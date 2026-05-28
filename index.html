@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Promote &amp; Lead — Something Big Is Coming</title>
+<meta name="description" content="Promote and Lead is launching soon. Join the waitlist to be first in line." />
+
+<!-- Open Graph -->
+<meta property="og:title" content="Promote &amp; Lead — Coming Soon" />
+<meta property="og:description" content="Something big is coming. Join the waitlist." />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@600;700&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet" />
+<!-- Clash Display fallback via Fontshare -->
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=general-sans@400,500,600&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --ink: #0a0612;
+    --hot: #ff2d6f;       /* hot pink */
+    --tangerine: #ff7a18; /* orange */
+    --electric: #6a2dff;  /* violet */
+    --cyan: #19e3ff;      /* electric cyan accent */
+    --cream: #fff4e8;
+    --glow: rgba(255,45,111,0.55);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: "General Sans", "Archivo", sans-serif;
+    background: var(--ink);
+    color: var(--cream);
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- animated aurora background ---------- */
+  .bg {
+    position: fixed;
+    inset: -20%;
+    z-index: 0;
+    filter: blur(70px) saturate(140%);
+    pointer-events: none;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+    opacity: 0.85;
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .blob.a { width: 55vw; height: 55vw; background: var(--hot);       top: -10%; left: -5%;  animation-delay: 0s; }
+  .blob.b { width: 50vw; height: 50vw; background: var(--electric);  bottom: -15%; right: -8%; animation-delay: -6s; }
+  .blob.c { width: 40vw; height: 40vw; background: var(--tangerine); top: 30%; left: 45%;  animation-delay: -11s; }
+
+  @keyframes drift {
+    0%   { transform: translate(0,0) scale(1); }
+    100% { transform: translate(6%, 8%) scale(1.18); }
+  }
+
+  /* grain overlay */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- layout ---------- */
+  .wrap {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: clamp(2rem, 5vw, 4rem) clamp(1.25rem, 5vw, 3rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    opacity: 0;
+    animation: rise 0.8s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  .logo-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 18px var(--cyan);
+  }
+  .logo-text {
+    font-family: "Clash Display", sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-size: 1.05rem;
+  }
+
+  main { display: flex; flex-direction: column; gap: 1.5rem; padding: 3rem 0; }
+
+  .badge {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid rgba(255,244,232,0.25);
+    border-radius: 100px;
+    background: rgba(255,244,232,0.04);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    animation: rise 0.8s cubic-bezier(.2,.8,.2,1) 0.15s forwards;
+  }
+  .badge .pulse {
+    display: inline-block;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--cyan); margin-right: 0.5rem;
+    animation: blink 1.6s ease-in-out infinite;
+    vertical-align: middle;
+  }
+
+  h1 {
+    font-family: "Clash Display", sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.8rem, 9vw, 6.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.25s forwards;
+  }
+  h1 .grad {
+    background: linear-gradient(100deg, var(--hot), var(--tangerine) 55%, var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .sub {
+    font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+    max-width: 38ch;
+    color: rgba(255,244,232,0.78);
+    line-height: 1.5;
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.4s forwards;
+  }
+
+  /* ---------- form ---------- */
+  form {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    max-width: 480px;
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.55s forwards;
+  }
+  input[type="email"] {
+    flex: 1 1 240px;
+    padding: 1rem 1.2rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--cream);
+    background: rgba(255,244,232,0.06);
+    border: 1px solid rgba(255,244,232,0.2);
+    border-radius: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="email"]::placeholder { color: rgba(255,244,232,0.4); }
+  input[type="email"]:focus {
+    border-color: var(--hot);
+    box-shadow: 0 0 0 4px rgba(255,45,111,0.18);
+  }
+  button {
+    padding: 1rem 1.6rem;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    cursor: pointer;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(100deg, var(--hot), var(--tangerine));
+    box-shadow: 0 8px 30px var(--glow);
+    transition: transform 0.15s, box-shadow 0.2s;
+    white-space: nowrap;
+  }
+  button:hover { transform: translateY(-2px); box-shadow: 0 12px 40px var(--glow); }
+  button:active { transform: translateY(0); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .msg {
+    margin-top: 0.4rem;
+    font-size: 0.92rem;
+    min-height: 1.4em;
+    color: var(--cyan);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .msg.show { opacity: 1; }
+  .msg.error { color: var(--hot); }
+
+  footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.82rem;
+    color: rgba(255,244,232,0.5);
+    opacity: 0;
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.7s forwards;
+  }
+  footer a { color: rgba(255,244,232,0.65); text-decoration: none; }
+  footer a:hover { color: var(--cyan); }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%     { opacity: 0.35; transform: scale(0.7); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    header, .badge, h1, .sub, form, footer { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="blob a"></div>
+    <div class="blob b"></div>
+    <div class="blob c"></div>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header>
+      <span class="logo-dot"></span>
+      <span class="logo-text">Promote&nbsp;&amp;&nbsp;Lead</span>
+    </header>
+
+    <main>
+      <span class="badge"><span class="pulse"></span>Launching Soon</span>
+      <h1>Something big is<br /><span class="grad">on the way.</span></h1>
+      <p class="sub">We're building something worth the wait. Drop your email and be the first to know the moment we go live.</p>
+
+      <form id="waitlist" novalidate>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="you@email.com"
+          required
+          autocomplete="email"
+          aria-label="Email address"
+        />
+        <button type="submit" id="submitBtn">Notify me</button>
+      </form>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    </main>
+
+    <footer>
+      <span>&copy; <span id="year"></span> Promote &amp; Lead. All rights reserved.</span>
+      <span><a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a></span>
+    </footer>
+  </div>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  const form = document.getElementById("waitlist");
+  const emailInput = document.getElementById("email");
+  const msg = document.getElementById("msg");
+  const btn = document.getElementById("submitBtn");
+
+  function showMsg(text, isError) {
+    msg.textContent = text;
+    msg.classList.add("show");
+    msg.classList.toggle("error", !!isError);
+  }
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!valid) {
+      showMsg("Please enter a valid email address.", true);
+      emailInput.focus();
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Joining…";
+
+    try {
+      // POSTs to a Cloudflare Pages Function at /api/subscribe (see functions/api/subscribe.js)
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+
+      if (res.ok) {
+        form.style.display = "none";
+        showMsg("You're on the list! We'll be in touch soon. \u{1F389}", false);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showMsg(data.error || "Something went wrong. Please try again.", true);
+        btn.disabled = false;
+        btn.textContent = "Notify me";
+      }
+    } catch (err) {
+      showMsg("Network error. Please try again.", true);
+      btn.disabled = false;
+      btn.textContent = "Notify me";
+    }
+  });
+</script>
+</body>
+</html>
