@@ -62,9 +62,9 @@
     opacity: 0.85;
     animation: drift 18s ease-in-out infinite alternate;
   }
-  .blob.a { width: 55vw; height: 55vw; background: var(--green);     top: -10%; left: -5%;  animation-delay: 0s; }
+  .blob.a { width: 55vw; height: 55vw; background: var(--green);     top: 25%; left: 30%;  animation-delay: 0s; }
   .blob.b { width: 50vw; height: 50vw; background: var(--navy);      bottom: -15%; right: -8%; animation-delay: -6s; }
-  .blob.c { width: 40vw; height: 40vw; background: var(--gold);      top: 30%; left: 45%;  animation-delay: -11s; }
+  .blob.c { width: 40vw; height: 40vw; background: var(--gold);      top: 40%; left: 55%;  animation-delay: -11s; }
 
   @keyframes drift {
     0%   { transform: translate(0,0) scale(1); }
@@ -107,6 +107,7 @@
     height: 36px;
     width: auto;
     display: block;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 12px rgba(255, 244, 232, 0.15));
   }
   .logo-text {
     font-family: "Clash Display", sans-serif;
