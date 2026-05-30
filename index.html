@@ -222,13 +222,46 @@
 
   footer {
     display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 1.25rem;
     font-size: 0.82rem;
     color: rgba(255,244,232,0.5);
     opacity: 0;
     animation: rise 0.9s cubic-bezier(.2,.8,.2,1) 0.7s forwards;
+  }
+  .footer-credential {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    background: rgba(255, 244, 232, 0.04);
+    border: 1px solid rgba(255, 244, 232, 0.1);
+    border-radius: 12px;
+    align-self: flex-start;
+    max-width: 100%;
+  }
+  .footer-credential-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: rgba(255,244,232,0.75);
+  }
+  .footer-credential-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,244,232,0.5);
+  }
+  .footer-credential-value {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--cream);
+  }
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
   footer a { color: rgba(255,244,232,0.65); text-decoration: none; }
   footer a:hover { color: var(--gold); }
@@ -283,8 +316,17 @@
     </main>
 
     <footer>
-      <span>&copy; <span id="year"></span> Promote &amp; Lead Solutions. All rights reserved.</span>
-      <span><a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a></span>
+      <div class="footer-credential">
+        <div data-iframe-width="110" data-iframe-height="110" data-share-badge-id="c2d5768a-b165-4a51-a8f9-cc6739038cb9" data-share-badge-host="https://www.credly.com"></div>
+        <div class="footer-credential-text">
+          <span class="footer-credential-label">Verified Credential</span>
+          <span class="footer-credential-value">RBLP&reg; Authorized Training Partner</span>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span id="year"></span> Promote &amp; Lead Solutions. All rights reserved.</span>
+        <span><a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a></span>
+      </div>
     </footer>
   </div>
 
@@ -340,5 +382,8 @@
     }
   });
 </script>
+
+<!-- Credly badge embed -->
+<script type="text/javascript" async src="//cdn.credly.com/assets/utilities/embed.js"></script>
 </body>
 </html>
