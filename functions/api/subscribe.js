@@ -21,15 +21,17 @@ export async function onRequestPost(context) {
       try {
         const existing = await db.select("pl_subscribers", `email=eq.${encodeURIComponent(clean)}&select=id`);
         isNew = !(existing && existing.length);
-      } catch (e) { /* treat as new */ }
-      await db.upsert("pl_subscribers", {
-        email: clean,
-        source: "cohort-form",
-        referrer: referrerFrom(request),
-        country: geo.country,
-        region: geo.region,
-        city: geo.city
-      }, "email");
+        await db.upsert("pl_subscribers", {
+          email: clean,
+          source: "cohort-form",
+          referrer: referrerFrom(request),
+          country: geo.country,
+          region: geo.region,
+          city: geo.city
+        }, "email");
+      } catch (e) {
+        // best-effort: never fail the signup on a transient DB hiccup; still notify below
+      }
     }
 
     if (isNew) await notify(env, clean, geo);
