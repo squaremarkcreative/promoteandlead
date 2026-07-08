@@ -10,8 +10,8 @@ export async function verifyAccess(request, env) {
 
   const token = request.headers.get("Cf-Access-Jwt-Assertion");
   const teamDomain = (env.ACCESS_TEAM_DOMAIN || "").replace(/\/$/, "");
-  const aud = env.ACCESS_AUD;
-  if (!token || !teamDomain || !aud) return null;
+  const allowedAuds = (env.ACCESS_AUD || "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (!token || !teamDomain || !allowedAuds.length) return null;
 
   const parts = token.split(".");
   if (parts.length !== 3) return null;
@@ -27,7 +27,7 @@ export async function verifyAccess(request, env) {
   if (payload.exp && payload.exp < now) return null;
   if (payload.nbf && payload.nbf > now + 60) return null;
   const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-  if (!auds.includes(aud)) return null;
+  if (!auds.some((a) => allowedAuds.includes(a))) return null;
   if (payload.iss && payload.iss !== teamDomain) return null;
 
   const key = await getKey(teamDomain, header.kid);
