@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Admin — Promote &amp; Lead Solutions</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+<style>
+  :root{--ink:#0a1428;--ink2:#0b1a34;--ink3:#08111f;--green:#1F5E2A;--green2:#2A8540;--gold:#C8A415;--gold2:#e8c769;--red:#8B2C2C;--cream:#fff4e8;--surface:rgba(255,244,232,.045);--surface2:rgba(255,244,232,.08);--border:rgba(255,244,232,.12);--bstrong:rgba(255,244,232,.22);--soft:rgba(255,244,232,.72);--faint:rgba(255,244,232,.5)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--ink);color:var(--cream);-webkit-font-smoothing:antialiased;line-height:1.5}
+  a{color:var(--gold2)}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.5rem;background:var(--ink3);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:.6rem;font-weight:700}
+  .brand img{height:30px}
+  .who{font-size:.82rem;color:var(--faint)}
+  .wrap{max-width:1200px;margin:0 auto;padding:1.5rem}
+  nav.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.5rem}
+  .tab{padding:.55rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--soft);cursor:pointer;font-size:.9rem;font-weight:600}
+  .tab.active{background:linear-gradient(100deg,var(--gold),var(--gold2));color:#1a1206;border-color:transparent}
+  .panel{display:none}.panel.active{display:block}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.3rem}
+  .card .n{font-size:2rem;font-weight:800;color:var(--gold2);line-height:1}
+  .card .l{font-size:.78rem;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin-top:.35rem}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:800px){.grid2{grid-template-columns:1fr}}
+  .box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1rem}
+  .box h3{font-size:.95rem;margin-bottom:.8rem;color:var(--cream)}
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th,td{text-align:left;padding:.55rem .6rem;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+  tr:hover td{background:var(--surface)}
+  .rank{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.88rem}
+  .rank b{color:var(--gold2)}
+  input,select,textarea{font-family:inherit;font-size:.88rem;color:var(--cream);background:var(--ink2);border:1px solid var(--bstrong);border-radius:9px;padding:.5rem .7rem;outline:none;width:100%}
+  input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+  textarea{resize:vertical;min-height:120px}
+  .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1rem;border-radius:9px;border:1px solid transparent;font-weight:600;font-size:.85rem;cursor:pointer;font-family:inherit}
+  .btn-gold{background:linear-gradient(100deg,var(--gold),var(--gold2));color:#1a1206}
+  .btn-green{background:linear-gradient(100deg,var(--green),var(--green2));color:#fff}
+  .btn-ghost{background:var(--surface);border-color:var(--bstrong);color:var(--cream)}
+  .btn-sm{padding:.35rem .6rem;font-size:.78rem}
+  .btn-del{background:transparent;border-color:rgba(139,44,44,.5);color:#e59a9a}
+  .row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+  .toolbar{display:flex;gap:.5rem;justify-content:space-between;align-items:center;margin-bottom:.8rem;flex-wrap:wrap}
+  .pill{font-size:.7rem;padding:.15rem .5rem;border-radius:100px;border:1px solid var(--border);color:var(--soft)}
+  .muted{color:var(--faint);font-size:.82rem}
+  .cohort{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1rem}
+  .slots{display:flex;gap:.3rem;margin:.5rem 0}
+  .slot{width:26px;height:8px;border-radius:4px;background:var(--border)}
+  .slot.filled{background:var(--gold)}
+  .msg{font-size:.85rem;margin-top:.5rem;min-height:1.2em}
+  .msg.ok{color:var(--gold2)}.msg.err{color:#e59a9a}
+  .status-sel{width:auto;min-width:110px;padding:.3rem .5rem;font-size:.78rem}
+  .loading{padding:3rem;text-align:center;color:var(--faint)}
+  .notice{background:rgba(200,164,21,.08);border:1px solid rgba(200,164,21,.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;font-size:.88rem;color:var(--soft)}
+  h2.pt{font-size:1.1rem;margin-bottom:1rem}
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><img src="/assets/logo-icon.png" alt="" /> Promote &amp; Lead — Admin</div>
+    <div class="row"><span class="who" id="who"></span><button class="btn btn-ghost btn-sm" onclick="load()">↻ Refresh</button></div>
+  </header>
+
+  <div class="wrap">
+    <div id="boot" class="loading">Loading dashboard…</div>
+    <div id="app" style="display:none">
+      <nav class="tabs" id="tabs"></nav>
+
+      <!-- DASHBOARD -->
+      <section class="panel" data-panel="dashboard">
+        <div class="cards" id="statCards"></div>
+        <div class="grid2">
+          <div class="box"><h3>Top 5 States</h3><div id="topStates"></div></div>
+          <div class="box"><h3>Top 5 Referrers</h3><div id="topReferrers"></div></div>
+          <div class="box"><h3>Top 5 Cities</h3><div id="topCities"></div></div>
+          <div class="box"><h3>By Country</h3><div id="byCountry"></div></div>
+        </div>
+      </section>
+
+      <!-- MAILING LIST -->
+      <section class="panel" data-panel="list">
+        <div class="toolbar">
+          <h2 class="pt">Mailing List (<span id="subCount">0</span>)</h2>
+          <div class="row">
+            <input id="newSub" placeholder="add email…" style="width:200px" />
+            <button class="btn btn-green btn-sm" onclick="addSub()">Add</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportCsv()">Export CSV</button>
+          </div>
+        </div>
+        <div class="box" style="padding:0;overflow:auto"><table id="subsTable"></table></div>
+      </section>
+
+      <!-- CONTACTS -->
+      <section class="panel" data-panel="contacts">
+        <h2 class="pt">Contact Leads (<span id="contactCount">0</span>)</h2>
+        <div class="box" style="padding:0;overflow:auto"><table id="contactsTable"></table></div>
+      </section>
+
+      <!-- COHORTS -->
+      <section class="panel" data-panel="cohorts">
+        <div class="toolbar">
+          <h2 class="pt">Cohorts</h2>
+        </div>
+        <div class="box">
+          <h3>New cohort</h3>
+          <div class="row">
+            <input id="coName" placeholder="Name (e.g. 26-002)" style="width:170px" />
+            <input id="coDate" type="date" style="width:170px" />
+            <input id="coCap" type="number" value="6" min="1" max="20" style="width:80px" />
+            <button class="btn btn-gold btn-sm" onclick="createCohort()">Create</button>
+          </div>
+        </div>
+        <div id="cohortList"></div>
+      </section>
+
+      <!-- EMAIL -->
+      <section class="panel" data-panel="email">
+        <h2 class="pt">Email a cohort or the list</h2>
+        <div class="notice">Sends from your company domain via Resend. Every email includes a one-click unsubscribe link (required by law). Unsubscribed contacts are automatically skipped.</div>
+        <div class="box" style="max-width:680px">
+          <label class="muted">Audience</label>
+          <select id="emAudience" style="margin:.3rem 0 .8rem"></select>
+          <label class="muted">Subject</label>
+          <input id="emSubject" placeholder="Subject line" style="margin:.3rem 0 .8rem" />
+          <label class="muted">Message</label>
+          <textarea id="emBody" placeholder="Write your message… (plain text; line breaks preserved)"></textarea>
+          <div class="row" style="margin-top:.8rem">
+            <button class="btn btn-gold" onclick="sendCampaign()" id="sendBtn">Send</button>
+            <span class="msg" id="emMsg"></span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+var D = null; // dashboard data
+var TABS = [["dashboard","Dashboard"],["list","Mailing List"],["contacts","Contacts"],["cohorts","Cohorts"],["email","Email"]];
+
+function esc(s){return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function fmtDate(s){ if(!s) return ""; try{return new Date(s).toLocaleDateString();}catch(e){return s;} }
+function loc(r){ return [r.city,r.region,r.country].filter(Boolean).join(", ") || "—"; }
+
+async function api(action,data){
+  var res = await fetch("/api/admin/action",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:action,data:data||{}})});
+  var j = await res.json().catch(function(){return {};});
+  if(!res.ok) throw new Error(j.error||("HTTP "+res.status));
+  return j;
+}
+
+async function load(){
+  try{
+    var res = await fetch("/api/admin/data",{headers:{"Accept":"application/json"}});
+    if(res.status===401){ document.getElementById("boot").innerHTML="Not authorized. This page is protected by Cloudflare Access."; return; }
+    var j = await res.json();
+    if(!res.ok){ document.getElementById("boot").innerHTML="⚠ "+esc(j.error||"Error loading data")+"<br><span class='muted'>Configure Supabase + run the schema, then refresh.</span>"; return; }
+    D = j;
+    document.getElementById("boot").style.display="none";
+    document.getElementById("app").style.display="block";
+    document.getElementById("who").textContent = j.user ? ("Signed in: "+j.user) : "";
+    renderAll();
+  }catch(e){ document.getElementById("boot").innerHTML="⚠ "+esc(e.message); }
+}
+
+function renderTabs(){
+  var t=document.getElementById("tabs"); t.innerHTML="";
+  TABS.forEach(function(pair,i){
+    var b=document.createElement("button"); b.className="tab"+(i===0?" active":""); b.textContent=pair[1];
+    b.onclick=function(){
+      document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active")});
+      document.querySelectorAll(".panel").forEach(function(x){x.classList.remove("active")});
+      b.classList.add("active");
+      document.querySelector('.panel[data-panel="'+pair[0]+'"]').classList.add("active");
+    };
+    t.appendChild(b);
+  });
+  document.querySelector('.panel[data-panel="dashboard"]').classList.add("active");
+}
+
+function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCohorts(); renderEmail(); }
+
+function renderDash(){
+  var o=D.overview;
+  document.getElementById("statCards").innerHTML =
+    card(o.subscribers,"Subscribers")+card(o.contacts,"Contact Leads")+card(o.cohorts,"Cohorts")+card(o.visits,"Total Visits");
+  document.getElementById("topStates").innerHTML = ranks(D.topStates,function(r){return (r.state||"—")+" ("+ (r.country||"") +")";});
+  document.getElementById("topReferrers").innerHTML = ranks(D.topReferrers,function(r){return r.referrer||"—";});
+  document.getElementById("topCities").innerHTML = ranks(D.topCities,function(r){return [r.city,r.region].filter(Boolean).join(", ")||"—";});
+  document.getElementById("byCountry").innerHTML = ranks(D.countries.slice(0,8),function(r){return r.country||"—";});
+}
+function card(n,l){return '<div class="card"><div class="n">'+(n||0)+'</div><div class="l">'+l+'</div></div>';}
+function ranks(arr,label){ if(!arr||!arr.length) return '<div class="muted">No data yet.</div>';
+  return arr.map(function(r){return '<div class="rank"><span>'+esc(label(r))+'</span><b>'+(r.visits||0)+'</b></div>';}).join(""); }
+
+function renderSubs(){
+  document.getElementById("subCount").textContent = D.subscribers.length;
+  var rows = D.subscribers.map(function(s){
+    return '<tr><td>'+esc(s.email)+(s.unsubscribed?' <span class="pill">unsub</span>':'')+'</td><td>'+esc(loc(s))+'</td><td>'+esc(s.referrer||"")+'</td><td>'+fmtDate(s.created_at)+'</td>'+
+      '<td><button class="btn btn-del btn-sm" onclick="delSub(\''+s.id+'\')">Delete</button></td></tr>';
+  }).join("");
+  document.getElementById("subsTable").innerHTML =
+    '<tr><th>Email</th><th>Location</th><th>Referrer</th><th>Joined</th><th></th></tr>'+(rows||'<tr><td colspan="5" class="muted">No subscribers yet.</td></tr>');
+}
+
+function renderContacts(){
+  document.getElementById("contactCount").textContent = D.contacts.length;
+  var opts=["new","contacted","won","closed"];
+  var rows = D.contacts.map(function(c){
+    var sel='<select class="status-sel" onchange="updContact(\''+c.id+'\',this.value)">'+opts.map(function(o){return '<option'+(c.status===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
+    return '<tr><td>'+esc(c.name||"")+'<div class="muted">'+esc(c.email||"")+'</div></td><td>'+esc(c.topic||"")+'</td><td style="max-width:320px">'+esc(c.message||"")+'</td><td>'+esc(loc(c))+'</td><td>'+fmtDate(c.created_at)+'</td><td>'+sel+'</td></tr>';
+  }).join("");
+  document.getElementById("contactsTable").innerHTML =
+    '<tr><th>From</th><th>Topic</th><th>Message</th><th>Location</th><th>Date</th><th>Status</th></tr>'+(rows||'<tr><td colspan="6" class="muted">No contact leads yet.</td></tr>');
+}
+
+function renderCohorts(){
+  var el=document.getElementById("cohortList");
+  if(!D.cohorts.length){ el.innerHTML='<div class="muted">No cohorts yet. Create one above.</div>'; return; }
+  el.innerHTML = D.cohorts.map(function(c){
+    var members=(c.members||[]);
+    var cap=c.capacity||6;
+    var slots=""; for(var i=0;i<cap;i++){ slots+='<div class="slot'+(i<members.length?' filled':'')+'"></div>'; }
+    var mopts=["applied","paid","scheduled","passed"];
+    var mrows=members.map(function(m){
+      var sel='<select class="status-sel" onchange="updMember(\''+m.id+'\',this.value)">'+mopts.map(function(o){return '<option'+(m.status===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
+      return '<tr><td>'+esc(m.name||"")+'</td><td>'+esc(m.email||"")+'</td><td>'+esc(m.rblp_type||"")+'</td><td>'+sel+'</td><td><button class="btn btn-del btn-sm" onclick="delMember(\''+m.id+'\')">✕</button></td></tr>';
+    }).join("");
+    var addForm = members.length<cap ?
+      '<div class="row" style="margin-top:.6rem">'+
+      '<input id="mn_'+c.id+'" placeholder="Name" style="width:130px">'+
+      '<input id="me_'+c.id+'" placeholder="Email" style="width:180px">'+
+      '<select id="mt_'+c.id+'" style="width:110px"><option>RBLP</option><option>RBLP-C</option><option>RBLP-T</option></select>'+
+      '<button class="btn btn-green btn-sm" onclick="addMember(\''+c.id+'\')">Add</button></div>'
+      : '<div class="muted" style="margin-top:.5rem">Cohort full ('+cap+'/'+cap+').</div>';
+    return '<div class="cohort"><div class="toolbar"><div><b style="font-size:1.05rem">Cohort '+esc(c.name)+'</b> <span class="pill">'+members.length+'/'+cap+'</span> '+(c.session_date?'<span class="muted">'+fmtDate(c.session_date)+'</span>':'')+'</div>'+
+      '<button class="btn btn-del btn-sm" onclick="delCohort(\''+c.id+'\',\''+esc(c.name)+'\')">Delete cohort</button></div>'+
+      '<div class="slots">'+slots+'</div>'+
+      '<table><tr><th>Name</th><th>Email</th><th>Type</th><th>Status</th><th></th></tr>'+(mrows||'<tr><td colspan="5" class="muted">No students yet.</td></tr>')+'</table>'+
+      addForm+'</div>';
+  }).join("");
+}
+
+function renderEmail(){
+  var sel=document.getElementById("emAudience");
+  var opts='<option value="list">Entire mailing list ('+D.subscribers.filter(function(s){return !s.unsubscribed;}).length+')</option>';
+  D.cohorts.forEach(function(c){ opts+='<option value="cohort:'+c.id+'">Cohort '+esc(c.name)+' ('+(c.members||[]).length+')</option>'; });
+  sel.innerHTML=opts;
+}
+
+/* actions */
+async function run(fn){ try{ await fn(); await load(); }catch(e){ alert(e.message); } }
+function addSub(){ var v=document.getElementById("newSub").value.trim(); if(!v)return; run(function(){return api("subscriber.add",{email:v});}); }
+function delSub(id){ if(confirm("Delete this subscriber?")) run(function(){return api("subscriber.delete",{id:id});}); }
+function updContact(id,status){ run(function(){return api("contact.update",{id:id,status:status});}); }
+function createCohort(){ var n=document.getElementById("coName").value.trim(); if(!n){alert("Name required");return;} run(function(){return api("cohort.create",{name:n,session_date:document.getElementById("coDate").value||null,capacity:parseInt(document.getElementById("coCap").value)||6});}); }
+function delCohort(id,name){ if(confirm("Delete cohort "+name+" and all its students?")) run(function(){return api("cohort.delete",{id:id});}); }
+function addMember(cid){ var n=document.getElementById("mn_"+cid).value.trim(),e=document.getElementById("me_"+cid).value.trim(),t=document.getElementById("mt_"+cid).value; if(!n&&!e){alert("Name or email required");return;} run(function(){return api("member.add",{cohort_id:cid,name:n,email:e,rblp_type:t});}); }
+function updMember(id,status){ run(function(){return api("member.update",{id:id,status:status});}); }
+function delMember(id){ if(confirm("Remove this student?")) run(function(){return api("member.delete",{id:id});}); }
+
+async function sendCampaign(){
+  var m=document.getElementById("emMsg"), btn=document.getElementById("sendBtn");
+  var audience=document.getElementById("emAudience").value, subject=document.getElementById("emSubject").value.trim(), message=document.getElementById("emBody").value.trim();
+  if(!subject||!message){ m.className="msg err"; m.textContent="Subject and message are required."; return; }
+  if(!confirm("Send this email now?")) return;
+  btn.disabled=true; btn.textContent="Sending…"; m.className="msg"; m.textContent="";
+  try{
+    var r=await api("campaign.send",{audience:audience,subject:subject,message:message});
+    m.className="msg ok"; m.textContent="Sent to "+r.sent+" recipient(s).";
+    document.getElementById("emSubject").value=""; document.getElementById("emBody").value="";
+  }catch(e){ m.className="msg err"; m.textContent=e.message; }
+  btn.disabled=false; btn.textContent="Send";
+}
+
+function exportCsv(){
+  var rows=[["email","city","region","country","referrer","status","unsubscribed","joined"]];
+  D.subscribers.forEach(function(s){ rows.push([s.email,s.city||"",s.region||"",s.country||"",s.referrer||"",s.status||"",s.unsubscribed?"yes":"no",s.created_at||""]); });
+  var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(",");}).join("\n");
+  var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="promote-lead-mailing-list.csv"; a.click();
+}
+
+load();
+</script>
+</body>
+</html>

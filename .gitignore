@@ -1,3 +1,13 @@
-
+.DS_Store
 .wrangler/
 waitlist.csv
+
+# Local dev secrets (Resend API key, etc.) — never commit
+.dev.vars
+
+# RBLP reference material — kept locally, never published
+Website/
+
+# Local dev / editor
+.claude/
+.envrc
