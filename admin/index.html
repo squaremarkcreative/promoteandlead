@@ -146,6 +146,7 @@
         <h2 class="pt">Email a cohort or the list</h2>
         <div class="notice">Sends from your company domain via Resend. Every email includes a one-click unsubscribe link (required by law). Unsubscribed contacts are automatically skipped.</div>
         <div class="box" style="max-width:680px">
+          <div id="emUsage" class="muted" style="margin-bottom:.7rem"></div>
           <label class="muted">Audience</label>
           <select id="emAudience" style="margin:.3rem 0 .8rem"></select>
           <label class="muted">Subject</label>
@@ -388,6 +389,13 @@ function renderEmail(){
   var opts='<option value="list">Entire mailing list ('+D.subscribers.filter(function(s){return !s.unsubscribed;}).length+')</option>';
   sortedCohorts().forEach(function(c){ opts+='<option value="cohort:'+c.id+'">Cohort '+esc(c.name)+' ('+(c.members||[]).length+')</option>'; });
   sel.innerHTML=opts;
+  var u=document.getElementById("emUsage");
+  if(u){ u.innerHTML='Sent this month: <b style="color:var(--gold2)">'+monthEmails()+'</b> of 3,000 &nbsp;·&nbsp; free tier: 100/day, 3,000/mo.'; }
+}
+function monthEmails(){
+  var now=new Date(), y=now.getFullYear(), mo=now.getMonth(), t=0;
+  (D.campaigns||[]).forEach(function(c){ var d=new Date(c.created_at); if(d.getFullYear()===y&&d.getMonth()===mo) t+=(c.recipient_count||0); });
+  return t;
 }
 
 /* actions */
@@ -407,7 +415,11 @@ async function sendCampaign(){
   var m=document.getElementById("emMsg"), btn=document.getElementById("sendBtn");
   var audience=document.getElementById("emAudience").value, subject=document.getElementById("emSubject").value.trim(), message=document.getElementById("emBody").value.trim();
   if(!subject||!message){ m.className="msg err"; m.textContent="Subject and message are required."; return; }
-  if(!confirm("Send this email now?")) return;
+  var n=0;
+  if(audience==="list") n=D.subscribers.filter(function(s){return !s.unsubscribed;}).length;
+  else if(audience.indexOf("cohort:")===0){ var cid=audience.slice(7); var c=(D.cohorts||[]).filter(function(x){return x.id===cid;})[0]; n=c?(c.members||[]).filter(function(mm){return mm.email;}).length:0; }
+  var warn = n>90 ? ("\n\n⚠ That's "+n+" emails. The free tier allows 100/day, so a batch this large may not all go out today.") : "";
+  if(!confirm("Send this to "+n+" recipient(s), plus a copy to you?"+warn)) return;
   btn.disabled=true; btn.textContent="Sending…"; m.className="msg"; m.textContent="";
   try{
     var r=await api("campaign.send",{audience:audience,subject:subject,message:message});

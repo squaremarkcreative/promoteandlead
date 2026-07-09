@@ -30,6 +30,12 @@ export async function onRequestGet(context) {
       (rows || []).forEach((r) => { settings[r.key] = r.value; });
     } catch (e) { /* pl_settings not created yet */ }
 
+    // recent campaigns (for monthly send count) — resilient
+    let campaigns = [];
+    try {
+      campaigns = (await db.select("pl_campaigns", "select=created_at,recipient_count,subject&order=created_at.desc&limit=200")) || [];
+    } catch (e) { /* ignore */ }
+
     return json({
       user: user.email,
       overview: {
@@ -45,7 +51,8 @@ export async function onRequestGet(context) {
       subscribers,
       contacts,
       cohorts,
-      settings
+      settings,
+      campaigns
     });
   } catch (err) {
     return json({ error: String(err.message || err) }, 500);
