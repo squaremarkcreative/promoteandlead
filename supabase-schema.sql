@@ -42,13 +42,16 @@ create table if not exists pl_contacts (
 -- ------------------------------------------------------------------ cohorts + members
 create table if not exists pl_cohorts (
   id           uuid primary key default gen_random_uuid(),
-  name         text not null unique,        -- e.g. '26-001'
+  name         text not null unique,        -- e.g. 'Jul 2026'
+  code         text,                        -- student access / prep training code, e.g. 'OUTEY'
   session_date date,
   capacity     int  not null default 6,
   status       text not null default 'open',-- open | full | completed
   notes        text,
   created_at   timestamptz not null default now()
 );
+-- If the table already exists from an earlier run, add the new column:
+alter table pl_cohorts add column if not exists code text;
 
 create table if not exists pl_cohort_members (
   id           uuid primary key default gen_random_uuid(),

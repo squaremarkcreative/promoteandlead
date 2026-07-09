@@ -16,15 +16,15 @@ export async function onRequestPost(context) {
 
   try {
     switch (action) {
-      case "cohort.create":
+      case "cohort.create": {
         if (!data.name) return json({ error: "Cohort name is required." }, 400);
-        await db.insert("pl_cohorts", {
-          name: data.name, session_date: data.session_date || null,
-          capacity: data.capacity || 6, notes: data.notes || null
-        });
+        const row = { name: data.name, session_date: data.session_date || null, capacity: data.capacity || 6, notes: data.notes || null };
+        if (data.code) row.code = data.code;
+        await db.insert("pl_cohorts", row);
         break;
+      }
       case "cohort.update":
-        await db.patch("pl_cohorts", `id=eq.${data.id}`, pick(data, ["name", "session_date", "capacity", "status", "notes"]));
+        await db.patch("pl_cohorts", `id=eq.${data.id}`, pick(data, ["name", "code", "session_date", "capacity", "status", "notes"]));
         break;
       case "cohort.delete":
         await db.remove("pl_cohorts", `id=eq.${data.id}`);

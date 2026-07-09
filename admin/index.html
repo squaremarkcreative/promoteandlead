@@ -51,6 +51,11 @@
   .slots{display:flex;gap:.3rem;margin:.5rem 0}
   .slot{width:26px;height:8px;border-radius:4px;background:var(--border)}
   .slot.filled{background:var(--gold)}
+  .co-edit{background:transparent;border:1px solid transparent;border-radius:8px;color:var(--cream);padding:.2rem .45rem;font-family:inherit}
+  .co-edit:hover{border-color:var(--border)}
+  .co-edit:focus{border-color:var(--gold);background:var(--ink2);outline:none}
+  .co-edit.nm{font-weight:700;font-size:1.05rem;width:150px}
+  .co-edit.cd{font-weight:600;font-size:.85rem;color:var(--gold2);letter-spacing:.06em;width:105px}
   .msg{font-size:.85rem;margin-top:.5rem;min-height:1.2em}
   .msg.ok{color:var(--gold2)}.msg.err{color:#e59a9a}
   .status-sel{width:auto;min-width:110px;padding:.3rem .5rem;font-size:.78rem}
@@ -108,9 +113,10 @@
         <div class="box">
           <h3>New cohort</h3>
           <div class="row">
-            <input id="coName" placeholder="Name (e.g. 26-002)" style="width:170px" />
-            <input id="coDate" type="date" style="width:170px" />
-            <input id="coCap" type="number" value="6" min="1" max="20" style="width:80px" />
+            <input id="coName" placeholder="Name (e.g. Jul 2026)" style="width:150px" />
+            <input id="coCode" placeholder="Access code" style="width:130px" />
+            <input id="coDate" type="date" style="width:160px" />
+            <input id="coCap" type="number" value="6" min="1" max="20" style="width:70px" />
             <button class="btn btn-gold btn-sm" onclick="createCohort()">Create</button>
           </div>
         </div>
@@ -324,7 +330,10 @@ function renderCohorts(){
       '<button class="btn btn-green btn-sm" onclick="addMember(\''+c.id+'\')">Add</button></div>'
       : '<div class="muted" style="margin-top:.5rem">Cohort full ('+cap+'/'+cap+').</div>';
     var totalPill = anyPay ? ' <span class="pill" style="border-color:rgba(200,164,21,.5);color:var(--gold2)">Est. payout '+money(total)+'</span>' : '';
-    return '<div class="cohort"><div class="toolbar"><div><b style="font-size:1.05rem">Cohort '+esc(c.name)+'</b> <span class="pill">'+members.length+'/'+cap+'</span>'+totalPill+' '+(c.session_date?'<span class="muted">'+fmtDate(c.session_date)+'</span>':'')+'</div>'+
+    return '<div class="cohort"><div class="toolbar"><div class="row" style="gap:.4rem;align-items:center">'+
+      '<input class="co-edit nm" value="'+esc(c.name||"")+'" title="Cohort name" onchange="updCohort(\''+c.id+'\',{name:this.value})">'+
+      '<input class="co-edit cd" value="'+esc(c.code||"")+'" placeholder="code" title="Student access code" onchange="updCohort(\''+c.id+'\',{code:this.value})">'+
+      '<span class="pill">'+members.length+'/'+cap+'</span>'+totalPill+(c.session_date?' <span class="muted">'+fmtDate(c.session_date)+'</span>':'')+'</div>'+
       '<button class="btn btn-del btn-sm" onclick="delCohort(\''+c.id+'\',\''+esc(c.name)+'\')">Delete cohort</button></div>'+
       '<div class="slots">'+slots+'</div>'+
       '<table><tr><th>Name</th><th>Email</th><th>Type</th><th>Pay</th><th>Status</th><th>Est. $</th><th></th></tr>'+(mrows||'<tr><td colspan="7" class="muted">No students yet.</td></tr>')+'</table>'+
@@ -353,7 +362,8 @@ async function run(fn){ try{ await fn(); await load(); }catch(e){ alert(e.messag
 function addSub(){ var v=document.getElementById("newSub").value.trim(); if(!v)return; run(function(){return api("subscriber.add",{email:v});}); }
 function delSub(id){ if(confirm("Delete this subscriber?")) run(function(){return api("subscriber.delete",{id:id});}); }
 function updContact(id,status){ run(function(){return api("contact.update",{id:id,status:status});}); }
-function createCohort(){ var n=document.getElementById("coName").value.trim(); if(!n){alert("Name required");return;} run(function(){return api("cohort.create",{name:n,session_date:document.getElementById("coDate").value||null,capacity:parseInt(document.getElementById("coCap").value)||6});}); }
+function createCohort(){ var n=document.getElementById("coName").value.trim(); if(!n){alert("Name required");return;} var data={name:n,session_date:document.getElementById("coDate").value||null,capacity:parseInt(document.getElementById("coCap").value)||6}; var code=document.getElementById("coCode").value.trim(); if(code)data.code=code; run(function(){return api("cohort.create",data);}); }
+function updCohort(id,patch){ run(function(){return api("cohort.update",Object.assign({id:id},patch));}); }
 function delCohort(id,name){ if(confirm("Delete cohort "+name+" and all its students?")) run(function(){return api("cohort.delete",{id:id});}); }
 function addMember(cid){ var n=document.getElementById("mn_"+cid).value.trim(),e=document.getElementById("me_"+cid).value.trim(),t=document.getElementById("mt_"+cid).value,p=document.getElementById("mp_"+cid).value; if(!n&&!e){alert("Name or email required");return;} run(function(){return api("member.add",{cohort_id:cid,name:n,email:e,rblp_type:t,payment_type:p});}); }
 function updMember(id,patch){ run(function(){return api("member.update",Object.assign({id:id},patch));}); }
