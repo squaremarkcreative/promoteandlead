@@ -111,10 +111,19 @@
           <h2 class="pt">Cohorts</h2>
         </div>
         <div class="box">
+          <h3>Access codes by month <span class="muted" style="font-weight:400">(students use the code active when they purchase)</span></h3>
+          <div id="codesList"></div>
+          <div class="row" style="margin-top:.5rem">
+            <input id="newCodeLabel" placeholder="Month (e.g. Nov 2026)" style="width:160px" />
+            <input id="newCodeVal" placeholder="Code" style="width:120px" />
+            <button class="btn btn-green btn-sm" onclick="addCode()">Add code</button>
+            <span class="msg" id="codesMsg"></span>
+          </div>
+        </div>
+        <div class="box">
           <h3>New cohort</h3>
           <div class="row">
-            <input id="coName" placeholder="Name (e.g. Jul 2026)" style="width:150px" />
-            <input id="coCode" placeholder="Access code" style="width:130px" />
+            <input id="coName" placeholder="Name (e.g. 26-002)" style="width:170px" />
             <input id="coDate" type="date" style="width:160px" />
             <input id="coCap" type="number" value="6" min="1" max="20" style="width:70px" />
             <button class="btn btn-gold btn-sm" onclick="createCohort()">Create</button>
@@ -246,7 +255,30 @@ function selectTab(key){
   document.querySelectorAll(".panel").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-panel")===key); });
 }
 
-function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCohorts(); renderEmail(); renderRates(); renderNotes(); }
+function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCodes(); renderCohorts(); renderEmail(); renderRates(); renderNotes(); }
+
+var ACCESS_CODES=[];
+function renderCodes(){
+  try{ ACCESS_CODES=JSON.parse((D.settings&&D.settings.access_codes)||"[]"); }catch(e){ ACCESS_CODES=[]; }
+  if(!Array.isArray(ACCESS_CODES)) ACCESS_CODES=[];
+  var el=document.getElementById("codesList"); if(!el) return;
+  el.innerHTML = ACCESS_CODES.length ? ACCESS_CODES.map(function(c,i){
+    return '<div class="row" style="margin-bottom:.35rem">'+
+      '<input value="'+esc(c.label||"")+'" placeholder="Month" style="width:160px" onchange="editCode('+i+',\'label\',this.value)">'+
+      '<input value="'+esc(c.code||"")+'" placeholder="Code" style="width:120px;color:var(--gold2);font-weight:600;letter-spacing:.05em" onchange="editCode('+i+',\'code\',this.value)">'+
+      '<button class="btn btn-del btn-sm" onclick="delCode('+i+')">✕</button></div>';
+  }).join("") : '<div class="muted">No codes yet — add one below.</div>';
+}
+function persistCodes(){
+  var m=document.getElementById("codesMsg");
+  return api("setting.save",{key:"access_codes",value:JSON.stringify(ACCESS_CODES)}).then(function(){
+    if(!D.settings)D.settings={}; D.settings.access_codes=JSON.stringify(ACCESS_CODES);
+    if(m){m.className="msg ok";m.textContent="Saved.";setTimeout(function(){if(m)m.textContent="";},1500);}
+  }).catch(function(e){ if(m){m.className="msg err";m.textContent=e.message;} });
+}
+function editCode(i,f,v){ if(ACCESS_CODES[i]){ ACCESS_CODES[i][f]=v; persistCodes(); } }
+function delCode(i){ ACCESS_CODES.splice(i,1); persistCodes(); renderCodes(); }
+function addCode(){ var l=document.getElementById("newCodeLabel").value.trim(), v=document.getElementById("newCodeVal").value.trim(); if(!l&&!v)return; ACCESS_CODES.push({label:l,code:v}); document.getElementById("newCodeLabel").value=""; document.getElementById("newCodeVal").value=""; persistCodes(); renderCodes(); }
 
 function renderNotes(){
   var el=document.getElementById("instrNotes");
@@ -310,7 +342,7 @@ function renderCohorts(){
   if(!D.cohorts.length){ el.innerHTML='<div class="muted">No cohorts yet. Create one above.</div>'; return; }
   var mopts=["applied","paid","scheduled","passed"];
   var popts=["","CA","Normal","Affirm"];
-  el.innerHTML = D.cohorts.map(function(c){
+  el.innerHTML = sortedCohorts().map(function(c){
     var members=(c.members||[]);
     var cap=c.capacity||6;
     var slots=""; for(var i=0;i<cap;i++){ slots+='<div class="slot'+(i<members.length?' filled':'')+'"></div>'; }
@@ -332,7 +364,6 @@ function renderCohorts(){
     var totalPill = anyPay ? ' <span class="pill" style="border-color:rgba(200,164,21,.5);color:var(--gold2)">Est. payout '+money(total)+'</span>' : '';
     return '<div class="cohort"><div class="toolbar"><div class="row" style="gap:.4rem;align-items:center">'+
       '<input class="co-edit nm" value="'+esc(c.name||"")+'" title="Cohort name" onchange="updCohort(\''+c.id+'\',{name:this.value})">'+
-      '<input class="co-edit cd" value="'+esc(c.code||"")+'" placeholder="code" title="Student access code" onchange="updCohort(\''+c.id+'\',{code:this.value})">'+
       '<span class="pill">'+members.length+'/'+cap+'</span>'+totalPill+(c.session_date?' <span class="muted">'+fmtDate(c.session_date)+'</span>':'')+'</div>'+
       '<button class="btn btn-del btn-sm" onclick="delCohort(\''+c.id+'\',\''+esc(c.name)+'\')">Delete cohort</button></div>'+
       '<div class="slots">'+slots+'</div>'+
@@ -353,7 +384,7 @@ function renderRates(){
 function renderEmail(){
   var sel=document.getElementById("emAudience");
   var opts='<option value="list">Entire mailing list ('+D.subscribers.filter(function(s){return !s.unsubscribed;}).length+')</option>';
-  D.cohorts.forEach(function(c){ opts+='<option value="cohort:'+c.id+'">Cohort '+esc(c.name)+' ('+(c.members||[]).length+')</option>'; });
+  sortedCohorts().forEach(function(c){ opts+='<option value="cohort:'+c.id+'">Cohort '+esc(c.name)+' ('+(c.members||[]).length+')</option>'; });
   sel.innerHTML=opts;
 }
 
@@ -362,8 +393,9 @@ async function run(fn){ try{ await fn(); await load(); }catch(e){ alert(e.messag
 function addSub(){ var v=document.getElementById("newSub").value.trim(); if(!v)return; run(function(){return api("subscriber.add",{email:v});}); }
 function delSub(id){ if(confirm("Delete this subscriber?")) run(function(){return api("subscriber.delete",{id:id});}); }
 function updContact(id,status){ run(function(){return api("contact.update",{id:id,status:status});}); }
-function createCohort(){ var n=document.getElementById("coName").value.trim(); if(!n){alert("Name required");return;} var data={name:n,session_date:document.getElementById("coDate").value||null,capacity:parseInt(document.getElementById("coCap").value)||6}; var code=document.getElementById("coCode").value.trim(); if(code)data.code=code; run(function(){return api("cohort.create",data);}); }
+function createCohort(){ var n=document.getElementById("coName").value.trim(); if(!n){alert("Name required");return;} run(function(){return api("cohort.create",{name:n,session_date:document.getElementById("coDate").value||null,capacity:parseInt(document.getElementById("coCap").value)||6});}); }
 function updCohort(id,patch){ run(function(){return api("cohort.update",Object.assign({id:id},patch));}); }
+function sortedCohorts(){ return D.cohorts.slice().sort(function(a,b){ var da=a.session_date||"", db=b.session_date||""; if(da&&db) return da<db?-1:da>db?1:0; if(da) return -1; if(db) return 1; return 0; }); }
 function delCohort(id,name){ if(confirm("Delete cohort "+name+" and all its students?")) run(function(){return api("cohort.delete",{id:id});}); }
 function addMember(cid){ var n=document.getElementById("mn_"+cid).value.trim(),e=document.getElementById("me_"+cid).value.trim(),t=document.getElementById("mt_"+cid).value,p=document.getElementById("mp_"+cid).value; if(!n&&!e){alert("Name or email required");return;} run(function(){return api("member.add",{cohort_id:cid,name:n,email:e,rblp_type:t,payment_type:p});}); }
 function updMember(id,patch){ run(function(){return api("member.update",Object.assign({id:id},patch));}); }
