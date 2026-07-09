@@ -51,15 +51,18 @@ create table if not exists pl_cohorts (
 );
 
 create table if not exists pl_cohort_members (
-  id         uuid primary key default gen_random_uuid(),
-  cohort_id  uuid references pl_cohorts(id) on delete cascade,
-  name       text,
-  email      text,
-  rblp_type  text,                          -- RBLP | RBLP-C | RBLP-T
-  status     text not null default 'applied',-- applied | paid | scheduled | passed
-  notes      text,
-  created_at timestamptz not null default now()
+  id           uuid primary key default gen_random_uuid(),
+  cohort_id    uuid references pl_cohorts(id) on delete cascade,
+  name         text,
+  email        text,
+  rblp_type    text,                          -- RBLP | RBLP-C | RBLP-T
+  payment_type text,                          -- CA | Normal | Affirm
+  status       text not null default 'applied',-- applied | paid | scheduled | passed
+  notes        text,
+  created_at   timestamptz not null default now()
 );
+-- If the table already exists from an earlier run, add the new column:
+alter table pl_cohort_members add column if not exists payment_type text;
 
 -- ------------------------------------------------------------------ analytics
 create table if not exists pl_visits (

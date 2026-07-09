@@ -114,6 +114,15 @@
             <button class="btn btn-gold btn-sm" onclick="createCohort()">Create</button>
           </div>
         </div>
+        <div class="box">
+          <h3>RBLP fee by payment type <span class="muted" style="font-weight:400">(% RBLP keeps of the prep price)</span></h3>
+          <div class="row">
+            <label class="muted">CA <input type="number" id="rate-CA" min="0" max="100" style="width:70px" /> %</label>
+            <label class="muted">Normal <input type="number" id="rate-Normal" min="0" max="100" style="width:70px" /> %</label>
+            <label class="muted">Affirm <input type="number" id="rate-Affirm" min="0" max="100" style="width:70px" /> %</label>
+          </div>
+          <div class="muted" style="margin-top:.5rem">Your estimated payout = prep price − RBLP's cut. Prep prices: RBLP $395 · Coach $495 · Trainer $595. Edit anytime; saved on this device.</div>
+        </div>
         <div id="cohortList"></div>
       </section>
 
@@ -185,7 +194,7 @@ function selectTab(key){
   document.querySelectorAll(".panel").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-panel")===key); });
 }
 
-function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCohorts(); renderEmail(); }
+function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCohorts(); renderEmail(); renderRates(); }
 
 function renderDash(){
   var o=D.overview;
@@ -221,31 +230,53 @@ function renderContacts(){
     '<tr><th>From</th><th>Topic</th><th>Message</th><th>Location</th><th>Date</th><th>Status</th></tr>'+(rows||'<tr><td colspan="6" class="muted">No contact leads yet.</td></tr>');
 }
 
+// --- finances ---
+var PREP_PRICE = { "RBLP":395, "RBLP-C":495, "RBLP-T":595 };
+function getRates(){ try{ var r=JSON.parse(localStorage.getItem("pl_rates")); if(r&&typeof r==="object") return r; }catch(e){} return {CA:15,Normal:5,Affirm:10}; }
+function saveRates(r){ try{ localStorage.setItem("pl_rates",JSON.stringify(r)); }catch(e){} }
+function memberPayout(m){ var price=PREP_PRICE[m.rblp_type]||0; var rates=getRates(); var pt=m.payment_type; if(!price||!pt||rates[pt]==null) return null; return price*(1-rates[pt]/100); }
+function money(n){ return n==null?"—":"$"+n.toFixed(2); }
+
 function renderCohorts(){
   var el=document.getElementById("cohortList");
   if(!D.cohorts.length){ el.innerHTML='<div class="muted">No cohorts yet. Create one above.</div>'; return; }
+  var mopts=["applied","paid","scheduled","passed"];
+  var popts=["","CA","Normal","Affirm"];
   el.innerHTML = D.cohorts.map(function(c){
     var members=(c.members||[]);
     var cap=c.capacity||6;
     var slots=""; for(var i=0;i<cap;i++){ slots+='<div class="slot'+(i<members.length?' filled':'')+'"></div>'; }
-    var mopts=["applied","paid","scheduled","passed"];
+    var total=0, anyPay=false;
     var mrows=members.map(function(m){
-      var sel='<select class="status-sel" onchange="updMember(\''+m.id+'\',this.value)">'+mopts.map(function(o){return '<option'+(m.status===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
-      return '<tr><td>'+esc(m.name||"")+'</td><td>'+esc(m.email||"")+'</td><td>'+esc(m.rblp_type||"")+'</td><td>'+sel+'</td><td><button class="btn btn-del btn-sm" onclick="delMember(\''+m.id+'\')">✕</button></td></tr>';
+      var sel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{status:this.value})">'+mopts.map(function(o){return '<option'+(m.status===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
+      var paysel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{payment_type:this.value})">'+popts.map(function(o){return '<option value="'+o+'"'+(((m.payment_type||"")===o)?' selected':'')+'>'+(o||"—")+'</option>';}).join("")+'</select>';
+      var po=memberPayout(m); if(po!=null){ total+=po; anyPay=true; }
+      return '<tr><td>'+esc(m.name||"")+'</td><td>'+esc(m.email||"")+'</td><td>'+esc(m.rblp_type||"")+'</td><td>'+paysel+'</td><td>'+sel+'</td><td>'+money(po)+'</td><td><button class="btn btn-del btn-sm" onclick="delMember(\''+m.id+'\')">✕</button></td></tr>';
     }).join("");
     var addForm = members.length<cap ?
       '<div class="row" style="margin-top:.6rem">'+
-      '<input id="mn_'+c.id+'" placeholder="Name" style="width:130px">'+
-      '<input id="me_'+c.id+'" placeholder="Email" style="width:180px">'+
-      '<select id="mt_'+c.id+'" style="width:110px"><option>RBLP</option><option>RBLP-C</option><option>RBLP-T</option></select>'+
+      '<input id="mn_'+c.id+'" placeholder="Name" style="width:120px">'+
+      '<input id="me_'+c.id+'" placeholder="Email" style="width:160px">'+
+      '<select id="mt_'+c.id+'" style="width:95px"><option>RBLP</option><option>RBLP-C</option><option>RBLP-T</option></select>'+
+      '<select id="mp_'+c.id+'" style="width:110px"><option value="">Pay type…</option><option>CA</option><option>Normal</option><option>Affirm</option></select>'+
       '<button class="btn btn-green btn-sm" onclick="addMember(\''+c.id+'\')">Add</button></div>'
       : '<div class="muted" style="margin-top:.5rem">Cohort full ('+cap+'/'+cap+').</div>';
-    return '<div class="cohort"><div class="toolbar"><div><b style="font-size:1.05rem">Cohort '+esc(c.name)+'</b> <span class="pill">'+members.length+'/'+cap+'</span> '+(c.session_date?'<span class="muted">'+fmtDate(c.session_date)+'</span>':'')+'</div>'+
+    var totalPill = anyPay ? ' <span class="pill" style="border-color:rgba(200,164,21,.5);color:var(--gold2)">Est. payout '+money(total)+'</span>' : '';
+    return '<div class="cohort"><div class="toolbar"><div><b style="font-size:1.05rem">Cohort '+esc(c.name)+'</b> <span class="pill">'+members.length+'/'+cap+'</span>'+totalPill+' '+(c.session_date?'<span class="muted">'+fmtDate(c.session_date)+'</span>':'')+'</div>'+
       '<button class="btn btn-del btn-sm" onclick="delCohort(\''+c.id+'\',\''+esc(c.name)+'\')">Delete cohort</button></div>'+
       '<div class="slots">'+slots+'</div>'+
-      '<table><tr><th>Name</th><th>Email</th><th>Type</th><th>Status</th><th></th></tr>'+(mrows||'<tr><td colspan="5" class="muted">No students yet.</td></tr>')+'</table>'+
+      '<table><tr><th>Name</th><th>Email</th><th>Type</th><th>Pay</th><th>Status</th><th>Est. $</th><th></th></tr>'+(mrows||'<tr><td colspan="7" class="muted">No students yet.</td></tr>')+'</table>'+
       addForm+'</div>';
   }).join("");
+}
+
+function renderRates(){
+  var r=getRates();
+  ["CA","Normal","Affirm"].forEach(function(k){
+    var el=document.getElementById("rate-"+k); if(!el) return;
+    el.value=r[k];
+    el.onchange=function(){ var rr=getRates(); rr[k]=parseFloat(el.value)||0; saveRates(rr); renderCohorts(); renderEmail(); };
+  });
 }
 
 function renderEmail(){
@@ -262,8 +293,8 @@ function delSub(id){ if(confirm("Delete this subscriber?")) run(function(){retur
 function updContact(id,status){ run(function(){return api("contact.update",{id:id,status:status});}); }
 function createCohort(){ var n=document.getElementById("coName").value.trim(); if(!n){alert("Name required");return;} run(function(){return api("cohort.create",{name:n,session_date:document.getElementById("coDate").value||null,capacity:parseInt(document.getElementById("coCap").value)||6});}); }
 function delCohort(id,name){ if(confirm("Delete cohort "+name+" and all its students?")) run(function(){return api("cohort.delete",{id:id});}); }
-function addMember(cid){ var n=document.getElementById("mn_"+cid).value.trim(),e=document.getElementById("me_"+cid).value.trim(),t=document.getElementById("mt_"+cid).value; if(!n&&!e){alert("Name or email required");return;} run(function(){return api("member.add",{cohort_id:cid,name:n,email:e,rblp_type:t});}); }
-function updMember(id,status){ run(function(){return api("member.update",{id:id,status:status});}); }
+function addMember(cid){ var n=document.getElementById("mn_"+cid).value.trim(),e=document.getElementById("me_"+cid).value.trim(),t=document.getElementById("mt_"+cid).value,p=document.getElementById("mp_"+cid).value; if(!n&&!e){alert("Name or email required");return;} run(function(){return api("member.add",{cohort_id:cid,name:n,email:e,rblp_type:t,payment_type:p});}); }
+function updMember(id,patch){ run(function(){return api("member.update",Object.assign({id:id},patch));}); }
 function delMember(id){ if(confirm("Remove this student?")) run(function(){return api("member.delete",{id:id});}); }
 
 async function sendCampaign(){
