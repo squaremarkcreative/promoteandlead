@@ -342,6 +342,7 @@ function renderCohorts(){
   if(!D.cohorts.length){ el.innerHTML='<div class="muted">No cohorts yet. Create one above.</div>'; return; }
   var mopts=["applied","paid","scheduled","passed"];
   var popts=["","CA","Normal","Affirm"];
+  var topts=["RBLP","RBLP-C","RBLP-T"];
   el.innerHTML = sortedCohorts().map(function(c){
     var members=(c.members||[]);
     var cap=c.capacity||6;
@@ -350,8 +351,9 @@ function renderCohorts(){
     var mrows=members.map(function(m){
       var sel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{status:this.value})">'+mopts.map(function(o){return '<option'+(m.status===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
       var paysel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{payment_type:this.value})">'+popts.map(function(o){return '<option value="'+o+'"'+(((m.payment_type||"")===o)?' selected':'')+'>'+(o||"—")+'</option>';}).join("")+'</select>';
+      var typesel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{rblp_type:this.value})">'+topts.map(function(o){return '<option'+(m.rblp_type===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
       var po=memberPayout(m); if(po!=null){ total+=po; anyPay=true; }
-      return '<tr><td>'+esc(m.name||"")+'</td><td>'+esc(m.email||"")+'</td><td>'+esc(m.rblp_type||"")+'</td><td>'+paysel+'</td><td>'+sel+'</td><td>'+money(po)+'</td><td><button class="btn btn-del btn-sm" onclick="delMember(\''+m.id+'\')">✕</button></td></tr>';
+      return '<tr><td>'+esc(m.name||"")+'</td><td>'+esc(m.email||"")+'</td><td>'+typesel+'</td><td>'+paysel+'</td><td>'+sel+'</td><td>'+money(po)+'</td><td><button class="btn btn-del btn-sm" onclick="delMember(\''+m.id+'\')">✕</button></td></tr>';
     }).join("");
     var addForm = members.length<cap ?
       '<div class="row" style="margin-top:.6rem">'+
