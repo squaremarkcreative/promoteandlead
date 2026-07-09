@@ -166,19 +166,23 @@ async function load(){
   }catch(e){ document.getElementById("boot").innerHTML="⚠ "+esc(e.message); }
 }
 
+var activeTab = "dashboard";
 function renderTabs(){
   var t=document.getElementById("tabs"); t.innerHTML="";
-  TABS.forEach(function(pair,i){
-    var b=document.createElement("button"); b.className="tab"+(i===0?" active":""); b.textContent=pair[1];
-    b.onclick=function(){
-      document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active")});
-      document.querySelectorAll(".panel").forEach(function(x){x.classList.remove("active")});
-      b.classList.add("active");
-      document.querySelector('.panel[data-panel="'+pair[0]+'"]').classList.add("active");
-    };
+  TABS.forEach(function(pair){
+    var b=document.createElement("button");
+    b.className="tab"+(pair[0]===activeTab?" active":"");
+    b.textContent=pair[1];
+    b.dataset.tab=pair[0];
+    b.onclick=function(){ selectTab(pair[0]); };
     t.appendChild(b);
   });
-  document.querySelector('.panel[data-panel="dashboard"]').classList.add("active");
+  selectTab(activeTab);
+}
+function selectTab(key){
+  activeTab=key;
+  document.querySelectorAll(".tab").forEach(function(x){ x.classList.toggle("active", x.dataset.tab===key); });
+  document.querySelectorAll(".panel").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-panel")===key); });
 }
 
 function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCohorts(); renderEmail(); }

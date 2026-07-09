@@ -129,11 +129,17 @@
   .nav-links a.link { font-size: 0.92rem; font-weight: 500; color: var(--text-soft); text-decoration: none; transition: color .2s; }
   .nav-links a.link:hover { color: var(--cream); }
   .nav-toggle { display: none; background: none; border: 1px solid var(--border-strong); border-radius: 10px; padding: 0.5rem; cursor: pointer; color: var(--cream); }
+  .mobile-menu { display: none; flex-direction: column; padding: 0.25rem 1rem 1rem; background: rgba(8,17,31,0.98); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+  .mobile-menu a { padding: 0.95rem 0.4rem; color: var(--cream); text-decoration: none; font-weight: 500; border-bottom: 1px solid var(--border); }
+  .mobile-menu a:last-child { border-bottom: none; }
+  .mobile-menu a.mm-apply { color: var(--gold-2); font-weight: 700; }
 
   @media (max-width: 860px) {
     .nav-links .link { display: none; }
     .nav-toggle { display: inline-flex; }
     .nav-links { gap: 0.75rem; }
+    header.site.menu-open { background: rgba(8,17,31,0.98); backdrop-filter: blur(14px); border-bottom-color: var(--border); }
+    header.site.menu-open .mobile-menu { display: flex; }
   }
 
   /* ---------------- hero ---------------- */
@@ -394,10 +400,19 @@
         <a class="link" href="#instructor">Instructor</a>
         <a class="link" href="#prep">Cohort Prep</a>
         <a class="btn btn-gold btn-sm" href="#apply">Apply Now</a>
-        <button class="nav-toggle" id="navToggle" aria-label="Jump to apply" onclick="location.hash='#apply'">
+        <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="mobileMenu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
       </nav>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#program">Program</a>
+      <a href="#levels">Certifications</a>
+      <a href="#military">Military Funding</a>
+      <a href="#how">How It Works</a>
+      <a href="#instructor">Instructor</a>
+      <a href="#prep">Cohort Prep</a>
+      <a class="mm-apply" href="#apply">Apply Now</a>
     </div>
   </header>
 
@@ -859,6 +874,21 @@
   var header = document.getElementById("siteHeader");
   var onScroll = function () { header.classList.toggle("scrolled", window.scrollY > 12); };
   onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
+
+  // mobile menu toggle
+  var navToggle = document.getElementById("navToggle");
+  if (navToggle) {
+    navToggle.addEventListener("click", function () {
+      var open = header.classList.toggle("menu-open");
+      navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.querySelectorAll("#mobileMenu a").forEach(function (a) {
+      a.addEventListener("click", function () {
+        header.classList.remove("menu-open");
+        navToggle.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
 
   // scroll reveal
   if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
