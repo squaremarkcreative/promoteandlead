@@ -23,6 +23,13 @@ export async function onRequestGet(context) {
 
     const totalVisits = (countries || []).reduce((n, c) => n + (c.visits || 0), 0);
 
+    // settings (key/value) — resilient if the table doesn't exist yet
+    const settings = {};
+    try {
+      const rows = await db.select("pl_settings", "select=key,value");
+      (rows || []).forEach((r) => { settings[r.key] = r.value; });
+    } catch (e) { /* pl_settings not created yet */ }
+
     return json({
       user: user.email,
       overview: {
@@ -37,7 +44,8 @@ export async function onRequestGet(context) {
       countries: countries || [],
       subscribers,
       contacts,
-      cohorts
+      cohorts,
+      settings
     });
   } catch (err) {
     return json({ error: String(err.message || err) }, 500);

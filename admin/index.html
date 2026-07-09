@@ -143,12 +143,58 @@
           </div>
         </div>
       </section>
+
+      <!-- NOTES -->
+      <section class="panel" data-panel="notes">
+        <h2 class="pt">Instructor Notes</h2>
+        <div class="box" style="max-width:880px">
+          <label class="muted">Your overall notes — saved to your database and visible on every device.</label>
+          <textarea id="instrNotes" style="min-height:220px;margin-top:.4rem" placeholder="Business notes, reminders, per-student follow-ups, ideas…"></textarea>
+          <div class="row" style="margin-top:.6rem"><button class="btn btn-gold" onclick="saveNotes()" id="notesBtn">Save notes</button><span class="msg" id="notesMsg"></span></div>
+        </div>
+        <div class="box" style="max-width:880px">
+          <h3>Training guide — running a cohort</h3>
+          <div style="font-size:.9rem;line-height:1.6">
+            <p style="color:var(--gold2);font-weight:600;margin:.7rem 0 .2rem">1 · Before the cohort</p>
+            <ul style="margin:0 0 .6rem 1.1rem;color:var(--soft)">
+              <li>Student applies free on RBLP, requests you as instructor, and pays for exam prep on your ATP store (or COOL/CA funds it).</li>
+              <li>Send the student their module password for RBLP's exam prep training page.</li>
+              <li>They review each module for their level and answer the reflection questions about their leader/follower experience — arriving with real examples.</li>
+            </ul>
+            <p style="color:var(--gold2);font-weight:600;margin:.7rem 0 .2rem">2 · What you cover — the five competency domains</p>
+            <ul style="margin:0 0 .6rem 1.1rem;color:var(--soft)">
+              <li><b>Team Climate</b> (all levels) — shared perceptions, attitudes, and emotions; a positive climate lifts morale, creativity, problem-solving, and resilience.</li>
+              <li><b>Team Cohesion</b> (all levels) — the bond that keeps a team united through adversity; social + task cohesion.</li>
+              <li><b>Individual Purpose</b> (all levels) — the desire and determination to build a meaningful future through work.</li>
+              <li><b>Team Learning</b> (Coach &amp; Trainer) — experiencing, reflecting, deciding, and acting to improve and innovate.</li>
+              <li><b>Organizational Learning</b> (Trainer) — how organizations gain and keep a competitive advantage through improvement at scale.</li>
+            </ul>
+            <p style="color:var(--gold2);font-weight:600;margin:.7rem 0 .2rem">3 · Session length</p>
+            <ul style="margin:0 0 .6rem 1.1rem;color:var(--soft)">
+              <li>RBLP — Modules 1&ndash;3 · ~3 instructional hours</li>
+              <li>RBLP-C — Modules 1&ndash;4 · ~4 hours (+ lunch &amp; breaks)</li>
+              <li>RBLP-T — Modules 1&ndash;5 · ~5 hours (+ lunch &amp; breaks)</li>
+            </ul>
+            <p style="color:var(--gold2);font-weight:600;margin:.7rem 0 .2rem">4 · Running the session (oral-exam rehearsal)</p>
+            <ul style="margin:0 0 .6rem 1.1rem;color:var(--soft)">
+              <li>Facilitate a live discussion of each domain — this is rehearsal for the oral exam.</li>
+              <li>Have every student speak to their own leader/follower examples; coach them to articulate clearly.</li>
+              <li>Rehearse the oral-exam format so they arrive confident.</li>
+            </ul>
+            <p style="color:var(--gold2);font-weight:600;margin:.7rem 0 .2rem">5 · After the session</p>
+            <ul style="margin:0 0 0 1.1rem;color:var(--soft)">
+              <li>Student schedules the oral exam on RBLP's scheduling page with the voucher code, uploads your training completion certificate, and takes the exam.</li>
+              <li>Move their status along here: applied → paid → scheduled → passed.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
 <script>
 var D = null; // dashboard data
-var TABS = [["dashboard","Dashboard"],["list","Mailing List"],["contacts","Contacts"],["cohorts","Cohorts"],["email","Email"]];
+var TABS = [["dashboard","Dashboard"],["list","Mailing List"],["contacts","Contacts"],["cohorts","Cohorts"],["email","Email"],["notes","Notes"]];
 
 function esc(s){return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function fmtDate(s){ if(!s) return ""; try{return new Date(s).toLocaleDateString();}catch(e){return s;} }
@@ -194,7 +240,23 @@ function selectTab(key){
   document.querySelectorAll(".panel").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-panel")===key); });
 }
 
-function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCohorts(); renderEmail(); renderRates(); }
+function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCohorts(); renderEmail(); renderRates(); renderNotes(); }
+
+function renderNotes(){
+  var el=document.getElementById("instrNotes");
+  if(el) el.value=(D.settings && D.settings.instructor_notes) || "";
+}
+async function saveNotes(){
+  var btn=document.getElementById("notesBtn"), m=document.getElementById("notesMsg");
+  var val=document.getElementById("instrNotes").value;
+  btn.disabled=true; btn.textContent="Saving…"; m.className="msg"; m.textContent="";
+  try{
+    await api("setting.save",{key:"instructor_notes",value:val});
+    if(!D.settings) D.settings={}; D.settings.instructor_notes=val;
+    m.className="msg ok"; m.textContent="Saved.";
+  }catch(e){ m.className="msg err"; m.textContent=e.message; }
+  btn.disabled=false; btn.textContent="Save notes";
+}
 
 function renderDash(){
   var o=D.overview;

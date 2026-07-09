@@ -76,6 +76,13 @@ create table if not exists pl_visits (
   created_at timestamptz not null default now()
 );
 
+-- ------------------------------------------------------------------ key/value settings (instructor notes, etc.)
+create table if not exists pl_settings (
+  key        text primary key,
+  value      text,
+  updated_at timestamptz not null default now()
+);
+
 -- ------------------------------------------------------------------ email campaigns log
 create table if not exists pl_campaigns (
   id              uuid primary key default gen_random_uuid(),
@@ -123,3 +130,4 @@ alter table pl_cohorts        enable row level security;
 alter table pl_cohort_members enable row level security;
 alter table pl_visits         enable row level security;
 alter table pl_campaigns      enable row level security;
+alter table pl_settings       enable row level security;

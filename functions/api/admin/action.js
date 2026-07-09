@@ -52,6 +52,10 @@ export async function onRequestPost(context) {
       case "subscriber.delete":
         await db.remove("pl_subscribers", `id=eq.${data.id}`);
         break;
+      case "setting.save":
+        if (!data.key) return json({ error: "Missing key." }, 400);
+        await db.upsert("pl_settings", { key: data.key, value: data.value || "", updated_at: new Date().toISOString() }, "key");
+        break;
       case "campaign.send":
         return await sendCampaign(env, db, data, new URL(request.url).origin);
       default:
