@@ -130,6 +130,23 @@
           </div>
         </div>
         <div class="box">
+          <h3>Place a CA student <span class="muted" style="font-weight:400">(Credentialing Assistance &mdash; recommends the first cohort starting after the eligibility window closes)</span></h3>
+          <div class="row">
+            <input id="plName" placeholder="Name" style="width:150px" />
+            <input id="plEmail" placeholder="Email" style="width:190px" />
+            <select id="plType" style="width:100px"><option>RBLP</option><option>RBLP-C</option><option>RBLP-T</option></select>
+            <select id="plBranch" style="width:135px"><option value="">Branch…</option><option>Army</option><option>Air Force</option></select>
+            <label class="muted" style="display:flex;gap:.4rem;align-items:center;width:auto">Sent to CA <input id="plCaDate" type="date" style="width:150px" /></label>
+          </div>
+          <div id="plSuggest" class="notice" style="margin:.8rem 0 0">Enter a branch and the date the request was sent to CA to get a cohort recommendation.</div>
+          <div class="row" style="margin-top:.7rem">
+            <label class="muted" style="width:auto">Cohort</label>
+            <select id="plCohort" style="width:260px"></select>
+            <button class="btn btn-green btn-sm" onclick="placeStudent()">Confirm &amp; add</button>
+            <span class="msg" id="plMsg"></span>
+          </div>
+        </div>
+        <div class="box">
           <h3>RBLP fee by payment type <span class="muted" style="font-weight:400">(% RBLP keeps of the prep price)</span></h3>
           <div class="row">
             <label class="muted">CA <input type="number" id="rate-CA" min="0" max="100" style="width:70px" /> %</label>
@@ -213,7 +230,11 @@ var D = null; // dashboard data
 var TABS = [["dashboard","Dashboard"],["list","Mailing List"],["contacts","Contacts"],["cohorts","Cohorts"],["email","Email"],["notes","Notes"]];
 
 function esc(s){return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-function fmtDate(s){ if(!s) return ""; try{return new Date(s).toLocaleDateString();}catch(e){return s;} }
+// Date-only values ("2026-09-05") must be parsed as local, not UTC, or they display a day early.
+function dOnly(s){ var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||""); return m ? new Date(+m[1],+m[2]-1,+m[3]) : null; }
+function isoDate(d){ var p=function(n){return (n<10?"0":"")+n;}; return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }
+function addDays(iso,n){ var d=dOnly(iso); if(!d) return null; d.setDate(d.getDate()+n); return isoDate(d); }
+function fmtDate(s){ if(!s) return ""; var d=dOnly(s); if(d) return d.toLocaleDateString(); try{return new Date(s).toLocaleDateString();}catch(e){return s;} }
 function loc(r){ return [r.city,r.region,r.country].filter(Boolean).join(", ") || "—"; }
 
 async function api(action,data){
@@ -256,7 +277,7 @@ function selectTab(key){
   document.querySelectorAll(".panel").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-panel")===key); });
 }
 
-function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCodes(); renderCohorts(); renderEmail(); renderRates(); renderNotes(); }
+function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCodes(); renderCohorts(); renderPlacer(); renderEmail(); renderRates(); renderNotes(); }
 
 var ACCESS_CODES=[];
 function renderCodes(){
@@ -354,7 +375,13 @@ function renderCohorts(){
       var paysel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{payment_type:this.value})">'+popts.map(function(o){return '<option value="'+o+'"'+(((m.payment_type||"")===o)?' selected':'')+'>'+(o||"—")+'</option>';}).join("")+'</select>';
       var typesel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{rblp_type:this.value})">'+topts.map(function(o){return '<option'+(m.rblp_type===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
       var po=memberPayout(m); if(po!=null){ total+=po; anyPay=true; }
-      return '<tr><td>'+esc(m.name||"")+'</td><td>'+esc(m.email||"")+'</td><td>'+typesel+'</td><td>'+paysel+'</td><td>'+sel+'</td><td>'+money(po)+'</td><td><button class="btn btn-del btn-sm" onclick="delMember(\''+m.id+'\')">✕</button></td></tr>';
+      var ca=""; // CA paperwork trail: when it went in, and when the eligibility window closes
+      if(m.ca_submitted_on){
+        var close=caWindowClose(m.ca_submitted_on,m.branch);
+        ca='<div class="muted" style="font-size:.75rem">'+(m.branch?esc(m.branch)+' &middot; ':'')+'CA sent '+fmtDate(m.ca_submitted_on)+
+           (close?' &middot; window closes '+fmtDate(close):'')+'</div>';
+      } else if(m.branch){ ca='<div class="muted" style="font-size:.75rem">'+esc(m.branch)+'</div>'; }
+      return '<tr><td>'+esc(m.name||"")+ca+'</td><td>'+esc(m.email||"")+'</td><td>'+typesel+'</td><td>'+paysel+'</td><td>'+sel+'</td><td>'+money(po)+'</td><td><button class="btn btn-del btn-sm" onclick="delMember(\''+m.id+'\')">✕</button></td></tr>';
     }).join("");
     var addForm = members.length<cap ?
       '<div class="row" style="margin-top:.6rem">'+
@@ -373,6 +400,81 @@ function renderCohorts(){
       '<table><tr><th>Name</th><th>Email</th><th>Type</th><th>Pay</th><th>Status</th><th>Est. $</th><th></th></tr>'+(mrows||'<tr><td colspan="7" class="muted">No students yet.</td></tr>')+'</table>'+
       addForm+'</div>';
   }).join("");
+}
+
+// --- CA eligibility window → cohort recommendation ---
+// The soldier can't start prep until their branch's CA window closes.
+var CA_WINDOW_DAYS = { "Army":45, "Air Force":30 };
+
+function caWindowClose(sentIso, branch){
+  var days = CA_WINDOW_DAYS[branch];
+  if(!sentIso || days == null) return null;
+  return addDays(sentIso, days);
+}
+// Earliest cohort starting on or after the window close (on-the-day counts as eligible).
+// Prefers one with an open slot; falls back to the earliest eligible cohort even if full.
+function recommendCohort(closeIso){
+  if(!closeIso) return null;
+  var eligible = sortedCohorts().filter(function(c){ return c.session_date && c.session_date >= closeIso; });
+  if(!eligible.length) return null;
+  var open = eligible.filter(function(c){ return (c.members||[]).length < (c.capacity||6); });
+  return open.length ? open[0] : eligible[0];
+}
+function cohortLabel(c){
+  var n=(c.members||[]).length, cap=c.capacity||6;
+  return c.name + (c.session_date ? " — starts "+fmtDate(c.session_date) : " — no date") + " ("+n+"/"+cap+")";
+}
+
+function renderPlacer(){
+  var sel=document.getElementById("plCohort"); if(!sel) return;
+  var keep=sel.value;
+  sel.innerHTML='<option value="">Select a cohort…</option>'+sortedCohorts().map(function(c){
+    return '<option value="'+c.id+'">'+esc(cohortLabel(c))+'</option>';
+  }).join("");
+  if(keep) sel.value=keep;
+  ["plBranch","plCaDate"].forEach(function(id){ var el=document.getElementById(id); if(el) el.onchange=suggestCohort; });
+  suggestCohort(true);
+}
+
+// Recomputes the suggestion. Selects it in the dropdown too, unless we're only refreshing the list.
+function suggestCohort(keepSelection){
+  var box=document.getElementById("plSuggest"), sel=document.getElementById("plCohort");
+  if(!box) return;
+  var branch=document.getElementById("plBranch").value, sent=document.getElementById("plCaDate").value;
+  if(!branch || !sent){
+    box.innerHTML="Enter a branch and the date the request was sent to CA to get a cohort recommendation.";
+    return;
+  }
+  var close=caWindowClose(sent,branch);
+  var head='<b>'+esc(branch)+' &middot; +'+CA_WINDOW_DAYS[branch]+' days</b> &rarr; eligibility window closes <b style="color:var(--gold2)">'+fmtDate(close)+'</b>.<br>';
+  var rec=recommendCohort(close);
+  if(!rec){
+    box.innerHTML=head+'No cohort starts on or after '+fmtDate(close)+' — create one above, then re-check.';
+    if(keepSelection!==true) sel.value="";
+    return;
+  }
+  var full=(rec.members||[]).length >= (rec.capacity||6);
+  box.innerHTML=head+'Suggested: <b style="color:var(--gold2)">'+esc(rec.name)+'</b> (starts '+fmtDate(rec.session_date)+')'+
+    (full?' — <span style="color:#e59a9a">this cohort is full</span>':'')+'. Confirm below or pick another.';
+  if(keepSelection!==true) sel.value=rec.id;
+}
+
+function placeStudent(){
+  var m=document.getElementById("plMsg");
+  var name=document.getElementById("plName").value.trim(), email=document.getElementById("plEmail").value.trim();
+  var type=document.getElementById("plType").value, branch=document.getElementById("plBranch").value;
+  var sent=document.getElementById("plCaDate").value, cid=document.getElementById("plCohort").value;
+  m.className="msg err";
+  if(!name && !email){ m.textContent="Name or email required."; return; }
+  if(!cid){ m.textContent="Pick a cohort to place them in."; return; }
+  m.className="msg"; m.textContent="";
+  run(function(){
+    return api("member.add",{cohort_id:cid,name:name,email:email,rblp_type:type,payment_type:"CA",
+      branch:branch||null,ca_submitted_on:sent||null}).then(function(){
+      ["plName","plEmail","plCaDate"].forEach(function(id){ document.getElementById(id).value=""; });
+      document.getElementById("plBranch").value="";
+    });
+  });
 }
 
 function renderRates(){

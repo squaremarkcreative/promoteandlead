@@ -33,11 +33,12 @@ export async function onRequestPost(context) {
         await db.insert("pl_cohort_members", {
           cohort_id: data.cohort_id, name: data.name || null, email: (data.email || "").toLowerCase() || null,
           rblp_type: data.rblp_type || null, payment_type: data.payment_type || null,
+          branch: data.branch || null, ca_submitted_on: data.ca_submitted_on || null,
           status: data.status || "applied", notes: data.notes || null
         });
         break;
       case "member.update":
-        await db.patch("pl_cohort_members", `id=eq.${data.id}`, pick(data, ["name", "email", "rblp_type", "payment_type", "status", "notes"]));
+        await db.patch("pl_cohort_members", `id=eq.${data.id}`, pick(data, ["name", "email", "rblp_type", "payment_type", "branch", "ca_submitted_on", "status", "notes"]));
         break;
       case "member.delete":
         await db.remove("pl_cohort_members", `id=eq.${data.id}`);
