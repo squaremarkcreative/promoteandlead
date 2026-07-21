@@ -37,9 +37,13 @@ export async function onRequestPost(context) {
           status: data.status || "applied", notes: data.notes || null
         });
         break;
-      case "member.update":
-        await db.patch("pl_cohort_members", `id=eq.${data.id}`, pick(data, ["name", "email", "rblp_type", "payment_type", "branch", "ca_submitted_on", "status", "notes"]));
+      case "member.update": {
+        const patch = pick(data, ["cohort_id", "name", "email", "rblp_type", "payment_type", "branch", "ca_submitted_on", "status", "certified_on", "notes"]);
+        // Cleared date inputs arrive as "" — Postgres needs null, not an empty string.
+        for (const k of ["ca_submitted_on", "certified_on"]) if (patch[k] === "") patch[k] = null;
+        await db.patch("pl_cohort_members", `id=eq.${data.id}`, patch);
         break;
+      }
       case "member.delete":
         await db.remove("pl_cohort_members", `id=eq.${data.id}`);
         break;

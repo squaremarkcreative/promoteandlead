@@ -62,6 +62,49 @@
   .loading{padding:3rem;text-align:center;color:var(--faint)}
   .notice{background:rgba(200,164,21,.08);border:1px solid rgba(200,164,21,.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;font-size:.88rem;color:var(--soft)}
   h2.pt{font-size:1.1rem;margin-bottom:1rem}
+  .link{background:none;border:none;padding:0;font:inherit;color:var(--cream);cursor:pointer;text-align:left;border-bottom:1px dotted var(--bstrong)}
+  .link:hover{color:var(--gold2);border-bottom-color:var(--gold)}
+  .overlay{position:fixed;inset:0;background:rgba(5,10,20,.72);display:none;align-items:flex-start;justify-content:center;padding:4vh 1rem;z-index:50;overflow:auto}
+  .sheet{background:var(--ink2);border:1px solid var(--bstrong);border-radius:16px;padding:1.4rem 1.5rem;width:100%;max-width:620px}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:.8rem 1rem;margin:.9rem 0}
+  .fields label{display:block;color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:.3rem}
+  .fields .wide{grid-column:1/-1}
+  .stu-status{font-size:.72rem;padding:.2rem .6rem;border-radius:100px;border:1px solid var(--border);color:var(--soft)}
+  .stu-status.passed{border-color:rgba(31,94,42,.8);color:#7fd18f}
+  .stu-status.dropped{border-color:rgba(139,44,44,.6);color:#e59a9a}
+  .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* ---------- phones ---------- */
+  @media(max-width:680px){
+    header.top{padding:.8rem 1rem}
+    .brand{font-size:.92rem}.brand img{height:24px}
+    .wrap{padding:1rem .8rem}
+    .box,.cohort{padding:.9rem 1rem}
+    .cards{grid-template-columns:1fr 1fr;gap:.7rem}
+    .card{padding:.9rem 1rem}.card .n{font-size:1.6rem}
+    nav.tabs{gap:.35rem;margin-bottom:1rem}
+    .tab{padding:.45rem .75rem;font-size:.82rem}
+    /* Form rows stack full width instead of running off the edge. */
+    .row>input,.row>select{width:100%!important;flex:1 1 100%}
+    .row>button{flex:0 0 auto}
+    .row>label{width:100%}
+    .inline-field{width:100%!important}
+    .inline-field>input{flex:1 1 auto;width:auto!important}
+    .co-edit.nm{width:100%}
+    /* Tables become stacked cards, each cell labelled by its column heading. */
+    table.mtable,table.mtable tbody,table.mtable tr,table.mtable td{display:block;width:100%}
+    table.mtable tr.hdr{display:none}
+    table.mtable tr{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.5rem .8rem;margin-bottom:.6rem}
+    table.mtable tr:hover td{background:none}
+    table.mtable td{border:none;padding:.3rem 0;display:flex;gap:.9rem;align-items:center;justify-content:space-between}
+    table.mtable td:before{content:attr(data-l);color:var(--faint);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600;flex:0 0 auto}
+    table.mtable td:not([data-l]){display:block}
+    table.mtable td:not([data-l]):before{content:none}
+    .status-sel{min-width:0;width:auto}
+    .overlay{padding:2vh .6rem}
+    .sheet{padding:1.1rem 1rem}
+    .fields{grid-template-columns:1fr;gap:.7rem}
+  }
 </style>
 </head>
 <body>
@@ -96,19 +139,24 @@
             <button class="btn btn-ghost btn-sm" onclick="exportCsv()">Export CSV</button>
           </div>
         </div>
-        <div class="box" style="padding:0;overflow:auto"><table id="subsTable"></table></div>
+        <div class="box" style="padding:0;overflow:auto"><table class="mtable" id="subsTable"></table></div>
       </section>
 
       <!-- CONTACTS -->
       <section class="panel" data-panel="contacts">
         <h2 class="pt">Contact Leads (<span id="contactCount">0</span>)</h2>
-        <div class="box" style="padding:0;overflow:auto"><table id="contactsTable"></table></div>
+        <div class="box" style="padding:0;overflow:auto"><table class="mtable" id="contactsTable"></table></div>
       </section>
 
       <!-- COHORTS -->
       <section class="panel" data-panel="cohorts">
         <div class="toolbar">
           <h2 class="pt">Cohorts</h2>
+        </div>
+        <div class="box">
+          <h3>Find a student <span class="muted" style="font-weight:400">(searches every cohort, past and present &mdash; click a result to open their record)</span></h3>
+          <input id="stuSearch" placeholder="Search by name or email…" style="max-width:320px" oninput="renderStudentSearch()" />
+          <div id="stuResults" style="margin-top:.6rem"></div>
         </div>
         <div class="box">
           <h3>Access codes by month <span class="muted" style="font-weight:400">(students use the code active when they purchase)</span></h3>
@@ -136,7 +184,7 @@
             <input id="plEmail" placeholder="Email" style="width:190px" />
             <select id="plType" style="width:100px"><option>RBLP</option><option>RBLP-C</option><option>RBLP-T</option></select>
             <select id="plBranch" style="width:135px"><option value="">Branch…</option><option>Army</option><option>Air Force</option></select>
-            <label class="muted" style="display:flex;gap:.4rem;align-items:center;width:auto">Sent to CA <input id="plCaDate" type="date" style="width:150px" /></label>
+            <label class="muted inline-field" style="display:flex;gap:.4rem;align-items:center;width:auto">Sent to CA <input id="plCaDate" type="date" style="width:150px" /></label>
           </div>
           <div id="plSuggest" class="notice" style="margin:.8rem 0 0">Enter a branch and the date the request was sent to CA to get a cohort recommendation.</div>
           <div class="row" style="margin-top:.7rem">
@@ -217,7 +265,8 @@
             <p style="color:var(--gold2);font-weight:600;margin:.7rem 0 .2rem">5 · After the session</p>
             <ul style="margin:0 0 0 1.1rem;color:var(--soft)">
               <li>Student schedules the oral exam on RBLP's scheduling page with the voucher code, uploads your training completion certificate, and takes the exam.</li>
-              <li>Move their status along here: applied → paid → scheduled → passed.</li>
+              <li>Move their status along here: applied → paid → scheduled → passed (or <b>dropped</b> if they fall off).</li>
+              <li>Click a student's name to open their record — cohort, date certified, and notes on what happened.</li>
             </ul>
           </div>
         </div>
@@ -225,11 +274,14 @@
     </div>
   </div>
 
+  <div class="overlay" id="stuModal" onclick="if(event.target===this) closeStudent()"></div>
+
 <script>
 var D = null; // dashboard data
 var TABS = [["dashboard","Dashboard"],["list","Mailing List"],["contacts","Contacts"],["cohorts","Cohorts"],["email","Email"],["notes","Notes"]];
 
-function esc(s){return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+// Escapes quotes too — student names land in value="…" attributes, and a stray " would break out.
+function esc(s){return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 // Date-only values ("2026-09-05") must be parsed as local, not UTC, or they display a day early.
 function dOnly(s){ var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||""); return m ? new Date(+m[1],+m[2]-1,+m[3]) : null; }
 function isoDate(d){ var p=function(n){return (n<10?"0":"")+n;}; return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }
@@ -277,7 +329,7 @@ function selectTab(key){
   document.querySelectorAll(".panel").forEach(function(x){ x.classList.toggle("active", x.getAttribute("data-panel")===key); });
 }
 
-function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCodes(); renderCohorts(); renderPlacer(); renderEmail(); renderRates(); renderNotes(); }
+function renderAll(){ renderTabs(); renderDash(); renderSubs(); renderContacts(); renderCodes(); renderCohorts(); renderPlacer(); renderStudentSearch(); renderStudent(); renderEmail(); renderRates(); renderNotes(); }
 
 var ACCESS_CODES=[];
 function renderCodes(){
@@ -334,11 +386,11 @@ function ranks(arr,label){ if(!arr||!arr.length) return '<div class="muted">No d
 function renderSubs(){
   document.getElementById("subCount").textContent = D.subscribers.length;
   var rows = D.subscribers.map(function(s){
-    return '<tr><td>'+esc(s.email)+(s.unsubscribed?' <span class="pill">unsub</span>':'')+'</td><td>'+esc(loc(s))+'</td><td>'+esc(s.referrer||"")+'</td><td>'+fmtDate(s.created_at)+'</td>'+
+    return '<tr><td>'+esc(s.email)+(s.unsubscribed?' <span class="pill">unsub</span>':'')+'</td><td data-l="Location">'+esc(loc(s))+'</td><td data-l="Referrer">'+esc(s.referrer||"")+'</td><td data-l="Joined">'+fmtDate(s.created_at)+'</td>'+
       '<td><button class="btn btn-del btn-sm" onclick="delSub(\''+s.id+'\')">Delete</button></td></tr>';
   }).join("");
   document.getElementById("subsTable").innerHTML =
-    '<tr><th>Email</th><th>Location</th><th>Referrer</th><th>Joined</th><th></th></tr>'+(rows||'<tr><td colspan="5" class="muted">No subscribers yet.</td></tr>');
+    '<tr class="hdr"><th>Email</th><th>Location</th><th>Referrer</th><th>Joined</th><th></th></tr>'+(rows||'<tr><td colspan="5" class="muted">No subscribers yet.</td></tr>');
 }
 
 function renderContacts(){
@@ -346,10 +398,10 @@ function renderContacts(){
   var opts=["new","contacted","won","closed"];
   var rows = D.contacts.map(function(c){
     var sel='<select class="status-sel" onchange="updContact(\''+c.id+'\',this.value)">'+opts.map(function(o){return '<option'+(c.status===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
-    return '<tr><td>'+esc(c.name||"")+'<div class="muted">'+esc(c.email||"")+'</div></td><td>'+esc(c.topic||"")+'</td><td style="max-width:320px">'+esc(c.message||"")+'</td><td>'+esc(loc(c))+'</td><td>'+fmtDate(c.created_at)+'</td><td>'+sel+'</td></tr>';
+    return '<tr><td>'+esc(c.name||"")+'<div class="muted">'+esc(c.email||"")+'</div></td><td data-l="Topic">'+esc(c.topic||"")+'</td><td data-l="Message" style="max-width:320px">'+esc(c.message||"")+'</td><td data-l="Location">'+esc(loc(c))+'</td><td data-l="Date">'+fmtDate(c.created_at)+'</td><td data-l="Status">'+sel+'</td></tr>';
   }).join("");
   document.getElementById("contactsTable").innerHTML =
-    '<tr><th>From</th><th>Topic</th><th>Message</th><th>Location</th><th>Date</th><th>Status</th></tr>'+(rows||'<tr><td colspan="6" class="muted">No contact leads yet.</td></tr>');
+    '<tr class="hdr"><th>From</th><th>Topic</th><th>Message</th><th>Location</th><th>Date</th><th>Status</th></tr>'+(rows||'<tr><td colspan="6" class="muted">No contact leads yet.</td></tr>');
 }
 
 // --- finances ---
@@ -362,7 +414,7 @@ function money(n){ return n==null?"—":"$"+n.toFixed(2); }
 function renderCohorts(){
   var el=document.getElementById("cohortList");
   if(!D.cohorts.length){ el.innerHTML='<div class="muted">No cohorts yet. Create one above.</div>'; return; }
-  var mopts=["applied","paid","scheduled","passed"];
+  var mopts=MSTATUS;
   var popts=["","CA","Normal","Affirm"];
   var topts=["RBLP","RBLP-C","RBLP-T"];
   el.innerHTML = sortedCohorts().map(function(c){
@@ -371,7 +423,7 @@ function renderCohorts(){
     var slots=""; for(var i=0;i<cap;i++){ slots+='<div class="slot'+(i<members.length?' filled':'')+'"></div>'; }
     var total=0, anyPay=false;
     var mrows=members.map(function(m){
-      var sel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{status:this.value})">'+mopts.map(function(o){return '<option'+(m.status===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
+      var sel='<select class="status-sel" onchange="setStatus(\''+m.id+'\',this.value)">'+mopts.map(function(o){return '<option'+(m.status===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
       var paysel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{payment_type:this.value})">'+popts.map(function(o){return '<option value="'+o+'"'+(((m.payment_type||"")===o)?' selected':'')+'>'+(o||"—")+'</option>';}).join("")+'</select>';
       var typesel='<select class="status-sel" onchange="updMember(\''+m.id+'\',{rblp_type:this.value})">'+topts.map(function(o){return '<option'+(m.rblp_type===o?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';
       var po=memberPayout(m); if(po!=null){ total+=po; anyPay=true; }
@@ -381,7 +433,10 @@ function renderCohorts(){
         ca='<div class="muted" style="font-size:.75rem">'+(m.branch?esc(m.branch)+' &middot; ':'')+'CA sent '+fmtDate(m.ca_submitted_on)+
            (close?' &middot; window closes '+fmtDate(close):'')+'</div>';
       } else if(m.branch){ ca='<div class="muted" style="font-size:.75rem">'+esc(m.branch)+'</div>'; }
-      return '<tr><td>'+esc(m.name||"")+ca+'</td><td>'+esc(m.email||"")+'</td><td>'+typesel+'</td><td>'+paysel+'</td><td>'+sel+'</td><td>'+money(po)+'</td><td><button class="btn btn-del btn-sm" onclick="delMember(\''+m.id+'\')">✕</button></td></tr>';
+      if(m.certified_on) ca+='<div class="muted" style="font-size:.75rem;color:#7fd18f">Certified '+fmtDate(m.certified_on)+'</div>';
+      var nameCell='<button class="link" onclick="openStudent(\''+m.id+'\')" title="Open student record">'+esc(m.name||m.email||"(no name)")+'</button>'+ca;
+      var emailCell='<input class="co-edit" style="width:100%;font-size:.85rem" value="'+esc(m.email||"")+'" onchange="updMember(\''+m.id+'\',{email:this.value})">';
+      return '<tr><td>'+nameCell+'</td><td data-l="Email">'+emailCell+'</td><td data-l="Type">'+typesel+'</td><td data-l="Pay">'+paysel+'</td><td data-l="Status">'+sel+'</td><td data-l="Est. $">'+money(po)+'</td><td><button class="btn btn-del btn-sm" onclick="delMember(\''+m.id+'\')">✕</button></td></tr>';
     }).join("");
     var addForm = members.length<cap ?
       '<div class="row" style="margin-top:.6rem">'+
@@ -397,7 +452,8 @@ function renderCohorts(){
       '<span class="pill">'+members.length+'/'+cap+'</span>'+totalPill+(c.session_date?' <span class="muted">'+fmtDate(c.session_date)+'</span>':'')+'</div>'+
       '<button class="btn btn-del btn-sm" onclick="delCohort(\''+c.id+'\',\''+esc(c.name)+'\')">Delete cohort</button></div>'+
       '<div class="slots">'+slots+'</div>'+
-      '<table><tr><th>Name</th><th>Email</th><th>Type</th><th>Pay</th><th>Status</th><th>Est. $</th><th></th></tr>'+(mrows||'<tr><td colspan="7" class="muted">No students yet.</td></tr>')+'</table>'+
+      '<div class="tscroll"><table class="mtable"><tr class="hdr"><th>Name</th><th>Email</th><th>Type</th><th>Pay</th><th>Status</th><th>Est. $</th><th></th></tr>'+
+        (mrows||'<tr><td colspan="7" class="muted">No students yet.</td></tr>')+'</table></div>'+
       addForm+'</div>';
   }).join("");
 }
@@ -475,6 +531,89 @@ function placeStudent(){
       document.getElementById("plBranch").value="";
     });
   });
+}
+
+// --- student record ---
+// A student is a lasting record: click their name anywhere to see the cohort they sat in,
+// when they certified, and the notes explaining what happened if they fell off.
+var MSTATUS = ["applied","paid","scheduled","passed","dropped"];
+var OPEN_STUDENT = null;
+
+function allMembers(){
+  var out=[];
+  ((D&&D.cohorts)||[]).forEach(function(c){ (c.members||[]).forEach(function(m){ out.push({m:m,c:c}); }); });
+  return out;
+}
+function findMember(id){
+  var hit=allMembers().filter(function(r){ return r.m.id===id; });
+  return hit.length?hit[0]:null;
+}
+function openStudent(id){ OPEN_STUDENT=id; renderStudent(); }
+function closeStudent(){ OPEN_STUDENT=null; renderStudent(); }
+
+// Passing is the milestone worth dating, so fill it in on the way past — still editable.
+function setStatus(id,val){
+  var f=findMember(id), patch={status:val};
+  if(val==="passed" && f && !f.m.certified_on) patch.certified_on=isoDate(new Date());
+  updMember(id,patch);
+}
+
+function selOpts(list,val){
+  return list.map(function(o){
+    var v=(typeof o==="string")?o:o.v, l=(typeof o==="string")?o:o.l;
+    return '<option value="'+esc(v)+'"'+(((val||"")===v)?' selected':'')+'>'+esc(l)+'</option>';
+  }).join("");
+}
+
+function renderStudent(){
+  var ov=document.getElementById("stuModal"); if(!ov) return;
+  var f=OPEN_STUDENT?findMember(OPEN_STUDENT):null;
+  if(!f){ OPEN_STUDENT=null; ov.style.display="none"; ov.innerHTML=""; return; }
+  var m=f.m, c=f.c, id=m.id;
+  var u=function(field){ return 'onchange="updMember(\''+id+'\',{'+field+':this.value})"'; };
+  var close=caWindowClose(m.ca_submitted_on,m.branch);
+  var caLine = m.ca_submitted_on
+    ? (m.branch?esc(m.branch)+' &middot; ':'')+'CA sent '+fmtDate(m.ca_submitted_on)+(close?' &middot; eligibility window closes '+fmtDate(close):'')
+    : 'No CA submission recorded.';
+  ov.innerHTML='<div class="sheet">'+
+    '<div class="toolbar" style="margin-bottom:.2rem"><div class="row" style="gap:.5rem">'+
+      '<h3 style="font-size:1.15rem;margin:0">'+esc(m.name||"(no name)")+'</h3>'+
+      '<span class="stu-status '+esc(m.status||"")+'">'+esc(m.status||"")+'</span></div>'+
+      '<button class="btn btn-ghost btn-sm" onclick="closeStudent()">Close ✕</button></div>'+
+    '<div class="muted">'+caLine+'</div>'+
+    '<div class="fields">'+
+      '<div><label>Name</label><input value="'+esc(m.name||"")+'" '+u("name")+'></div>'+
+      '<div><label>Email</label><input value="'+esc(m.email||"")+'" '+u("email")+'></div>'+
+      '<div><label>Cohort</label><select onchange="updMember(\''+id+'\',{cohort_id:this.value})">'+
+        sortedCohorts().map(function(x){ return '<option value="'+x.id+'"'+(x.id===c.id?' selected':'')+'>'+esc(cohortLabel(x))+'</option>'; }).join("")+
+      '</select></div>'+
+      '<div><label>Session date</label><div style="padding:.55rem 0;color:var(--soft)">'+(c.session_date?fmtDate(c.session_date):"—")+'</div></div>'+
+      '<div><label>Certification</label><select '+u("rblp_type")+'>'+selOpts(["RBLP","RBLP-C","RBLP-T"],m.rblp_type)+'</select></div>'+
+      '<div><label>Payment</label><select '+u("payment_type")+'>'+selOpts([{v:"",l:"—"},"CA","Normal","Affirm"],m.payment_type)+'</select></div>'+
+      '<div><label>Branch</label><select '+u("branch")+'>'+selOpts([{v:"",l:"—"},"Army","Air Force"],m.branch)+'</select></div>'+
+      '<div><label>Sent to CA</label><input type="date" value="'+esc(m.ca_submitted_on||"")+'" '+u("ca_submitted_on")+'></div>'+
+      '<div><label>Status</label><select onchange="setStatus(\''+id+'\',this.value)">'+selOpts(MSTATUS,m.status)+'</select></div>'+
+      '<div><label>Date certified</label><input type="date" value="'+esc(m.certified_on||"")+'" '+u("certified_on")+'></div>'+
+      '<div class="wide"><label>Notes — what happened</label><textarea style="min-height:100px" '+u("notes")+'>'+esc(m.notes||"")+'</textarea></div>'+
+    '</div>'+
+    '<div class="muted">Added '+fmtDate(m.created_at)+' &middot; est. payout '+money(memberPayout(m))+'</div>'+
+    '<div class="row" style="margin-top:.9rem"><button class="btn btn-del btn-sm" onclick="delMember(\''+id+'\')">Remove student</button></div>'+
+  '</div>';
+  ov.style.display="flex";
+}
+
+function renderStudentSearch(){
+  var box=document.getElementById("stuResults"), inp=document.getElementById("stuSearch");
+  if(!box||!inp) return;
+  var all=allMembers(), q=inp.value.trim().toLowerCase();
+  if(!q){ box.innerHTML='<span class="muted">'+all.length+' student'+(all.length===1?'':'s')+' on record.</span>'; return; }
+  var hits=all.filter(function(r){ return ((r.m.name||"")+" "+(r.m.email||"")).toLowerCase().indexOf(q)>=0; });
+  box.innerHTML = hits.length ? hits.slice(0,25).map(function(r){
+    return '<div style="padding:.4rem 0;border-bottom:1px solid var(--border)">'+
+      '<button class="link" onclick="openStudent(\''+r.m.id+'\')">'+esc(r.m.name||r.m.email||"(no name)")+'</button> '+
+      '<span class="muted">'+esc(r.c.name)+(r.c.session_date?' &middot; '+fmtDate(r.c.session_date):'')+' &middot; '+esc(r.m.status||"")+
+      (r.m.certified_on?' &middot; certified '+fmtDate(r.m.certified_on):'')+'</span></div>';
+  }).join("") : '<span class="muted">No student matches that.</span>';
 }
 
 function renderRates(){

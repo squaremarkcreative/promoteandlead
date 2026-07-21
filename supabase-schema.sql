@@ -62,7 +62,8 @@ create table if not exists pl_cohort_members (
   payment_type text,                          -- CA | Normal | Affirm
   branch       text,                          -- Army | Air Force (drives the CA eligibility window)
   ca_submitted_on date,                       -- date the Credentialing Assistance request was sent to CA
-  status       text not null default 'applied',-- applied | paid | scheduled | passed
+  status       text not null default 'applied',-- applied | paid | scheduled | passed | dropped
+  certified_on date,                          -- date they passed the oral exam
   notes        text,
   created_at   timestamptz not null default now()
 );
@@ -70,6 +71,7 @@ create table if not exists pl_cohort_members (
 alter table pl_cohort_members add column if not exists payment_type text;
 alter table pl_cohort_members add column if not exists branch text;
 alter table pl_cohort_members add column if not exists ca_submitted_on date;
+alter table pl_cohort_members add column if not exists certified_on date;
 
 -- ------------------------------------------------------------------ analytics
 create table if not exists pl_visits (
