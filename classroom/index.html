@@ -194,6 +194,20 @@
   .deeper-h{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:.5rem}
   .deeper .fld:last-child{margin-bottom:0}
 
+  .track-why{margin:-.35rem 0 .9rem;padding:.6rem .8rem;border-left:3px solid var(--gold);background:var(--surface2);border-radius:0 8px 8px 0}
+  .track-why b{color:var(--cream);font-size:.88rem}
+  .track-why p{font-size:.85rem;color:var(--soft);line-height:1.55;margin:.3rem 0 .25rem}
+  .track-why span{font-size:.76rem;color:var(--faint)}
+  details.track-all{margin:0 0 1rem}
+  details.track-all summary{cursor:pointer;font-size:.85rem;color:var(--gold2);font-weight:600;padding:.3rem 0}
+  details.track-all > div{padding:.6rem 0 0}
+  .ta{padding:.6rem 0;border-top:1px solid var(--border)}
+  .ta:first-child{border-top:0}
+  .ta b{font-family:inherit;color:var(--gold2);font-size:.92rem;margin-right:.4rem}
+  .ta > span{font-size:.8rem;color:var(--cream)}
+  .ta p{font-size:.85rem;color:var(--soft);line-height:1.55;margin:.25rem 0}
+  .ta .muted{font-size:.76rem}
+
   /* ---------------- the journey ---------------- */
   .next-step{border-color:var(--bstrong);padding:1.3rem 1.4rem}
   .next-step.you{border-color:rgba(200,164,21,.5);background:linear-gradient(180deg,rgba(200,164,21,.07),transparent 60%)}
@@ -594,7 +608,7 @@ function renderHome(el) {
       (p.displayName
         ? '<p class="muted">You\'re preparing for the <b class="soft">' + esc(p.track) + '</b> oral exam with Promote and Lead Solutions.</p>'
         : '<p class="muted">Let\'s start with your name &mdash; it\'s what goes on your certificate. ' +
-          '<button class="btn btn-ghost btn-sm" data-go="settings">Add my details</button></p>') +
+          '<button class="btn btn-gold btn-sm" data-go="pipeline">Get started</button></p>') +
       '<div class="notice"><b>Your next step:</b> ' + esc(current ? current.title : "—") +
         ' &nbsp;<button class="btn btn-gold btn-sm no-print" data-go="pipeline">See my journey</button></div>' +
     "</div>" +
@@ -646,11 +660,7 @@ function renderPipeline(el) {
     profile: function () {
       return '<label class="fld"><span>Your name (as it should appear on your certificate)</span>' +
         '<input id="pDisplay" value="' + esc(p.displayName) + '" placeholder="First Last"></label>' +
-        '<label class="fld"><span>Which certification are you going for?</span>' +
-        '<select id="pTrack"' + (p.trackLocked ? " disabled" : "") + ">" +
-        Object.keys(ME.tracks).map(function (k) {
-          return '<option value="' + k + '"' + (k === p.track ? " selected" : "") + ">" + k + " &mdash; " + ME.tracks[k].modules.length + " modules</option>";
-        }).join("") + "</select></label>" +
+        trackPicker("pTrack", p.track, p.trackLocked) +
         '<label class="fld"><span>How are you paying for it?</span><select id="pFunding">' +
         '<option value="">Choose one&hellip;</option>' +
         ME.funding.options.map(function (o) {
@@ -775,12 +785,13 @@ function renderPipeline(el) {
   wireGo(el);
 
   var save = $("#pSaveProfile", el);
+  wireTrackPicker(el, "pTrack");
   if (save) save.addEventListener("click", function () {
     var fund = $("#pFunding", el);
     run(function () {
       return api("profile.save", { display_name: $("#pDisplay").value, track: $("#pTrack") ? $("#pTrack").value : p.track })
         .then(function () { return fund && fund.value ? api("funding.choose", { source: fund.value }) : null; });
-    }, "Saved.");
+    }, "Saved — here's your next step.").then(function () { window.scrollTo({ top: 0 }); });
   });
   var applied = $("#pApplied", el);
   if (applied) applied.addEventListener("change", function () {
@@ -828,6 +839,43 @@ function whyPrepHtml(compact) {
     "</div>";
 }
 
+// "RBLP-C" means nothing on its own. Show who the selected level is for, right under the
+// picker, and let them open all three side by side. Inline rather than a hover tooltip —
+// half of these students are on a phone, where hover doesn't exist.
+function trackPicker(selectedId, current, locked) {
+  return '<label class="fld"><span>Which certification are you going for?</span>' +
+    '<select id="' + selectedId + '"' + (locked ? " disabled" : "") + ">" +
+    Object.keys(ME.tracks).map(function (k) {
+      return '<option value="' + k + '"' + (k === current ? " selected" : "") + ">" +
+        k + " &mdash; " + esc(ME.tracks[k].who) + "</option>";
+    }).join("") + "</select></label>" +
+    '<div class="track-why" id="' + selectedId + 'Why"></div>' +
+    '<details class="track-all"><summary>Not sure? Compare all three</summary><div>' +
+      Object.keys(ME.tracks).map(function (k) {
+        var t = ME.tracks[k];
+        return '<div class="ta"><b>' + k + "</b><span>" + esc(t.who) + " &middot; " + esc(t.experience) + "</span>" +
+          "<p>" + esc(t.about) + "</p>" +
+          '<span class="muted">' + esc(t.covers) + " &middot; " + t.reflectionHours + "h reflection + " +
+          t.paybackHours + "h with us &middot; " + t.examHours + "h oral exam</span></div>";
+      }).join("") +
+      '<p class="muted">Still unsure? Pick the one that matches the leadership you can actually speak to &mdash; ' +
+      'the exam asks for your own examples. You can change this until you\'re placed in a cohort, or ' +
+      'email <a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> and we\'ll talk it through.</p>' +
+    "</div></details>";
+}
+
+function wireTrackPicker(el, selectId) {
+  var sel = $("#" + selectId, el), why = $("#" + selectId + "Why", el);
+  if (!sel || !why) return;
+  var paint = function () {
+    var t = ME.tracks[sel.value];
+    why.innerHTML = t ? "<b>" + esc(t.who) + "</b> &middot; " + esc(t.experience) +
+      "<p>" + esc(t.about) + "</p><span>" + esc(t.covers) + "</span>" : "";
+  };
+  sel.addEventListener("change", paint);
+  paint();
+}
+
 /* ------------------------------------------------------------------ settings */
 // Their own details. Email is deliberately read-only: it's the identity the sign-in code is
 // issued against and the key every record hangs off, so changing it here would orphan the
@@ -850,11 +898,7 @@ function renderSettings(el) {
       '<p class="muted fld-note">This is how you sign in, so it can\'t be changed here. ' +
         'Need a different address? Email <a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> and we\'ll move your account across.</p>' +
 
-      '<label class="fld"><span>Which certification you\'re going for</span>' +
-        '<select id="sTrack"' + (p.trackLocked ? " disabled" : "") + ">" +
-        Object.keys(ME.tracks).map(function (k) {
-          return '<option value="' + k + '"' + (k === p.track ? " selected" : "") + ">" + k + " &mdash; " + ME.tracks[k].modules.length + " modules</option>";
-        }).join("") + "</select></label>" +
+      trackPicker("sTrack", p.track, p.trackLocked) +
       (p.trackLocked
         ? '<p class="muted fld-note">Set by your cohort enrollment. Email us if it needs to change.</p>'
         : '<p class="muted fld-note">You can change this until you\'re placed in a cohort.</p>') +
@@ -883,15 +927,24 @@ function renderSettings(el) {
     "</div>";
 
   wireGo(el);
+  wireTrackPicker(el, "sTrack");
   $("#sSave", el).addEventListener("click", function () {
     var track = $("#sTrack", el), fund = $("#sFunding", el);
+    var wasOnboarding = ME.pipeline.currentStep === "profile";
     run(function () {
       return api("profile.save", { display_name: $("#sName", el).value, track: track.disabled ? p.track : track.value })
         .then(function () {
           return (!fund.disabled && fund.value && fund.value !== p.paymentSource)
             ? api("funding.choose", { source: fund.value }) : null;
         });
-    }, "Saved.");
+    }, "Saved.").then(function () {
+      // Still setting up? Don't strand them on a settings form — show them what's next.
+      if (wasOnboarding && ME.pipeline.currentStep !== "profile") {
+        ACTIVE = "pipeline";
+        location.hash = "#/pipeline";
+        renderTabs(); renderAll(); window.scrollTo({ top: 0 });
+      }
+    });
   });
   $("#sSignOut", el).addEventListener("click", function () { $("#signOut").click(); });
 }

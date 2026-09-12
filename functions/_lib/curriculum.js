@@ -15,10 +15,35 @@
 // examHours are rblp.com's operational oral lengths, which is what we tell candidates. ACE's
 // National Guide lists longer Coach/Trainer orals — that record is for credit conversations,
 // not for scheduling, so don't "correct" these against it.
+// `who` / `about` / `experience` are the same words as the marketing site's certification
+// cards, so somebody who read the site and then signed up sees the level they thought they
+// were choosing. Picking a level is the first real decision a student makes and they make it
+// with no context otherwise — "RBLP-C" means nothing on its own.
 export const TRACKS = {
-  RBLP:     { label: "RBLP",   modules: [1, 2, 3],       paybackHours: 3, reflectionHours: 6,  window: "09:00–12:30", examHours: 1.5 },
-  "RBLP-C": { label: "RBLP-C", modules: [1, 2, 3, 4],    paybackHours: 4, reflectionHours: 8,  window: "09:00–14:30", examHours: 2 },
-  "RBLP-T": { label: "RBLP-T", modules: [1, 2, 3, 4, 5], paybackHours: 5, reflectionHours: 10, window: "09:00–15:30", examHours: 2.5 }
+  RBLP: {
+    label: "RBLP", modules: [1, 2, 3], paybackHours: 3, reflectionHours: 6,
+    window: "09:00–12:30", examHours: 1.5,
+    who: "First-line and aspiring supervisors",
+    experience: "Typically 2+ years leading a team",
+    about: "For supervisors who build and lead resilient teams — creating a positive climate, cohesion and shared purpose.",
+    covers: "Team Climate, Team Cohesion, Individual Purpose"
+  },
+  "RBLP-C": {
+    label: "RBLP-C", modules: [1, 2, 3, 4], paybackHours: 4, reflectionHours: 8,
+    window: "09:00–14:30", examHours: 2,
+    who: "Managers, and Army warrant officers W1–W3",
+    experience: "Typically 5+ years",
+    about: "For managers who coach a team through the cycle of experiential learning — solving problems, implementing change, improving continuously.",
+    covers: "Everything in RBLP, plus Team Learning"
+  },
+  "RBLP-T": {
+    label: "RBLP-T", modules: [1, 2, 3, 4, 5], paybackHours: 5, reflectionHours: 10,
+    window: "09:00–15:30", examHours: 2.5,
+    who: "Senior managers, and Army warrant officers W3–W5",
+    experience: "Typically 10+ years",
+    about: "For senior leaders who build organizational resilience and develop leader training programmes using the RBLP framework.",
+    covers: "Everything in RBLP-C, plus Organizational Learning"
+  }
 };
 
 export const MODULES = [

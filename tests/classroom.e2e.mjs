@@ -580,6 +580,29 @@ check("the per-module teach sequences fit the 60 minutes they actually have",
   Object.values(CURRIC.MODULE_TEACHING)
     .every((mt) => Number(mt.sequence[mt.sequence.length - 1][0].split("–")[1]) === 60));
 
+// ---------------------------------------------------------------- onboarding
+section("Acceptance: a new account knows what it's choosing, and where to go next");
+m = await (await get(me, student.cookie)).json();
+check("every level explains who it's for", Object.values(m.tracks).every((t) => t.who && t.about && t.experience && t.covers),
+  Object.entries(m.tracks).filter(([, t]) => !t.who).map(([k]) => k));
+check("the level descriptions match the marketing site's wording",
+  /First-line and aspiring supervisors/.test(m.tracks.RBLP.who) && /Senior managers/.test(m.tracks["RBLP-T"].who));
+check("warrant officers are pointed at Coach and Trainer, where RBLP puts them",
+  /W1–W3/.test(m.tracks["RBLP-C"].who) && /W3–W5/.test(m.tracks["RBLP-T"].who));
+
+const onboard = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("the picker explains the selected level inline, not on hover",
+  /function trackPicker/.test(onboard) && /track-why/.test(onboard) && !/title="[^"]*Typically/.test(onboard));
+check("and lets them compare all three", /Compare all three/.test(onboard));
+check("both the journey step and settings use the same picker",
+  (onboard.match(/trackPicker\(/g) || []).length >= 3, (onboard.match(/trackPicker\(/g) || []).length);
+
+// A new account used to be sent to Settings, fill the form, and sit there.
+check("a nameless new student is sent into the journey, not settings",
+  /data-go="pipeline">Get started<\/button>/.test(onboard) && !/data-go="settings">Add my details/.test(onboard));
+check("saving from settings during onboarding carries them to the journey",
+  /wasOnboarding/.test(onboard) && /ACTIVE = "pipeline"/.test(onboard));
+
 // ---------------------------------------------------------------- teaching guide
 section("Acceptance: instructor teaching guide");
 const guide = await (await get(consoleEp, instructor.cookie)).json();
