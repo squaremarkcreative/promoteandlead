@@ -365,9 +365,15 @@ export function fundingGuidance(source) {
     case "af_ca":
       return {
         heading: "Filing Credentialing Assistance",
+        // Two company names on one credential looks wrong if nobody explains it, and a Soldier
+        // being asked to type an unfamiliar name into a funding request is right to hesitate.
+        // Say who RLS is and why they're on the form, rather than just instructing.
         body: [
-          "When you file your CA request, the company you select is **RLS** — the intermediate government-approved ATP that processes the funding.",
-          "Your training is delivered by **Promote and Lead Solutions** — when you talk to RBLP, your instructor / ATP is **Promote and Lead Solutions, LLC (PLS)**.",
+          "You'll see **two company names** during this, and that's normal — one is who the government pays, the other is who teaches you.",
+          "**Resilient Leadership Solutions (RLS)** is an RBLP Authorized Training Partner and the approved vendor registered in the Credentialing Assistance system. CA pays RLS. Promote and Lead delivers your training in partnership with them, which is why RLS is the company name on your funding request.",
+          "**Promote and Lead Solutions, LLC (PLS)** is your instructor of record with RBLP. That's the name to give RBLP, and it's who you'll actually be in the room with.",
+          "You'll see RLS on your completion certificate too, for the same reason — that's the name your CA office is expecting to match against the request they funded.",
+          "If your education counselor queries the two names, email info@promoteandlead.com and we'll send them whatever they need.",
           "Once your CA request is approved, come back here and continue your enrollment."
         ],
         link: source === "army_ca"

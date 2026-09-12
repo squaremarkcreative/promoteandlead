@@ -701,8 +701,15 @@ function renderPipeline(el) {
           (g.portal ? '<a class="btn btn-gold btn-sm" href="' + esc(g.portal.url) + '" target="_blank" rel="noopener">2. Open ' + esc(g.portal.name) + ' &rarr;</a>' : "") +
         "</div>" +
         (g.portal && g.portal.hint ? '<p class="muted">' + esc(g.portal.hint) + "</p>" : "") +
-        '<div class="notice"><b>The one thing people get wrong:</b> when it asks for the training company, select <b>RLS</b>. ' +
-          'That\'s the government-approved partner CA pays through. Your instructor of record with RBLP is still Promote and Lead Solutions.</div>' +
+        '<div class="notice"><b>When it asks for the training company, select RLS</b> &mdash; here\'s why, because two names on one ' +
+          'credential looks odd until someone explains it.<br><br>' +
+          '<b>Resilient Leadership Solutions (RLS)</b> is an RBLP Authorized Training Partner and the approved vendor registered in the ' +
+          'Credentialing Assistance system, so CA pays them. Promote and Lead delivers your training in partnership with RLS &mdash; that\'s ' +
+          'why theirs is the name on the funding request and ours is the name on your instruction.<br><br>' +
+          'With <b>RBLP</b>, your instructor of record stays <b>Promote and Lead Solutions, LLC</b>. And RLS will appear on your completion ' +
+          'certificate as well, so it matches the request your CA office funded.<br><br>' +
+          'If your education counselor questions the two names, email <a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> ' +
+          'and we\'ll send them what they need.</div>' +
         (ME.funding.caWarnings
           ? '<h4 class="warn-h">Before you file &mdash; the things that bounce packets</h4><ul class="warnlist">' +
             ME.funding.caWarnings.map(function (w) {

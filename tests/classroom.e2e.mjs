@@ -158,8 +158,21 @@ check("the CA step points at RBLP's instructions for their branch", /instruction
 check("the student payload carries the branch-specific CA instructions link",
   /rblp\.com\/follow-these-steps-to-use-army/.test(m.funding.guidance.link), m.funding.guidance.link);
 const caPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+const guidanceCA = (await import(`file://${R}/_lib/classroom.js`)).fundingGuidance("army_ca").body;
 check("the page renders the instructions link as a button", /Read the step-by-step/.test(caPage));
-check("and still flags selecting RLS as the training company", /select <b>RLS<\/b>/.test(caPage));
+check("and still flags selecting RLS as the training company",
+  /When it asks for the training company, select RLS/.test(caPage));
+// Two company names on a funding request reads as a scam if nobody explains it. Say who RLS
+// is and why they're on the form — a Soldier who hesitates here doesn't file.
+check("the step explains WHY it's RLS, not just that it is",
+  /Authorized Training Partner and the approved vendor/.test(caPage) && /in partnership with RLS/.test(caPage));
+check("RLS is spelled out, not left as an acronym", /Resilient Leadership Solutions \(RLS\)/.test(caPage));
+check("it separates who gets paid from who teaches",
+  /who the government pays/.test(JSON.stringify(guidanceCA)) && /instructor of record/.test(caPage));
+check("it warns the same name appears on the certificate, so that isn't a surprise",
+  /completion\s*\n?\s*'? ?\+? ?'?certificate as well/.test(caPage) || /certificate as well/.test(caPage));
+check("and offers to answer the education counselor directly",
+  /education counselor questions the two names/.test(caPage));
 
 const noDate = await post(action, { action: "pipeline.caSubmitted", data: {} }, student.cookie);
 check("filing with CA requires the date — the 45-day clock runs from it", noDate.status === 400);
