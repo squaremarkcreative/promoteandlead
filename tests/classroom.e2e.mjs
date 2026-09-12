@@ -358,6 +358,20 @@ const tgPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.ht
 check("every task has a Done control", /data-cover="/.test(tgPage) && /"Covered"|&#10003; Covered/.test(tgPage));
 check("covered tasks sort to the bottom of their module",
   /todo\.concat\(done\)/.test(tgPage));
+// Marking Done re-renders to re-sort the tasks, and the open module was hardcoded to module 1,
+// so an instructor teaching module 3 had it collapse under them mid-session.
+check("the module they're teaching stays open across a Done",
+  /var isOpen = TG_OPEN \? TG_OPEN\.indexOf\(m\.num\) >= 0 : m\.num === 1/.test(tgPage));
+check("every teaching module is addressable by number", /class="mod tg" data-mod="/.test(tgPage));
+check("what they expanded is remembered, not reset to a default",
+  /addEventListener\("toggle", function \(\) \{ TG_OPEN = tgOpenModules\(el\)/.test(tgPage));
+check("Done lands on the next task still to cover", /tgSpotlightNext\(el, modNum\)/.test(tgPage));
+check("the next task is found by skipping covered ones",
+  /\$\(".tg-task:not\(\.covered\)", d\)/.test(tgPage));
+check("finishing a module says so rather than jumping nowhere",
+  /every task ticked off/.test(tgPage));
+check("un-ticking holds their place instead of moving them",
+  /Un-ticking is a correction, not progress/.test(tgPage) && /window\.scrollTo\(0, y\)/.test(tgPage));
 check("their original numbering is kept, so you can still refer to task 3",
   /x\.n \+ "\. " \+ esc\(t\.title\)/.test(tgPage));
 check("each module shows how many are left", /still to cover/.test(tgPage));

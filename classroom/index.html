@@ -105,7 +105,7 @@
   .jump button{flex:none;white-space:nowrap}
   .jump-n{opacity:.75;font-weight:600;margin-left:.3rem}
   @media (max-width:560px){ .jump-h{display:none} }
-  .task.spotlight{outline:2px solid var(--gold);outline-offset:3px;transition:outline-color .4s}
+  .task.spotlight,.tg-task.spotlight{outline:2px solid var(--gold);outline-offset:3px;transition:outline-color .4s}
   details.mod{border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-bottom:.8rem;overflow:hidden}
   details.mod>summary{padding:.9rem 1.1rem;cursor:pointer;font-weight:700;display:flex;justify-content:space-between;gap:.7rem;align-items:center;flex-wrap:wrap;list-style:none}
   details.mod>summary::-webkit-details-marker{display:none}
@@ -1743,6 +1743,26 @@ function runOfDayHtml(blocks, opts) {
 //
 // Kept in localStorage per cohort: it's where-you-are-today state, not a record worth storing.
 var COVERED = {};
+var TG_OPEN = null;   // module numbers the instructor has expanded; null = first-visit default
+
+function tgOpenModules(el) {
+  var out = [];
+  $$("details.mod.tg", el).forEach(function (d) { if (d.open) out.push(Number(d.dataset.mod)); });
+  return out;
+}
+
+// Teaching live, Done means "move me on" — so land on the next task still to cover rather
+// than dumping them at the top of a collapsed accordion.
+function tgSpotlightNext(el, modNum) {
+  var d = $('details.mod.tg[data-mod="' + modNum + '"]', el);
+  if (!d) return false;
+  var next = $(".tg-task:not(.covered)", d);
+  if (!next) return false;
+  next.scrollIntoView({ behavior: "smooth", block: "center" });
+  next.classList.add("spotlight");
+  setTimeout(function () { next.classList.remove("spotlight"); }, 1600);
+  return true;
+}
 
 function coveredKey() { return "pl_covered_" + (ACTIVE_COHORT || "x"); }
 
@@ -1829,7 +1849,8 @@ function renderTeaching(el) {
       '</div></div>' +
 
     CONSOLE.outline.filter(function (m) { return m.num <= maxModule; }).map(function (m) {
-      return '<details class="mod tg"' + (m.num === 1 ? " open" : "") + '><summary>' +
+      var isOpen = TG_OPEN ? TG_OPEN.indexOf(m.num) >= 0 : m.num === 1;
+      return '<details class="mod tg" data-mod="' + m.num + '"' + (isOpen ? " open" : "") + '><summary>' +
         '<span>Module ' + m.num + ' — ' + esc(m.title) + '</span>' +
         '<span class="pill">' + m.tasks.length + ' tasks &middot; ~75 min</span></summary>' +
         '<div class="mod-body">' +
@@ -1874,10 +1895,24 @@ function renderTeaching(el) {
         '</div></details>';
     }).join("");
 
+  // Remember what they expanded, so a re-render puts the room back the way they had it.
+  $$("details.mod.tg", el).forEach(function (d) {
+    d.addEventListener("toggle", function () { TG_OPEN = tgOpenModules(el); });
+  });
+
   $$("[data-cover]", el).forEach(function (b) {
     b.addEventListener("click", function () {
-      toggleCovered(b.dataset.cover);
+      var key = b.dataset.cover;
+      var host = b.closest("details.mod");
+      var modNum = host ? Number(host.dataset.mod) : 0;
+      var y = window.scrollY;
+      toggleCovered(key);
+      TG_OPEN = tgOpenModules(el);
       renderTeaching(el);
+      // Un-ticking is a correction, not progress: hold their place instead of moving them.
+      if (COVERED[key] && modNum && tgSpotlightNext(el, modNum)) return;
+      window.scrollTo(0, y);
+      if (COVERED[key] && modNum) flash("Module " + modNum + " covered — every task ticked off.");
     });
   });
   $$("[data-uncover]", el).forEach(function (b) {
@@ -1885,7 +1920,10 @@ function renderTeaching(el) {
       var mod = CONSOLE.outline.filter(function (m) { return String(m.num) === b.dataset.uncover; })[0];
       if (mod) mod.tasks.forEach(function (t) { delete COVERED[t.key]; });
       try { localStorage.setItem(coveredKey(), JSON.stringify(COVERED)); } catch (e) {}
+      var y = window.scrollY;
+      TG_OPEN = tgOpenModules(el);
       renderTeaching(el);
+      window.scrollTo(0, y);
     });
   });
 
