@@ -54,7 +54,7 @@ export const JOURNEY = [
       { key: "rblp_received", owner: "rblp", title: "Waiting on RBLP to confirm your application", titleDone: "RBLP has your application",
         blurb: "RBLP tells us once your application is in. We'll email you the moment they do." },
       { key: "invoice",       owner: "rblp", title: "Watch for your training invoice from RBLP", titleDone: "Training invoice received", only: "CA",
-        blurb: "One invoice, for the exam prep training. The exam is invoiced separately later — RBLP raise that one once your completion certificate shows you've finished the course." },
+        blurb: "One invoice, for the exam prep training. The exam is invoiced separately later — RBLP issues that one once your completion certificate shows you've finished the course." },
       { key: "ca_submitted",  owner: "you",  title: "File your CA request for the training", titleDone: "Training request filed", only: "CA",
         blurb: "Just the training. CA funds the course and the exam as two separate goals, and you can't have both open at once — the exam request comes after you've finished the course and your grade posts. RBLP keeps the step-by-step instructions for your branch; open them first." },
       { key: "ca_approved",   owner: "ca",   title: "Waiting on your CA decision", titleDone: "Your CA funding is approved", only: "CA",
@@ -285,11 +285,11 @@ export function buildPipeline({ student, membership, events, worksheets, hours }
 // Mirrors "Cert templates/CA Pay Cert Template.pptx" — the same wording, laid out in HTML so
 // the level, hours and date come from the student's record instead of being retyped each time.
 //
-// Which organisation is named matters for reimbursement: CA money is processed by RLS, the
+// Which organization is named matters for reimbursement: CA money is processed by RLS, the
 // government-approved ATP, so a CA student's certificate has to say RLS or the claim doesn't
 // match the paperwork. Everyone else is taught and certified by PLS directly. Keyed off
 // FUNDING[...].paymentType so a future CA source is picked up without touching this.
-// The letterhead follows the named organisation — an RLS-headed certificate that credits PLS
+// The letterhead follows the named organization — an RLS-headed certificate that credits PLS
 // in its body reads as a mistake to whoever is checking the claim.
 export const CERT_ORGS = {
   RLS: { name: "Resilient Leadership Solutions", short: "RLS", logo: "/assets/cert/rls-logo.png" },

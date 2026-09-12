@@ -679,7 +679,7 @@ function renderPipeline(el) {
   var p = ME.profile, J = ME.pipeline, cur = J.current;
 
   // One thing at a time. The big card is whatever is actually next; the map below is there for
-  // orientation, not for working from. Students on this programme are juggling a CA portal, an
+  // orientation, not for working from. Students on this program are juggling a CA portal, an
   // RBLP account and us — a wall of thirteen checkboxes is how people give up.
   var bodies = {
     profile: function () {
@@ -712,11 +712,11 @@ function renderPipeline(el) {
     invoice: function () {
       var r = ME.rblpSupport || {};
       return '<p>RBLP emails you an invoice for the <b class="soft">exam prep training</b>. That\'s the one you file with CA.</p>' +
-        '<p class="muted">There\'s no exam invoice yet, and that\'s correct &mdash; RBLP raise that one later, once your completion ' +
+        '<p class="muted">There\'s no exam invoice yet, and that\'s correct &mdash; RBLP issues that one later, once your completion ' +
         'certificate shows you finished the course. You\'ll file a second CA request for it then.</p>' +
         '<label class="row check"><input type="checkbox" id="pInvoice">' +
         "<span>I've received my training invoice from RBLP.</span></label>" +
-        '<div class="notice"><b>Nothing after a week?</b> RBLP raise these, so they\'re the fastest people to ask &mdash; ' +
+        '<div class="notice"><b>Nothing after a week?</b> RBLP issues these, so they\'re the fastest people to ask &mdash; ' +
           'chasing through us just adds a day. Check your spam folder first, then contact them directly:<br>' +
           '<a href="mailto:' + esc(r.email) + '?subject=' + encodeURIComponent("RBLP invoices for Credentialing Assistance") + '">' + esc(r.email) + '</a>' +
           (r.phone ? ' &middot; ' + esc(r.phone) : "") +
@@ -1350,7 +1350,7 @@ function renderPrintSheet() {
 
 /* ------------------------------------------------------------------ certificate */
 // The document a student hands in with a Credentialing Assistance claim. Everything variable
-// (name, level, hours, date, and which organisation is named) is decided server-side in
+// (name, level, hours, date, and which organization is named) is decided server-side in
 // certificateData() — this only lays it out. Printing it is the download: the browser's
 // "Save as PDF" gives them a real PDF without this site needing a PDF library.
 function certHtml(c) {
@@ -1709,7 +1709,7 @@ function renderAdmin(el) {
                 ((c.instructorEmail || "").toLowerCase() === (i.email || "").toLowerCase() ? " selected" : "") + ">" +
                 esc(i.name) + "</option>";
             }).join("") +
-            // Keep an assignment we don't recognise rather than silently dropping it on save.
+            // Keep an assignment we don't recognize rather than silently dropping it on save.
             ((c.instructorEmail && !((CONSOLE.admin && CONSOLE.admin.instructorList) || []).some(function (i) {
               return (i.email || "").toLowerCase() === c.instructorEmail.toLowerCase(); }))
               ? '<option value="' + esc(c.instructorEmail) + '" selected>' + esc(c.instructorEmail) + " (not an instructor account)</option>" : "") +

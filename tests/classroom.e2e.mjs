@@ -551,10 +551,19 @@ check("RBLP's own support details reach the student",
 const chasePage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
 // Invoices are RBLP's to raise; routing the chase through us just adds a day.
 check("missing invoices send the student to RBLP, not to us",
-  /Nothing after a week\?<\/b> RBLP raise these/.test(chasePage) &&
+  /Nothing after a week\?<\/b> RBLP issues these/.test(chasePage) &&
   /mailto:' \+ esc\(r\.email\)/.test(chasePage));
 check("but we still ask to be told, so it shows up as stalled",
   /Tell us too/.test(chasePage) && /info@promoteandlead\.com/.test(chasePage));
+// US military audience — British spellings and idiom read as foreign and sloppy.
+const fsMod = await import("node:fs");
+const allCopy = ["functions/_lib/curriculum.js", "functions/_lib/classroom.js", "classroom/index.html", "index.html"]
+  .map((f) => fsMod.readFileSync(ROOT + f, "utf8")).join("\n");
+check("no British spellings in the copy",
+  !/\bprogramme\b|\borganis[a-z]*|\brecognis[a-z]*|\bwhilst\b|\bamongst\b/i.test(allCopy),
+  (allCopy.match(/\bprogramme\b|\borganis[a-z]*|\brecognis[a-z]*|\bwhilst\b|\bamongst\b/gi) || []).slice(0, 5));
+check("invoices are issued or sent, never 'raised'", !/RBLP raise|raise (an |the )?invoice/i.test(allCopy));
+
 check("the old 'email us and we'll chase it' copy is gone",
   !/Email <a href="mailto:info@promoteandlead\.com">info@promoteandlead\.com<\/a> and we\\'ll chase it/.test(chasePage));
 

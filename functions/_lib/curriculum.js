@@ -41,7 +41,7 @@ export const TRACKS = {
     window: "09:00–15:30", examHours: 2.5,
     who: "Senior managers, and Army warrant officers W3–W5",
     experience: "Typically 10+ years",
-    about: "For senior leaders who build organizational resilience and develop leader training programmes using the RBLP framework.",
+    about: "For senior leaders who build organizational resilience and develop leader training programs using the RBLP framework.",
     covers: "Everything in RBLP-C, plus Organizational Learning"
   }
 };
@@ -135,7 +135,7 @@ export const MODULES = [
       ["Experiential Learning", "Experience → Reflect → Decide → Act"],
       ["Stretch Goals", "Ambitious goals that pull performance up"],
       ["Psychological Safety", "Safe to speak honestly without punishment"],
-      ["Adaptive Thinking", "Recognising change and adjusting quickly"],
+      ["Adaptive Thinking", "Recognizing change and adjusting quickly"],
       ["Mental Models", "“How we do things around here”"],
       ["Single-Loop Learning", "Improve the existing process"],
       ["Double-Loop Learning", "Question and change the assumptions"]
@@ -224,17 +224,17 @@ export function allTaskKeys() {
 //   ask   — ONE merged, applied question. Per the SOP we don't read the canned questions:
 //           reading them makes people recite prepared lines instead of thinking.
 export const MODULE_OPENINGS = {
-  1: "Climate is what the team feels this week; culture is what the organisation has believed for years. Get that split landed early — most of module 1 hangs off it.",
+  1: "Climate is what the team feels this week; culture is what the organization has believed for years. Get that split landed early — most of module 1 hangs off it.",
   2: "Cohesion is what's left when the work gets hard. Two strands run through every task: do they get along, and do they deliver together.",
   3: "This module moves from the team to the individual. The leader's job here is helping one person see why their work matters and where it's taking them.",
   4: "Teams learn in a loop — experience, reflect, decide, act. The tasks are about making that loop deliberate instead of accidental.",
-  5: "Organisations don't learn; teams do, and then the organisation keeps it. Everything here is about what happens to a lesson after one team learns it."
+  5: "Organizations don't learn; teams do, and then the organization keeps it. Everything here is about what happens to a lesson after one team learns it."
 };
 
 export const COACHING = {
   // ---- Module 1 — Team Climate
   m1_analyze_climate: {
-    open: "Name the thing people feel but don't have a word for. Climate is the mood on the team right now; culture is what the organisation has believed for twenty years.",
+    open: "Name the thing people feel but don't have a word for. Climate is the mood on the team right now; culture is what the organization has believed for twenty years.",
     model: "Tommy: the Army's culture didn't shift an inch, but one toxic supervisor took the climate of my shop down inside a month. Same values on the wall, completely different place to work.",
     ask: "Talk about the climate in a job you've had, and what it did to the way the team worked."
   },
@@ -367,14 +367,14 @@ export const COACHING = {
 
   // ---- Module 5 — Organizational Learning
   m5_analyze_org: {
-    open: "The key move: organisations don't learn directly — teams learn, and the organisation keeps it. Separate continuous improvement (make the existing thing better) from innovation (make a new thing).",
+    open: "The key move: organizations don't learn directly — teams learn, and the organization keeps it. Separate continuous improvement (make the existing thing better) from innovation (make a new thing).",
     model: "Tommy: improving the retention workflow was continuous improvement. Building Promote & Lead as an authorized training partner was innovation — a different thing, not a better version of the old one.",
     ask: "Does a lesson your team learns actually survive past your team? Where does it go?"
   },
   m5_shared_vision: {
-    open: "Vision is what the organisation wants to become; mission is what it does today. Then the chain: vision shapes culture, culture shapes strategy, strategy drives learning and change.",
+    open: "Vision is what the organization wants to become; mission is what it does today. Then the chain: vision shapes culture, culture shapes strategy, strategy drives learning and change.",
     model: "Tommy: the vision for P&L was the ATP model before any of it existed. Everything since has been strategy working back from that.",
-    ask: "Can you say what your organisation is trying to become, in a sentence? Could the person next to you?"
+    ask: "Can you say what your organization is trying to become, in a sentence? Could the person next to you?"
   },
   m5_knowledge_creation: {
     open: "The best ideas usually come from the people doing the work. The leader's job is developing half-formed ideas instead of dismissing them, and treating a challenge to the status quo as improvement rather than complaint.",
@@ -382,7 +382,7 @@ export const COACHING = {
     ask: "When did you last have an idea about your own job? Who did you tell, and what happened to it?"
   },
   m5_knowledge_sharing: {
-    open: "Knowledge only becomes organisational once it's shared. Name the standard obstacle — 'that works over there, not here' — and land communities of practice as the fix.",
+    open: "Knowledge only becomes organizational once it's shared. Name the standard obstacle — 'that works over there, not here' — and land communities of practice as the fix.",
     model: "Tommy: the RCCC network, the SVA, the RBLP trainers, the ministry groups — same pattern every time. People doing the same work comparing notes is where the real learning moved.",
     ask: "Who outside your team does your job somewhere else — and when did you last compare notes with them?"
   }
@@ -464,7 +464,7 @@ export const MODULE_ARC = [
 export const STUDY_HABITS = {
   terms: [
     "Build a one-page glossary per module — the term plus your own one-liner.",
-    "Say the definitions out loud. If you only recognise them on the page, you're not ready.",
+    "Say the definitions out loud. If you only recognize them on the page, you're not ready.",
     "Give the confusable pairs extra attention; they're listed in each module's self-check."
   ],
   stories: [
@@ -833,7 +833,7 @@ export const WHY_PREP = {
 //   Army CA (AR 621-5, 19 Mar 2026): commissioned O1–O10 cut from new goals; warrant officers
 //     W1–W5 and all enlisted stay eligible; officers with a goal opened before that date may
 //     finish that one. Supervisor/commander approval now required at every rank.
-//   AF COOL/CA: already a Total Force ENLISTED programme — commissioned, separated and retired
+//   AF COOL/CA: already a Total Force ENLISTED program — commissioned, separated and retired
 //     are ineligible, and that isn't a 2026 "officer cut" to announce. Leadership credentials
 //     skew SNCO E7–E9. The Air Force's 2024 warrant officer return is tiny and cyber/IT only,
 //     so it is not a meaningful parallel to Army warrants; don't imply it is.
@@ -856,7 +856,7 @@ const CA_WARNINGS_ARMY = [
 ];
 
 const CA_WARNINGS_AF = [
-  { rule: "AF COOL is an enlisted programme", detail: "Total Force enlisted. Commissioned officers, and anyone separated or retired, aren't eligible — the leadership credentials in particular are aimed at SNCOs, E7–E9." },
+  { rule: "AF COOL is an enlisted program", detail: "Total Force enlisted. Commissioned officers, and anyone separated or retired, aren't eligible — the leadership credentials in particular are aimed at SNCOs, E7–E9." },
   { rule: "Check your timeline with your education office", detail: "Air Force processing differs from the Army's, so confirm the lead time before you count on a particular cohort date." }
 ];
 
