@@ -976,7 +976,9 @@ export const CA_NOTIFICATION_NOTE =
 //
 // The answer is that the date is a placeholder: pick any Saturday inside the allowed window so
 // the request can be filed. It doesn't bind them to that date, and it isn't their cohort.
-export const CA_WINDOW = { minDays: 45, maxDays: 90 };
+// Calendar days, confirmed — not business days. Sources disagree on this and it decides
+// whether a request is accepted, so it is settled here rather than hedged in the copy.
+export const CA_WINDOW = { minDays: 45, maxDays: 90, unit: "calendar days" };
 
 export function eligibleCourseDates(today) {
   const from = today ? new Date(today + "T12:00:00Z") : new Date();
@@ -995,9 +997,7 @@ export function eligibleCourseDates(today) {
   return {
     earliest: earliest.toISOString().slice(0, 10),
     latest: latest.toISOString().slice(0, 10),
-    saturdays,
-    // The first couple are only safe if the office counts calendar days; flag them.
-    tightUntil: day(Math.round(CA_WINDOW.minDays * 1.45)).toISOString().slice(0, 10)
+    saturdays
   };
 }
 

@@ -1279,8 +1279,9 @@ check("every suggested date is a Saturday",
 check("none is sooner than the lead time", dates.saturdays.every((d) => d >= dates.earliest), [dates.earliest, dates.saturdays[0]]);
 check("none is beyond the outer limit", dates.saturdays.every((d) => d <= dates.latest));
 check("the window is the published 45 to 90 days", win.minDays === 45 && win.maxDays === 90);
-check("dates that only work on calendar-day counting are flagged separately",
-  dates.tightUntil > dates.earliest && dates.saturdays.some((d) => d < dates.tightUntil) && dates.saturdays.some((d) => d >= dates.tightUntil));
+// Calendar days, settled — so every suggested date is simply valid, with no hedging.
+check("the window is calendar days, stated", win.unit === "calendar days");
+check("no date needs a caveat", dates.tightUntil === undefined);
 check("CA students get the list", Array.isArray(m.funding.courseDates && m.funding.courseDates.saturdays));
 check("non-CA students don't", (await (await get(me, payer.cookie)).json()).funding.courseDates === null);
 const datePage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");

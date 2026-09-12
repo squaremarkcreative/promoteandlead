@@ -797,14 +797,10 @@ function renderPipeline(el) {
             'It gets you through the form &mdash; it is not a commitment, and it will not be your cohort date. ' +
             'We place you in the next cohort you\'re eligible for once the money is confirmed.</p>' +
             '<div class="glossary">' + cd.saturdays.map(function (d) {
-              var tight = d < cd.tightUntil;
-              return '<span class="pill' + (tight ? " warn" : " ok") + '" title="' +
-                (tight ? "Fine if your office counts calendar days. Choose a later one if they count business days." : "Comfortably inside the window") +
-                '">' + esc(fmtDay(d)) + "</span>";
+              return '<span class="pill ok">' + esc(fmtDay(d)) + "</span>";
             }).join("") + "</div>" +
-            '<p class="muted">Amber ones are inside the window if your education center counts <b>calendar</b> days. ' +
-            'If they count <b>business</b> days, choose a green one. Ask them if you\'re unsure &mdash; it\'s the one thing ' +
-            'that decides whether the request is accepted.</p>';
+            '<p class="muted">These are the Saturdays between 45 and 90 <b>calendar</b> days out &mdash; the window the ' +
+            'portal will accept. Any of them works.</p>';
         })() +
         '<label class="fld" style="max-width:240px"><span>Date you filed it</span>' +
         '<input type="date" id="pCaDate" value="' + esc(p.caSubmittedOn || "") + '"></label>' +
