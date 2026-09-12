@@ -197,6 +197,11 @@ export async function onRequestGet(context) {
           storedRole: s.role,
           route: jp.route,
           steps: evs,
+          // Where they're placed, so the admin can see and change it in one row.
+          cohort: membership && membership.cohort
+            ? { id: membership.cohort.id, label: membership.cohort.slug || membership.cohort.name }
+            : null,
+          memberTrack: membership ? membership.rblp_type : null,
           stage: {
             key: jp.current.key, title: jp.current.title, phase: jp.current.phase,
             owner: jp.current.owner, ownerLabel: jp.current.ownerLabel,
@@ -230,6 +235,8 @@ export async function onRequestGet(context) {
         certificates,
         stalledAfterDays: STALLED_AFTER_DAYS,
         handoffs: ADMIN_HANDOFFS,
+        allCohorts: (await db.select("pl_cohorts", "select=id,name,slug,session_date&order=created_at.desc&limit=200"))
+          .map((c) => ({ id: c.id, label: c.slug || c.name, name: c.name, date: c.session_date || null })),
         passwords: await db.select("pl_module_passwords", "select=*&order=year_month.desc&limit=24"),
         currentMonth: monthKey()
       };

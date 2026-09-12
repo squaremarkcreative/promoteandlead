@@ -8,6 +8,7 @@ import { sb, json } from "../../_lib/db.js";
 import { currentStudent } from "../../_lib/session.js";
 import { FUNDING, normalizeTrack, loadMembership, loadSessions, PIPELINE_STEPS, JOURNEY, routeFor } from "../../_lib/classroom.js";
 import { transactionalEmail, sendEmail } from "../../_lib/email.js";
+import { issueCode } from "../../_lib/session.js";
 import { allTaskKeys } from "../../_lib/curriculum.js";
 
 const VALID_TASKS = new Set(allTaskKeys());
@@ -284,6 +285,85 @@ export async function onRequestPost(context) {
           });
         }
         return json({ ok: true, emailed, alreadyDone });
+      }
+
+      // ---------------------------------------------------------------- cohorts + placement
+      //
+      // Placing a student was the one thing the journey promised ("We put you in a cohort")
+      // that the classroom couldn't actually do — it lived in the separate CRM. The roster row
+      // is the source of truth for enrollment, track and certification, so placing someone
+      // mirrors their classroom profile onto it rather than asking Tommy to retype it.
+      case "cohort.create": {
+        if (me.role !== "admin") return json({ error: "Admins only." }, 403);
+        const name = text(data.name, 120).trim();
+        if (!name) return json({ error: "Give the cohort a name." }, 400);
+        const row = {
+          name,
+          slug: text(data.slug, 40).trim() || null,
+          session_date: /^\d{4}-\d{2}-\d{2}$/.test(String(data.session_date || "")) ? data.session_date : null,
+          capacity: Number(data.capacity) > 0 ? Number(data.capacity) : 6,
+          status: "open",
+          classroom_status: "draft"
+        };
+        await db.insert("pl_cohorts", row);
+        return json({ ok: true });
+      }
+
+      case "member.place": {
+        if (me.role !== "admin") return json({ error: "Admins only." }, 403);
+        const studentRows = await db.select("pl_students", `select=*&id=eq.${data.student_id}&limit=1`);
+        if (!studentRows.length) return json({ error: "No such student." }, 404);
+        const st = studentRows[0];
+        const email = (st.email || "").toLowerCase();
+
+        // Moving between cohorts, or removing entirely, is the same call with a different id.
+        const existing = await db.select("pl_cohort_members", `select=*&email=eq.${encodeURIComponent(email)}`);
+        if (!data.cohort_id) {
+          for (const mm of existing) await db.remove("pl_cohort_members", `id=eq.${mm.id}`);
+          return json({ ok: true, placed: false });
+        }
+
+        const cohorts = await db.select("pl_cohorts", `select=id&id=eq.${data.cohort_id}&limit=1`);
+        if (!cohorts.length) return json({ error: "No such cohort." }, 404);
+
+        const track = normalizeTrack(data.rblp_type || st.track);
+        const fund = FUNDING[st.payment_source];
+        const patch = {
+          cohort_id: data.cohort_id,
+          email,
+          name: st.display_name || null,
+          rblp_type: track,
+          payment_type: fund ? fund.paymentType : null,
+          branch: st.branch || (fund ? fund.branch : null)
+        };
+        if (existing.length) {
+          await db.patch("pl_cohort_members", `id=eq.${existing[0].id}`, patch);
+          for (const dupe of existing.slice(1)) await db.remove("pl_cohort_members", `id=eq.${dupe.id}`);
+        } else {
+          await db.insert("pl_cohort_members", { ...patch, status: "applied" });
+        }
+        return json({ ok: true, placed: true });
+      }
+
+      // There are no passwords to reset — sign-in is a one-time code to the student's own
+      // address. This is the equivalent: send them a fresh one. It goes to them, never to us.
+      case "student.sendCode": {
+        if (me.role !== "admin") return json({ error: "Admins only." }, 403);
+        const rows2 = await db.select("pl_students", `select=email,display_name&id=eq.${data.id}&limit=1`);
+        if (!rows2.length) return json({ error: "No such student." }, 404);
+        const target = rows2[0];
+        const { code, ttlMinutes } = await issueCode(env, db, target.email);
+        const sent = await sendEmail(env, {
+          to: target.email,
+          subject: `${code} is your Promote & Lead classroom code`,
+          html: transactionalEmail(
+            `<p style="margin:0 0 14px">Here's a fresh sign-in code for the <strong>Promote &amp; Lead classroom</strong>:</p>` +
+            `<p style="margin:0 0 14px;font-size:34px;letter-spacing:9px;font-weight:700;color:#0B2E6D;font-family:Arial,Helvetica,sans-serif">${code}</p>` +
+            `<p style="margin:0 0 14px">It expires in ${ttlMinutes} minutes and can only be used once. There's no password to remember — this is how you sign in every time.</p>` +
+            `<p style="margin:0">Still stuck? Just reply to this email.</p>`),
+          text: `Your Promote & Lead classroom sign-in code is ${code}. It expires in ${ttlMinutes} minutes.`
+        });
+        return json({ ok: true, sent });
       }
 
       case "student.unlock": {

@@ -705,6 +705,60 @@ const plainStudent = keysOf(tabFn({ ME: { cohort: null, profile: { role: "studen
 check("a student with no cohort yet still sees their own journey",
   plainStudent.includes("home") && plainStudent.includes("pipeline") && !plainStudent.includes("teaching"), plainStudent);
 
+// ---------------------------------------------------------------- placing students
+section("Acceptance: the admin can actually run cohorts");
+const placeMe = await signIn("place.me@example.com");
+await post(action, { action: "profile.save", data: { display_name: "Pat Place", track: "RBLP-T" } }, placeMe.cookie);
+await post(action, { action: "funding.choose", data: { source: "army_ca" } }, placeMe.cookie);
+const placeId = DB.pl_students.find((x) => x.email === "place.me@example.com").id;
+
+let pm2 = await (await get(me, placeMe.cookie)).json();
+check("before placement the student has no cohort", pm2.cohort === null);
+
+const cohortsBefore = DB.pl_cohorts.length;
+check("admin can create a cohort from the classroom",
+  (await post(action, { action: "cohort.create", data: { name: "Nov 2026", slug: "26-004", session_date: "2026-11-07", capacity: 6 } }, boss.cookie)).ok &&
+  DB.pl_cohorts.length === cohortsBefore + 1);
+check("a cohort needs a name", (await post(action, { action: "cohort.create", data: { slug: "x" } }, boss.cookie)).status === 400);
+const newCohort = DB.pl_cohorts.find((c) => c.slug === "26-004");
+
+check("placing a student works", (await post(action, { action: "member.place", data: { student_id: placeId, cohort_id: newCohort.id } }, boss.cookie)).ok);
+pm2 = await (await get(me, placeMe.cookie)).json();
+check("and the student sees their cohort", pm2.cohort && pm2.cohort.slug === "26-004", pm2.cohort);
+// Placement mirrors the classroom profile onto the roster so nothing is retyped.
+const placedRow = DB.pl_cohort_members.find((mm) => mm.email === "place.me@example.com");
+check("their track and funding carry across", placedRow.rblp_type === "RBLP-T" && placedRow.payment_type === "CA", placedRow);
+check("so does their name", placedRow.name === "Pat Place");
+check("the journey's enrolled step is now done",
+  pm2.pipeline.steps.find((st) => st.key === "enrolled").done === true);
+
+// Moving between cohorts must not leave them on two rosters.
+const other = DB.pl_cohorts.find((c) => c.slug === "26-002") || DB.pl_cohorts[0];
+await post(action, { action: "member.place", data: { student_id: placeId, cohort_id: other.id } }, boss.cookie);
+check("moving cohorts doesn't duplicate the roster row",
+  DB.pl_cohort_members.filter((mm) => mm.email === "place.me@example.com").length === 1);
+
+await post(action, { action: "member.place", data: { student_id: placeId, cohort_id: null } }, boss.cookie);
+check("and they can be removed", DB.pl_cohort_members.filter((mm) => mm.email === "place.me@example.com").length === 0);
+
+check("only an admin can place students",
+  (await post(action, { action: "member.place", data: { student_id: placeId, cohort_id: newCohort.id } }, placeMe.cookie)).status === 403);
+check("and only an admin can create cohorts",
+  (await post(action, { action: "cohort.create", data: { name: "nope" } }, instructor.cookie)).status === 403);
+
+// There are no passwords; the equivalent is sending them a fresh one-time code.
+const codeBefore = SENT.length;
+const codeRes = await (await post(action, { action: "student.sendCode", data: { id: placeId } }, boss.cookie)).json();
+check("admin can send a student a fresh sign-in code", codeRes.ok && SENT.length === codeBefore + 1);
+check("the code goes to the student, never to the admin",
+  SENT[SENT.length - 1].to === "place.me@example.com", SENT[SENT.length - 1].to);
+check("it's a real usable code", /\b\d{6}\b/.test(SENT[SENT.length - 1].subject));
+
+const adminUi = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("the admin table offers a cohort dropdown per student", /data-place="/.test(adminUi));
+check("and a send-code button", /data-code="/.test(adminUi));
+check("and a cohort creation form", /id="ncSave"/.test(adminUi));
+
 // ---------------------------------------------------------------- no duplicate notifications
 section("Acceptance: marking a step twice doesn't email twice");
 const dupStudent = await signIn("dup.check@example.com");

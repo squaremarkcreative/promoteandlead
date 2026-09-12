@@ -208,6 +208,9 @@
   .ta p{font-size:.85rem;color:var(--soft);line-height:1.55;margin:.25rem 0}
   .ta .muted{font-size:.76rem}
 
+  .place{margin-top:.35rem}
+  .place select{max-width:200px;font-size:.78rem;padding:.25rem .4rem}
+
   /* ---------------- the journey ---------------- */
   .next-step{border-color:var(--bstrong);padding:1.3rem 1.4rem}
   .next-step.you{border-color:rgba(200,164,21,.5);background:linear-gradient(180deg,rgba(200,164,21,.07),transparent 60%)}
@@ -1608,7 +1611,7 @@ function renderAdmin(el) {
     (function () {
       var learners = a.students.filter(function (s) { return s.role === "student"; });
       var staff = a.students.filter(function (s) { return s.role !== "student"; });
-      return renderLearnerTable(a, learners) + renderCertTable(a.certificates) + renderStaffTable(staff);
+      return renderCohortCreate() + renderLearnerTable(a, learners) + renderCertTable(a.certificates) + renderStaffTable(staff);
     })();
 
   $("#pwSave", el).addEventListener("click", function () {
@@ -1654,6 +1657,29 @@ function renderAdmin(el) {
       if (row) printCertificateFor(row.certificate);
     });
   });
+  var ncSave = $("#ncSave", el);
+  if (ncSave) ncSave.addEventListener("click", function () {
+    run(function () {
+      return api("cohort.create", {
+        name: $("#ncName", el).value, slug: $("#ncSlug", el).value,
+        session_date: $("#ncDate", el).value, capacity: $("#ncCap", el).value
+      });
+    }, "Cohort created.");
+  });
+  $$("[data-place]", el).forEach(function (sel) {
+    sel.addEventListener("change", function () {
+      run(function () { return api("member.place", { student_id: sel.dataset.place, cohort_id: sel.value || null }); },
+        sel.value ? "Placed — they'll see their cohort next time they load it." : "Removed from cohort.");
+    });
+  });
+  $$("[data-code]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (b.disabled) return;
+      b.disabled = true;
+      run(function () { return api("student.sendCode", { id: b.dataset.code }); }, "Fresh sign-in code emailed to them.")
+        .then(function () { b.disabled = false; });
+    });
+  });
   $$("[data-detail]", el).forEach(function (b) {
     b.addEventListener("click", function () {
       var row = $("#det-" + b.dataset.detail, el);
@@ -1671,6 +1697,20 @@ function renderAdmin(el) {
         .then(function () { b.disabled = false; });
     });
   });
+}
+
+// Cohorts had to be created in the separate CRM, which meant the journey could promise
+// "we put you in a cohort" with nowhere here to do it.
+function renderCohortCreate() {
+  return '<div class="box"><h3>Cohorts</h3>' +
+    '<p class="muted">Create a cohort, then place students into it from the table below.</p>' +
+    '<div class="row" style="align-items:flex-end">' +
+      '<label class="fld" style="margin:0;max-width:190px"><span>Name</span><input id="ncName" placeholder="November 2026"></label>' +
+      '<label class="fld" style="margin:0;max-width:130px"><span>Cohort id</span><input id="ncSlug" placeholder="26-004"></label>' +
+      '<label class="fld" style="margin:0;max-width:170px"><span>Saturday</span><input id="ncDate" type="date"></label>' +
+      '<label class="fld" style="margin:0;max-width:100px"><span>Seats</span><input id="ncCap" type="number" value="6"></label>' +
+      '<button class="btn btn-gold btn-sm" id="ncSave">Create cohort</button>' +
+    "</div></div>";
 }
 
 function renderLearnerTable(a, learners) {
@@ -1693,6 +1733,12 @@ function renderLearnerTable(a, learners) {
             '<button class="linkish" data-detail="' + s.id + '">' + esc(s.display_name || s.email) + "</button>" +
             '<br><span class="muted">' + esc(s.email) + "</span></td>" +
           "<td>" + esc(s.track || "—") + '<br><span class="muted">' + esc(s.payment_source || "no funding yet") + "</span>" +
+            '<div class="place"><select data-place="' + s.id + '">' +
+              '<option value="">&mdash; not in a cohort &mdash;</option>' +
+              (a.allCohorts || []).map(function (c) {
+                return '<option value="' + esc(c.id) + '"' + (s.cohort && s.cohort.id === c.id ? " selected" : "") + ">" +
+                  esc(c.label) + (c.date ? " &middot; " + esc(fmtDay(c.date)) : "") + "</option>";
+              }).join("") + "</select></div>" +
             // They bought straight from RBLP's storefront and told us. Confirm it, then mark paid.
             (s.purchase_claimed_at && !s.steps.paid
               ? '<br><span class="pill warn">says they paid ' + esc(fmtDay(s.purchase_claimed_at)) + "</span>" : "") + "</td>" +
@@ -1710,7 +1756,9 @@ function renderLearnerTable(a, learners) {
           '<td><select data-role="' + s.id + '" style="max-width:110px">' +
             ["student", "instructor"].map(function (r) {
               return '<option value="' + r + '"' + (r === s.role ? " selected" : "") + ">" + r + "</option>";
-            }).join("") + "</select></td></tr>" +
+            }).join("") + "</select>" +
+            '<button class="btn btn-ghost btn-sm" style="margin-top:.3rem" data-code="' + s.id + '" ' +
+            'title="Emails them a fresh one-time code. There are no passwords to reset.">Send code</button></td></tr>' +
           '<tr class="detail" id="det-' + s.id + '" hidden><td colspan="6">' + studentDetail(s) + "</td></tr>";
       }).join("") + "</tbody></table></div>"
       : '<p class="muted">No students yet.</p>') + "</div>";
