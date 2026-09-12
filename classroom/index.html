@@ -216,6 +216,11 @@
   ul.warnlist span{font-size:.82rem;color:var(--soft);line-height:1.55}
 
   .deeper{margin-top:.6rem;padding:.7rem .85rem;border:1px dashed var(--border);border-radius:10px;background:rgba(200,164,21,.04)}
+  .task-head-state{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
+  .task-head-state .save-state{margin-left:0}
+  .jump-save{margin-left:auto;flex:none;padding:0 .45rem;font-size:.78rem;font-weight:600;color:#94a3b8;white-space:nowrap}
+  .jump-save.saving{color:#fbbf24}
+  .jump-save.saved{color:#4ade80}
   .save-state{margin-left:auto;align-self:center;font-size:.8rem;color:#64748b}
 .save-state.saving{color:#b45309}
 .save-state.saved{color:#15803d}
@@ -1219,6 +1224,7 @@ function renderWorksheets(el) {
   });
   syncHeaderOffset();
   $$(".task", el).forEach(wireTask);
+  syncGlobalSave();
 }
 
 // The jump bar is sticky under the header, and the header wraps to two lines on a narrow
@@ -1245,7 +1251,7 @@ function moduleJumpHtml() {
       return '<button class="btn btn-sm ' + (done ? "btn-green" : "btn-ghost") + '" data-jump="' + m.num +
         '" title="Module ' + m.num + " — " + esc(m.title) + '">M' + m.num +
         '<span class="jump-n">' + ready + "/" + m.tasks.length + "</span></button>";
-    }).join("") + "</div>";
+    }).join("") + '<span class="jump-save" id="jumpSave">Saves as you type</span></div>';
 }
 
 function openModule(el, num, taskKey) {
@@ -1299,12 +1305,13 @@ function firstIncompleteModule() {
 // student who has written those has somewhere to go under follow-up instead of stalling.
 function taskHtml(t) {
   var r = t.response || { what: "", why: "", life: "", story: "", notdo: "", plan: "", status: "empty" };
-  var badge = r.status === "expanded" ? '<span class="pill ok">Expanded after session</span>'
-    : r.status === "ready" ? '<span class="pill ok">Ready</span>'
-    : r.status === "draft" ? '<span class="pill warn">Draft</span>' : '<span class="pill">Not started</span>';
+  var badge = r.status === "expanded" ? '<span class="pill ok task-badge">Expanded after session</span>'
+    : r.status === "ready" ? '<span class="pill ok task-badge">Ready</span>'
+    : r.status === "draft" ? '<span class="pill warn task-badge">Draft</span>' : '<span class="pill task-badge">Not started</span>';
   return '<div class="task" data-task="' + esc(t.key) + '" data-status="' + esc(r.status === "empty" ? "draft" : r.status) + '"' +
     ' data-updated="' + esc(r.updatedAt || "") + '">' +
-    '<div class="row" style="justify-content:space-between;align-items:flex-start"><h4>' + esc(t.title) + "</h4>" + badge + "</div>" +
+    '<div class="row" style="justify-content:space-between;align-items:flex-start"><h4>' + esc(t.title) + "</h4>" +
+    '<span class="task-head-state">' + badge + '<span class="save-state">Saves as you type</span></span></div>' +
     '<div class="starter"><b>Starter — what:</b> ' + esc(t.what) + (t.why ? ' &middot; <b>why:</b> ' + esc(t.why) : "") + "</div>" +
     '<label class="fld"><span>1. What is it?</span><textarea data-f="what">' + esc(r.what) + "</textarea></label>" +
     '<label class="fld"><span>2. Why is it important?</span><textarea data-f="why">' + esc(r.why) + "</textarea></label>" +
@@ -1342,8 +1349,34 @@ function collectTask(node) {
 }
 
 function setSaveState(node, text, cls) {
-  var el = $(".save-state", node);
-  if (el) { el.textContent = text; el.className = "save-state " + (cls || ""); }
+  $$(".save-state", node).forEach(function (el) {
+    el.textContent = text;
+    el.className = "save-state " + (cls || "");
+  });
+}
+
+// Autosave never re-renders — rebuilding the DOM under a live cursor would lose the cursor and
+// anything half-typed — so the status badge has to be corrected in place. Without this, a task
+// saved for the first time goes on claiming "Not started".
+function refreshBadge(node, status) {
+  var pill = $(".task-badge", node);
+  if (!pill) return;
+  var ok = status === "ready" || status === "expanded";
+  pill.textContent = status === "expanded" ? "Expanded after session" : status === "ready" ? "Ready" : "Draft";
+  pill.className = "pill task-badge " + (ok ? "ok" : "warn");
+}
+
+// Per-task indicators scroll away on a long answer, so the sticky bar carries one truth that
+// is always on screen: is any of my work unsaved right now?
+var IN_FLIGHT = 0;
+var SAVED_ONCE = false;
+
+function syncGlobalSave() {
+  var el = $("#jumpSave");
+  if (!el) return;
+  var pending = IN_FLIGHT || Object.keys(DIRTY).length;
+  el.textContent = pending ? "Saving…" : SAVED_ONCE ? "All work saved" : "Saves as you type";
+  el.className = "jump-save" + (pending ? " saving" : SAVED_ONCE ? " saved" : "");
 }
 
 // Autosave must never change their status. Editing an answer already marked ready shouldn't
@@ -1356,14 +1389,22 @@ async function autosave(node) {
   var payload = collectTask(node);
   payload.status = currentStatus(node);
   setSaveState(node, "Saving…", "saving");
+  IN_FLIGHT++;
+  syncGlobalSave();
   try {
     await api("worksheet.save", payload);
     delete DIRTY[payload.task_key];
     try { localStorage.removeItem(draftKey(payload.task_key)); } catch (e) {}
+    SAVED_ONCE = true;
+    node.dataset.updated = new Date().toISOString();
+    refreshBadge(node, payload.status);
     setSaveState(node, "Saved " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), "saved");
   } catch (e) {
     // The local copy is still there, so nothing is lost — say so rather than just failing.
     setSaveState(node, "Couldn't reach the server — your work is safe on this device", "err");
+  } finally {
+    IN_FLIGHT--;
+    syncGlobalSave();
   }
 }
 
@@ -1376,6 +1417,7 @@ function wireTask(node) {
       DIRTY[key] = true;
       try { localStorage.setItem(draftKey(key), JSON.stringify({ at: Date.now(), v: collectTask(node) })); } catch (e) {}
       setSaveState(node, "Unsaved…", "saving");
+      syncGlobalSave();
       clearTimeout(SAVE_TIMERS[key]);
       SAVE_TIMERS[key] = setTimeout(function () { autosave(node); }, 1500);
     });

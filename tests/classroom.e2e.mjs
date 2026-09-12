@@ -1437,7 +1437,25 @@ check("the server save is debounced rather than fired per character",
 check("leaving a field flushes it instead of waiting out the timer",
   /addEventListener\("blur"/.test(asPage));
 check("closing the tab mid-sentence warns first", /beforeunload/.test(asPage));
-check("the student can see whether their work is saved", /class="save-state"/.test(asPage));
+// A student watching the status badge top-right saw nothing change and assumed autosave was
+// dead. The save signal has to be where they are already looking, and on screen at any scroll.
+check("the save state sits beside the status badge, where they look",
+  /task-head-state">' \+ badge \+ '<span class="save-state"/.test(asPage));
+check("and by the buttons too, so either end of a long task shows it",
+  (asPage.match(/class="save-state"/g) || []).length >= 2);
+check("every indicator in a task updates, not just the first",
+  /\$\$\(".save-state", node\)\.forEach/.test(asPage));
+check("the sticky bar carries an always-visible save state", /id="jumpSave"/.test(asPage));
+check("it distinguishes saving from saved", /"Saving…" : SAVED_ONCE \? "All work saved"/.test(asPage));
+check("in-flight saves are counted, so it can't read saved mid-request",
+  /IN_FLIGHT\+\+/.test(asPage) && /IN_FLIGHT--/.test(asPage));
+// Autosave can't re-render (it would drop the cursor), so the badge is corrected in place.
+check("a first-ever autosave stops the badge claiming Not started",
+  /refreshBadge\(node, payload\.status\)/.test(asPage));
+check("the badge keeps ready and expanded rather than flattening them to draft",
+  /status === "expanded" \? "Expanded after session" : status === "ready" \? "Ready" : "Draft"/.test(asPage));
+check("autosave records the new server time for the stale-stash guard",
+  /node\.dataset\.updated = new Date\(\)\.toISOString\(\)/.test(asPage));
 check("a failed save says the work is still safe locally",
   /your work is safe on this device/.test(asPage));
 check("work stranded by a failed save is restored on return",
