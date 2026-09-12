@@ -705,6 +705,38 @@ const plainStudent = keysOf(tabFn({ ME: { cohort: null, profile: { role: "studen
 check("a student with no cohort yet still sees their own journey",
   plainStudent.includes("home") && plainStudent.includes("pipeline") && !plainStudent.includes("teaching"), plainStudent);
 
+// ---------------------------------------------------------------- module access
+section("Acceptance: the door and the key together");
+// The password rotates monthly and the classroom is the only reliable place to find the
+// current one, so the email must not send people to rblp.com ahead of it.
+const caEmail = SENT.filter((x) => /prep work is open/.test(x.subject)).pop();
+check("the CA-approved email exists", !!caEmail);
+check("it sends them to the classroom, not to rblp.com",
+  /promoteandlead\.com\/classroom/.test(caEmail.html) && !/>rblp\.com</.test(caEmail.html), caEmail.html.match(/href="[^"]*"/g));
+check("and says the classroom carries the password and the link",
+  /Start in your classroom/.test(caEmail.html) && /password/.test(caEmail.html));
+
+// The password shown is whichever month it is now, from the admin's stored list.
+const { monthKey: mk } = await import(`file://${R}/_lib/classroom.js`);
+DB.pl_module_passwords = [
+  { year_month: mk(), password: "THISMONTH" },
+  { year_month: "2020-01", password: "ANCIENT" }
+];
+m = await (await get(me, student.cookie)).json();
+check("the student sees this month's password, not an old one",
+  m.modulePassword.password === "THISMONTH" && m.modulePassword.yearMonth === mk(), m.modulePassword);
+DB.pl_module_passwords = [{ year_month: "2020-01", password: "ANCIENT" }];
+m = await (await get(me, student.cookie)).json();
+check("a month with nothing loaded shows no password rather than a stale one",
+  m.modulePassword.password === null, m.modulePassword);
+
+const accessPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("the prep page puts the password and the RBLP link together",
+  /function modulesAccessHtml/.test(accessPage) &&
+  /rblp\.com\/exam-prep-training/.test(accessPage) && /id="mpCopy"/.test(accessPage));
+check("it points at the exam prep page, not RBLP's front door",
+  !/href="https:\/\/rblp\.com\/"/.test(accessPage));
+
 // ---------------------------------------------------------------- referrals
 section("Acceptance: who brought this student");
 // Making someone an instructor issues their share link — referral pay needs a mechanism.

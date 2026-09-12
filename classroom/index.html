@@ -211,6 +211,12 @@
   .place{margin-top:.35rem}
   .place select{max-width:200px;font-size:.78rem;padding:.25rem .4rem}
 
+  .access{padding:1rem 1.1rem;border:1px solid rgba(200,164,21,.4);border-radius:14px;background:rgba(200,164,21,.06);margin-top:1rem}
+  .access h3{font-size:1rem;margin-bottom:.35rem}
+  .access-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-top:.5rem}
+  .access-row code{font-family:ui-monospace,Menlo,monospace;font-size:1.25rem;letter-spacing:.12em;font-weight:700;
+    color:var(--cream);background:var(--ink3);border:1px solid var(--bstrong);border-radius:8px;padding:.4rem .8rem}
+
   /* ---------------- the journey ---------------- */
   .next-step{border-color:var(--bstrong);padding:1.3rem 1.4rem}
   .next-step.you{border-color:rgba(200,164,21,.5);background:linear-gradient(180deg,rgba(200,164,21,.07),transparent 60%)}
@@ -913,6 +919,24 @@ function wireTrackPicker(el, selectId) {
   paint();
 }
 
+// Everything needed to get into RBLP's modules, in one block. The password rotates monthly and
+// the classroom is the only place a student can reliably find the current one — so the door and
+// the key belong together, rather than a link in an email that lands on RBLP's front page.
+function modulesAccessHtml() {
+  var mp = ME.modulePassword || {};
+  return '<div class="access"><h3>Get into the modules</h3>' +
+    (mp.password
+      ? '<p class="muted">RBLP will ask for a password. This one is current for <b class="soft">' + esc(mp.yearMonth) +
+          '</b> &mdash; it changes every month and we keep it up to date here.</p>' +
+        '<div class="access-row"><code id="mpVal">' + esc(mp.password) + "</code>" +
+          '<button class="btn btn-ghost btn-sm" id="mpCopy">Copy</button></div>'
+      : '<p class="muted">This month\'s password hasn\'t been posted yet. Email ' +
+        '<a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> and we\'ll sort it straight away.</p>') +
+    '<div class="row" style="margin-top:.8rem"><a class="btn btn-gold btn-sm" href="https://rblp.com/exam-prep-training/" target="_blank" rel="noopener">Open the modules on rblp.com &rarr;</a></div>' +
+    '<p class="muted" style="margin-top:.6rem">Opens in a new tab, so your drafts stay put. Read your module there, then come back and write your answers in your own words.</p>' +
+    "</div>";
+}
+
 /* ------------------------------------------------------------------ settings */
 // Their own details. Email is deliberately read-only: it's the identity the sign-in code is
 // issued against and the key every record hangs off, so changing it here would orphan the
@@ -1011,9 +1035,7 @@ function renderWorksheets(el) {
       'The starter lines are our coaching notes — replace them with your own wording, and always use your own story.</p>' +
       '<div class="bar"><i style="width:' + w.progress.percent + '%"></i></div>' +
       '<p class="muted">' + w.progress.ready + " of " + w.progress.required + " tasks marked ready for your cohort</p>" +
-      '<div class="notice">' + (ME.modulePassword.password
-          ? "Module password for " + esc(ME.modulePassword.yearMonth) + ": <b>" + esc(ME.modulePassword.password) + "</b> — it rotates monthly."
-          : "The module password for " + esc(ME.modulePassword.yearMonth) + " hasn't been posted yet. Email info@promoteandlead.com if you need it now.") + "</div>" +
+      modulesAccessHtml() +
       '<button class="btn btn-ghost btn-sm" id="printSheetBtn">Print my exam sheet</button> ' +
       '<button class="btn btn-ghost btn-sm" id="howToStudy">How to study</button>' +
     "</div>" +
@@ -1055,6 +1077,11 @@ function renderWorksheets(el) {
     }).join("");
 
   $("#printSheetBtn", el).addEventListener("click", function () { window.print(); });
+  var mpCopy = $("#mpCopy", el);
+  if (mpCopy) mpCopy.addEventListener("click", function () {
+    var v = $("#mpVal", el).textContent;
+    try { navigator.clipboard.writeText(v); flash("Password copied."); } catch (e) { flash("Select and copy: " + v); }
+  });
   $("#howToStudy", el).addEventListener("click", function () {
     var box = $("#studyBox", el);
     box.hidden = !box.hidden;

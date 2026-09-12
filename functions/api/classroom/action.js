@@ -437,16 +437,17 @@ const ADMIN_STEPS = {
   ca_approved: (s) => ({
     subject: "Your CA funding is approved — your prep work is open",
     html: `<p style="margin:0 0 14px">Congratulations — <strong>your Credentialing Assistance funding is approved</strong>.</p>` +
-      `<p style="margin:0 0 14px">Your prep work is now unlocked. Sign in, read the modules on rblp.com with the month password we show you, and start drafting your answers and stories.</p>` +
+      `<p style="margin:0 0 14px">Your prep work is now unlocked. <strong>Start in your classroom</strong> — it shows you this month's module password and takes you straight to the right page on RBLP's site, so there's nothing to hunt for.</p>` +
       `<p style="margin:0 0 14px">This is the part that wins the exam — students who come to the live session with drafts get far more out of the day.</p>` +
       `<p style="margin:0"><a href="https://promoteandlead.com/classroom">Open your classroom</a></p>`,
     text: "Your CA funding is approved and your prep work is unlocked. Sign in at promoteandlead.com/classroom."
   }),
   paid: () => ({
     subject: "Payment received — your prep work is open",
-    html: `<p style="margin:0 0 14px">Thanks — <strong>your payment is in</strong>, and your prep work is unlocked.</p>` +
+    html: `<p style="margin:0 0 14px">RBLP have confirmed <strong>your payment</strong>, and your prep work is unlocked.</p>` +
+      `<p style="margin:0 0 14px"><strong>Start in your classroom</strong> — it shows you this month's module password and takes you straight to the right page on RBLP's site, so there's nothing to hunt for.</p>` +
       `<p style="margin:0 0 14px">You'll go into the next available cohort; we'll confirm the date and send your Teams link.</p>` +
-      `<p style="margin:0">Sign in and get started: <a href="https://promoteandlead.com/classroom">promoteandlead.com/classroom</a></p>`,
+      `<p style="margin:0"><a href="https://promoteandlead.com/classroom">Open your classroom</a></p>`,
     text: "Payment received — your prep work is unlocked at promoteandlead.com/classroom."
   }),
   certified: () => ({
