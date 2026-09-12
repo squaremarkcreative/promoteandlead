@@ -1448,6 +1448,16 @@ check("autosave carries the task's existing status", /payload\.status = currentS
 check("the saved status is on the task node for autosave to read", /data-status="/.test(asPage));
 check("a save button still sets the status it names", /payload\.status = btn\.dataset\.save/.test(asPage));
 
+// Restoring is a write, so a wrong restore destroys good work. Both guards matter: a stash
+// older than the server loses, and a restore fills empty fields but never empties full ones.
+check("a stash older than the server's copy is discarded, not restored",
+  /stashed\.at > serverAt/.test(asPage));
+check("the server's save time is available to compare against", /data-updated="/.test(asPage));
+check("an empty stashed value never blanks what the server holds",
+  /typeof v === "string" && v && v !== ta\.value/.test(asPage));
+check("a stash that has nothing to contribute is cleared rather than left to rot",
+  (asPage.match(/localStorage\.removeItem\(draftKey/g) || []).length >= 3);
+
 // Prove the server half: saving content with status "ready" keeps it ready.
 await post(action, { action: "worksheet.save", data: { task_key: "m1_respect", what: "Treating people as people", status: "ready" } }, student.cookie);
 let wsm = await (await get(me, student.cookie)).json();

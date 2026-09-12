@@ -1223,7 +1223,8 @@ function taskHtml(t) {
   var badge = r.status === "expanded" ? '<span class="pill ok">Expanded after session</span>'
     : r.status === "ready" ? '<span class="pill ok">Ready</span>'
     : r.status === "draft" ? '<span class="pill warn">Draft</span>' : '<span class="pill">Not started</span>';
-  return '<div class="task" data-task="' + esc(t.key) + '" data-status="' + esc(r.status === "empty" ? "draft" : r.status) + '">' +
+  return '<div class="task" data-task="' + esc(t.key) + '" data-status="' + esc(r.status === "empty" ? "draft" : r.status) + '"' +
+    ' data-updated="' + esc(r.updatedAt || "") + '">' +
     '<div class="row" style="justify-content:space-between;align-items:flex-start"><h4>' + esc(t.title) + "</h4>" + badge + "</div>" +
     '<div class="starter"><b>Starter — what:</b> ' + esc(t.what) + (t.why ? ' &middot; <b>why:</b> ' + esc(t.why) : "") + "</div>" +
     '<label class="fld"><span>1. What is it?</span><textarea data-f="what">' + esc(r.what) + "</textarea></label>" +
@@ -1313,19 +1314,29 @@ function wireTask(node) {
 
   // A draft left in local storage means an autosave never made it through. Put the work back
   // in front of them and try again now, rather than letting the server's older copy win.
+  //
+  // Two guards, because restoring is a write and a wrong restore destroys good work. A stash
+  // older than the server's copy is stale — it loses to the server. And a restore only ever
+  // fills a field, never empties one: an empty stashed value means "I have nothing to add
+  // here", not "delete what the server has".
   var stashed = null;
   try { stashed = JSON.parse(localStorage.getItem(draftKey(key)) || "null"); } catch (e) {}
-  if (stashed && stashed.v) {
+  var serverAt = Date.parse(node.dataset.updated || "") || 0;
+  if (stashed && stashed.v && (!serverAt || stashed.at > serverAt)) {
     var restored = false;
     $$("textarea[data-f]", node).forEach(function (ta) {
       var v = stashed.v[ta.dataset.f];
-      if (typeof v === "string" && v !== ta.value) { ta.value = v; restored = true; }
+      if (typeof v === "string" && v && v !== ta.value) { ta.value = v; restored = true; }
     });
     if (restored) {
       DIRTY[key] = true;
       setSaveState(node, "Restored unsaved work from this device", "warn");
       autosave(node);
+    } else {
+      try { localStorage.removeItem(draftKey(key)); } catch (e) {}
     }
+  } else if (stashed) {
+    try { localStorage.removeItem(draftKey(key)); } catch (e) {}
   }
 
   $$("[data-save]", node).forEach(function (btn) {
