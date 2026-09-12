@@ -892,3 +892,35 @@ export const RBLP_SUPPORT = {
   hours: "Mon–Fri, 8:30am–4:30pm Mountain",
   expect: "They ask for 1–2 business days to reply."
 };
+
+// A cohort day is always the same shape, so nobody should be typing start and end times into a
+// form — pick the Saturday and the rest follows. Cohorts run in America/Chicago whatever
+// timezone the person setting them up happens to be in, so the offset is resolved against that
+// zone rather than the admin's browser (which is how a cohort ends up an hour out).
+export function chicagoInstant(dateStr, hhmm) {
+  const naive = new Date(`${dateStr}T${hhmm}:00Z`);
+  if (isNaN(naive)) return null;
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Chicago", hour12: false,
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
+    }).formatToParts(naive).filter((p) => p.type !== "literal").map((p) => [p.type, p.value])
+  );
+  const asChicago = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour % 24, +parts.minute);
+  return new Date(naive.getTime() - (asChicago - naive.getTime())).toISOString();
+}
+
+// The standard Saturday for a cohort, derived from COHORT_DAY rather than retyped.
+export function standardSession(dateStr) {
+  const first = COHORT_DAY[0];
+  const last = COHORT_DAY[COHORT_DAY.length - 1];
+  const end = addMinutes(last.at, last.minutes);
+  const taught = COHORT_DAY.filter((b) => b.kind === "module").reduce((a, b) => a + b.minutes, 0);
+  return {
+    label: "Saturday session",
+    starts_at: chicagoInstant(dateStr, first.at),
+    ends_at: chicagoInstant(dateStr, end),
+    instructional_minutes: taught,
+    window: `${first.at}–${end} Central`
+  };
+}

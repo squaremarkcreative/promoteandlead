@@ -9,6 +9,7 @@ import { currentStudent } from "../../_lib/session.js";
 import { FUNDING, normalizeTrack, loadMembership, loadSessions, PIPELINE_STEPS, JOURNEY, routeFor, referralCodeFor } from "../../_lib/classroom.js";
 import { transactionalEmail, sendEmail } from "../../_lib/email.js";
 import { issueCode } from "../../_lib/session.js";
+import { standardSession } from "../../_lib/curriculum.js";
 import { allTaskKeys } from "../../_lib/curriculum.js";
 
 const VALID_TASKS = new Set(allTaskKeys());
@@ -243,6 +244,24 @@ export async function onRequestPost(context) {
         return json({ ok: true });
       }
 
+      // Pick the Saturday; the times come from the standard day shape. Typing 09:00 and 15:30
+      // into a form by hand is how a cohort ends up an hour out, or in the wrong timezone.
+      case "session.addStandard": {
+        if (me.role !== "admin") return json({ error: "Admins only." }, 403);
+        if (!data.cohort_id) return json({ error: "Which cohort?" }, 400);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(String(data.date || ""))) return json({ error: "Pick a date." }, 400);
+        const std = standardSession(data.date);
+        if (!std.starts_at) return json({ error: "That date didn't parse." }, 400);
+        await db.insert("pl_cohort_sessions", {
+          cohort_id: data.cohort_id,
+          label: std.label,
+          starts_at: std.starts_at,
+          ends_at: std.ends_at,
+          instructional_minutes: std.instructional_minutes
+        });
+        return json({ ok: true, window: std.window });
+      }
+
       case "session.add": {
         if (me.role !== "admin") return json({ error: "Admins only." }, 403);
         if (!data.cohort_id || !data.starts_at) return json({ error: "Cohort and start time are required." }, 400);
@@ -345,6 +364,23 @@ export async function onRequestPost(context) {
           classroom_status: "draft"
         };
         await db.insert("pl_cohorts", row);
+
+        // A cohort IS its Saturday. Asking for the date here and then again under Sessions is
+        // the same question twice, so create the standard session straight away.
+        if (row.session_date) {
+          const made = await db.select("pl_cohorts",
+            `select=id&name=eq.${encodeURIComponent(row.name)}&order=created_at.desc&limit=1`);
+          const std = standardSession(row.session_date);
+          if (made.length && std.starts_at) {
+            await db.insert("pl_cohort_sessions", {
+              cohort_id: made[0].id,
+              label: std.label,
+              starts_at: std.starts_at,
+              ends_at: std.ends_at,
+              instructional_minutes: std.instructional_minutes
+            });
+          }
+        }
         return json({ ok: true });
       }
 

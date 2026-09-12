@@ -815,6 +815,33 @@ check("admin can create a cohort from the classroom",
 check("a cohort needs a name", (await post(action, { action: "cohort.create", data: { slug: "x" } }, boss.cookie)).status === 400);
 const newCohort = DB.pl_cohorts.find((c) => c.slug === "26-004");
 
+// A cohort IS its Saturday — asking for the date at creation and again under Sessions was the
+// same question twice.
+const madeSessions = DB.pl_cohort_sessions.filter((x) => x.cohort_id === newCohort.id);
+check("creating a cohort with a date creates its session", madeSessions.length === 1, madeSessions.length);
+const cs = madeSessions[0];
+const inChicago = (iso) => new Date(iso).toLocaleString("en-US", { timeZone: "America/Chicago", hour12: false, hour: "2-digit", minute: "2-digit" });
+check("the session runs 09:00 to 15:30 Central, whatever the admin's own timezone",
+  inChicago(cs.starts_at) === "09:00" && inChicago(cs.ends_at) === "15:30", [inChicago(cs.starts_at), inChicago(cs.ends_at)]);
+check("with the taught minutes from the day shape, not typed in", cs.instructional_minutes === 300, cs.instructional_minutes);
+
+// Extra sittings still possible, same shape, date only.
+check("an extra session can be added by date alone",
+  (await post(action, { action: "session.addStandard", data: { cohort_id: newCohort.id, date: "2026-11-14" } }, boss.cookie)).ok &&
+  DB.pl_cohort_sessions.filter((x) => x.cohort_id === newCohort.id).length === 2);
+check("a session needs a real date",
+  (await post(action, { action: "session.addStandard", data: { cohort_id: newCohort.id, date: "soon" } }, boss.cookie)).status === 400);
+
+// Three fields that could only ever be set wrong are gone from the cohort form.
+const cohortForm = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("no manual start/end time entry", !/data-s="starts"/.test(cohortForm) && !/data-s="ends"/.test(cohortForm));
+check("no tracks-allowed checkboxes — every cohort takes all three", !/data-track=/.test(cohortForm));
+check("no module password month override — it follows the month", !/password_month_key/.test(cohortForm));
+check("the instructor is chosen from the instructor accounts, not typed",
+  /<select data-f="instructor_email">/.test(cohortForm));
+check("and each instructor shows which cohorts they're on",
+  /cohorts: cohorts\.filter/.test((await import("node:fs")).readFileSync(ROOT + "functions/api/classroom/console.js", "utf8")));
+
 check("placing a student works", (await post(action, { action: "member.place", data: { student_id: placeId, cohort_id: newCohort.id } }, boss.cookie)).ok);
 pm2 = await (await get(me, placeMe.cookie)).json();
 check("and the student sees their cohort", pm2.cohort && pm2.cohort.slug === "26-004", pm2.cohort);

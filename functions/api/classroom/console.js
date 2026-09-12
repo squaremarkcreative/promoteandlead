@@ -257,7 +257,13 @@ export async function onRequestGet(context) {
         handoffs: ADMIN_HANDOFFS,
         referralVia: REFERRAL_VIA,
         instructorList: students.filter((x) => effectiveRole(env, x) === "instructor")
-          .map((x) => ({ id: x.id, name: x.display_name || x.email, code: x.referral_code, link: referralLink(x.referral_code) })),
+          .map((x) => ({
+            id: x.id, name: x.display_name || x.email, email: x.email,
+            code: x.referral_code, link: referralLink(x.referral_code),
+            // Which cohorts they're teaching, so assignments are visible at a glance.
+            cohorts: cohorts.filter((c) => (c.instructor_email || "").toLowerCase() === (x.email || "").toLowerCase())
+              .map((c) => c.slug || c.name)
+          })),
         allCohorts: (await db.select("pl_cohorts", "select=id,name,slug,session_date&order=created_at.desc&limit=200"))
           .map((c) => ({ id: c.id, label: c.slug || c.name, name: c.name, date: c.session_date || null })),
         passwords: await db.select("pl_module_passwords", "select=*&order=year_month.desc&limit=24"),

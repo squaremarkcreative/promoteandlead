@@ -1646,17 +1646,23 @@ function renderAdmin(el) {
         '<div class="grid2">' +
           '<label class="fld"><span>Cohort id / slug</span><input data-f="slug" value="' + esc(c.slug || "") + '" placeholder="26-002"></label>' +
           '<label class="fld"><span>Teams join URL</span><input data-f="teams_url" value="' + esc(c.teamsUrl || "") + '" placeholder="https://teams.microsoft.com/l/meetup-join/…"></label>' +
-          '<label class="fld"><span>Instructor email</span><input data-f="instructor_email" value="' + esc(c.instructorEmail || "") + '" placeholder="instructor@promoteandlead.com"></label>' +
+          '<label class="fld"><span>Instructor</span><select data-f="instructor_email">' +
+            '<option value="">&mdash; unassigned &mdash;</option>' +
+            ((CONSOLE.admin && CONSOLE.admin.instructorList) || []).map(function (i) {
+              return '<option value="' + esc(i.email) + '"' +
+                ((c.instructorEmail || "").toLowerCase() === (i.email || "").toLowerCase() ? " selected" : "") + ">" +
+                esc(i.name) + "</option>";
+            }).join("") +
+            // Keep an assignment we don't recognise rather than silently dropping it on save.
+            ((c.instructorEmail && !((CONSOLE.admin && CONSOLE.admin.instructorList) || []).some(function (i) {
+              return (i.email || "").toLowerCase() === c.instructorEmail.toLowerCase(); }))
+              ? '<option value="' + esc(c.instructorEmail) + '" selected>' + esc(c.instructorEmail) + " (not an instructor account)</option>" : "") +
+            "</select></label>" +
           '<label class="fld"><span>Classroom status</span><select data-f="classroom_status">' +
             ["draft", "open", "in_progress", "complete"].map(function (s) {
               return '<option value="' + s + '"' + (s === c.classroomStatus ? " selected" : "") + ">" + s + "</option>";
             }).join("") + "</select></label>" +
-          '<label class="fld"><span>Module password month override</span><input data-f="password_month_key" value="' + esc(c.passwordMonthKey || "") + '" placeholder="YYYY-MM (blank = current month)"></label>' +
-          '<label class="fld"><span>Tracks allowed</span><div class="row">' +
-            ["RBLP", "RBLP-C", "RBLP-T"].map(function (t) {
-              var on = c.tracksAllowed && c.tracksAllowed.indexOf(t) >= 0;
-              return '<label class="row" style="gap:.3rem"><input type="checkbox" data-track="' + t + '" style="width:auto"' + (on ? " checked" : "") + "> " + t + "</label>";
-            }).join("") + "</div></label>" +
+
         "</div>" +
         '<button class="btn btn-gold btn-sm" data-savecohort="' + c.id + '">Save cohort settings</button>' +
 
@@ -1667,12 +1673,12 @@ function renderAdmin(el) {
               (s.instructionalMinutes || "—") + '</td><td><button class="btn btn-ghost btn-sm" data-delsession="' + s.id + '">Delete</button></td></tr>';
           }).join("") + "</tbody></table></div>" : '<p class="muted">No sessions yet.</p>') +
         '<div class="row" style="margin-top:.7rem;align-items:flex-end">' +
-          '<label class="fld" style="margin:0;max-width:150px"><span>Label</span><input data-s="label" placeholder="Saturday session"></label>' +
-          '<label class="fld" style="margin:0;max-width:210px"><span>Starts (local)</span><input data-s="starts" type="datetime-local"></label>' +
-          '<label class="fld" style="margin:0;max-width:210px"><span>Ends</span><input data-s="ends" type="datetime-local"></label>' +
-          '<label class="fld" style="margin:0;max-width:110px"><span>Minutes</span><input data-s="minutes" type="number" placeholder="225"></label>' +
-          '<button class="btn btn-ghost btn-sm" data-addsession="' + c.id + '">Add session</button>' +
-        "</div></div>";
+          '<label class="fld" style="margin:0;max-width:190px"><span>Saturday</span><input data-s="date" type="date"></label>' +
+          '<button class="btn btn-gold btn-sm" data-addsession="' + c.id + '">Add session</button>' +
+        "</div>" +
+        '<p class="muted">Only needed for an <b class="soft">extra</b> date &mdash; a make-up or a second sitting. ' +
+        'The cohort\'s own Saturday was added when you created it. Runs 09:00&ndash;15:30 Central either way.</p>' +
+        "</div>";
     }).join("") +
 
     // Instructors and admins don't walk the student journey, so they don't belong in this table
@@ -1680,7 +1686,7 @@ function renderAdmin(el) {
     (function () {
       var learners = a.students.filter(function (s) { return s.role === "student"; });
       var staff = a.students.filter(function (s) { return s.role !== "student"; });
-      return renderCohortCreate() + renderLearnerTable(a, learners) + renderCertTable(a.certificates) + renderStaffTable(staff);
+      return renderCohortCreate() + renderLearnerTable(a, learners) + renderCertTable(a.certificates) + renderStaffTable(staff, a);
     })();
 
   $("#pwSave", el).addEventListener("click", function () {
@@ -1688,25 +1694,20 @@ function renderAdmin(el) {
   });
   $$("[data-savecohort]", el).forEach(function (b) {
     b.addEventListener("click", function () {
-      var box = b.closest("[data-cohort]"), payload = { id: b.dataset.savecohort, tracks_allowed: [] };
+      var box = b.closest("[data-cohort]"), payload = { id: b.dataset.savecohort };
       $$("[data-f]", box).forEach(function (f) { payload[f.dataset.f] = f.value; });
-      $$("[data-track]", box).forEach(function (t) { if (t.checked) payload.tracks_allowed.push(t.dataset.track); });
       run(function () { return api("cohort.classroom", payload); }, "Cohort settings saved.");
     });
   });
   $$("[data-addsession]", el).forEach(function (b) {
     b.addEventListener("click", function () {
       var box = b.closest("[data-cohort]");
-      var get = function (k) { var n = $('[data-s="' + k + '"]', box); return n ? n.value : ""; };
-      if (!get("starts")) return flash("Pick a start time.", "err");
+      var dateEl = $('[data-s="date"]', box);
+      if (!dateEl || !dateEl.value) return flash("Pick the Saturday.", "err");
+      // Times come from the standard day shape, resolved in Central — not from this browser.
       run(function () {
-        return api("session.add", {
-          cohort_id: b.dataset.addsession, label: get("label"),
-          starts_at: new Date(get("starts")).toISOString(),
-          ends_at: get("ends") ? new Date(get("ends")).toISOString() : null,
-          instructional_minutes: get("minutes") ? Number(get("minutes")) : null
-        });
-      }, "Session added.");
+        return api("session.addStandard", { cohort_id: b.dataset.addsession, date: dateEl.value });
+      }, "Session added — 09:00 to 15:30 Central.");
     });
   });
   $$("[data-delsession]", el).forEach(function (b) {
@@ -1778,11 +1779,12 @@ function renderAdmin(el) {
 // "we put you in a cohort" with nowhere here to do it.
 function renderCohortCreate() {
   return '<div class="box"><h3>Cohorts</h3>' +
-    '<p class="muted">Create a cohort, then place students into it from the table below.</p>' +
+    '<p class="muted">The Saturday you pick becomes the session &mdash; 09:00 to 15:30 Central, the standard day. ' +
+    'Place students into it from the table below.</p>' +
     '<div class="row" style="align-items:flex-end">' +
       '<label class="fld" style="margin:0;max-width:190px"><span>Name</span><input id="ncName" placeholder="November 2026"></label>' +
       '<label class="fld" style="margin:0;max-width:130px"><span>Cohort id</span><input id="ncSlug" placeholder="26-004"></label>' +
-      '<label class="fld" style="margin:0;max-width:170px"><span>Saturday</span><input id="ncDate" type="date"></label>' +
+      '<label class="fld" style="margin:0;max-width:180px"><span>Saturday</span><input id="ncDate" type="date"></label>' +
       '<label class="fld" style="margin:0;max-width:100px"><span>Seats</span><input id="ncCap" type="number" value="6"></label>' +
       '<button class="btn btn-gold btn-sm" id="ncSave">Create cohort</button>' +
     "</div></div>";
@@ -1882,7 +1884,7 @@ function renderCertTable(certs) {
       : '<p class="muted">None yet. They\'re issued when an instructor completes a class.</p>') + "</div>";
 }
 
-function renderStaffTable(staff) {
+function renderStaffTable(staff, a0) {
   if (!staff.length) return "";
   return '<div class="box"><h3>Instructors &amp; admins (' + staff.length + ")</h3>" +
     '<p class="muted">Staff accounts. They don\'t have a student journey &mdash; an instructor isn\'t working toward a credential here.</p>' +
@@ -1890,7 +1892,13 @@ function renderStaffTable(staff) {
     '<div class="scroll"><table><thead><tr><th>Account</th><th>Referral link</th><th>Role</th></tr></thead><tbody>' +
     staff.map(function (s) {
       return "<tr><td>" + esc(s.email) + '<br><span class="muted">' + esc(s.display_name || "no name yet") + "</span></td>" +
-        '<td class="muted">' + (s.referralCode ? "?ref=" + esc(s.referralCode) : "&mdash;") + "</td>" +
+        '<td class="muted">' + (s.referralCode ? "?ref=" + esc(s.referralCode) : "&mdash;") +
+          (function () {
+            var mine = ((a0 && a0.instructorList) || []).filter(function (i) { return i.id === s.id; })[0];
+            return mine && mine.cohorts && mine.cohorts.length
+              ? '<br><span class="pill ok">' + mine.cohorts.map(esc).join("</span> <span class=\"pill ok\">") + "</span>"
+              : '<br><span class="muted">no cohorts assigned</span>';
+          })() + "</td>" +
         '<td><select data-role="' + s.id + '" style="max-width:120px">' +
           ["student", "instructor"].map(function (r) {
             return '<option value="' + r + '"' + (r === s.role ? " selected" : "") + ">" + r + "</option>";
