@@ -16,11 +16,17 @@
   a{color:var(--gold2)}
   h1,h2,h3{line-height:1.25}
 
-  header.top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 1.2rem;background:var(--ink3);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;flex-wrap:wrap}
-  .brand{display:flex;align-items:center;gap:.6rem;font-weight:700;font-size:.95rem}
-  .brand img{height:28px}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.05rem 1.3rem;background:var(--ink3);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:.65rem;font-weight:700;font-size:1.02rem}
+  .brand img{height:32px}
   .brand small{display:block;font-size:.62rem;letter-spacing:.1em;color:var(--faint);font-weight:600;text-transform:uppercase}
-  .who{font-size:.8rem;color:var(--faint);display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+  /* The greeting is the one bit of the page that's about the person using it, so it shouldn't
+     be the smallest text on screen. The name reads as primary; the rest stays quiet. */
+  .who{font-size:.95rem;color:var(--soft);display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+  #whoEmail{font-size:1.05rem;font-weight:600;color:var(--cream)}
+  .who .pill{font-size:.76rem;padding:.25rem .7rem}
+  .who .btn{font-size:.84rem;padding:.4rem .85rem}
+  @media(max-width:560px){#whoEmail{font-size:.95rem}.who{gap:.5rem;font-size:.88rem}}
   .wrap{max-width:1080px;margin:0 auto;padding:1.3rem 1.1rem 4rem}
 
   nav.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.4rem;overflow-x:auto}
