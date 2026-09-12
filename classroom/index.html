@@ -694,9 +694,13 @@ function renderPipeline(el) {
       var g = ME.funding.guidance || {};
       return '<p>This happens on your branch\'s Credentialing Assistance website &mdash; you <b class="soft">upload</b> both invoices there, ' +
           'the exam one and the training one.</p>' +
-        '<p><b class="soft">Start with the instructions.</b> RBLP keeps a step-by-step guide for your branch and it walks you through the ' +
-          'upload screen by screen. Read it first &mdash; it answers most of what people get stuck on.</p>' +
-        (g.link ? '<div class="row"><a class="btn btn-gold btn-sm" href="' + esc(g.link) + '" target="_blank" rel="noopener">Open the CA instructions for my branch &rarr;</a></div>' : "") +
+        '<p><b class="soft">Read the instructions first.</b> RBLP keeps a step-by-step guide for your branch that walks the upload ' +
+          'screen by screen &mdash; it answers most of what people get stuck on. Then go to the portal and do it.</p>' +
+        '<div class="row">' +
+          (g.link ? '<a class="btn btn-ghost btn-sm" href="' + esc(g.link) + '" target="_blank" rel="noopener">1. Read the step-by-step &rarr;</a>' : "") +
+          (g.portal ? '<a class="btn btn-gold btn-sm" href="' + esc(g.portal.url) + '" target="_blank" rel="noopener">2. Open ' + esc(g.portal.name) + ' &rarr;</a>' : "") +
+        "</div>" +
+        (g.portal && g.portal.hint ? '<p class="muted">' + esc(g.portal.hint) + "</p>" : "") +
         '<div class="notice"><b>The one thing people get wrong:</b> when it asks for the training company, select <b>RLS</b>. ' +
           'That\'s the government-approved partner CA pays through. Your instructor of record with RBLP is still Promote and Lead Solutions.</div>' +
         (ME.funding.caWarnings

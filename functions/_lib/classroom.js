@@ -372,7 +372,14 @@ export function fundingGuidance(source) {
         ],
         link: source === "army_ca"
           ? "https://rblp.com/follow-these-steps-to-use-army-cool-ca/"
-          : "https://rblp.com/follow-these-steps-to-use-air-force-cool-ca/"
+          : "https://rblp.com/follow-these-steps-to-use-air-force-cool-ca/",
+        // The step tells them to upload on their branch's site, so give them the actual door.
+        // RBLP's page explains HOW; these are WHERE. Both, in that order.
+        portal: source === "army_ca"
+          ? { name: "ArmyIgnitED", url: "https://www.armyignited.army.mil/",
+              hint: "Your CA request starts and finishes here. Since March 2026 it also routes your commander's approval." }
+          : { name: "AFVEC", url: "https://afvec.us.af.mil",
+              hint: "Sign in, then Education Programs → AF COOL." }
       };
     case "navy_cool":
       return {

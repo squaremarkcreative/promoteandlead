@@ -158,7 +158,7 @@ check("the CA step points at RBLP's instructions for their branch", /instruction
 check("the student payload carries the branch-specific CA instructions link",
   /rblp\.com\/follow-these-steps-to-use-army/.test(m.funding.guidance.link), m.funding.guidance.link);
 const caPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
-check("the page renders that link as a button", /Open the CA instructions for my branch/.test(caPage));
+check("the page renders the instructions link as a button", /Read the step-by-step/.test(caPage));
 check("and still flags selecting RLS as the training company", /select <b>RLS<\/b>/.test(caPage));
 
 const noDate = await post(action, { action: "pipeline.caSubmitted", data: {} }, student.cookie);
@@ -486,6 +486,23 @@ check("track windows match the locked academy day shapes",
   m.tracks.RBLP.window === "09:00–12:30" && m.tracks["RBLP-C"].window === "09:00–14:30" && m.tracks["RBLP-T"].window === "09:00–15:30");
 check("payback hours still 3 / 4 / 5",
   m.tracks.RBLP.paybackHours === 3 && m.tracks["RBLP-C"].paybackHours === 4 && m.tracks["RBLP-T"].paybackHours === 5);
+
+// The step says "upload on your branch's site", so it has to give them that site. RBLP's page
+// explains HOW; the portal is WHERE. Both, numbered, in that order.
+const gArmy = (await import(`file://${R}/_lib/classroom.js`)).fundingGuidance("army_ca");
+const gAf = (await import(`file://${R}/_lib/classroom.js`)).fundingGuidance("af_ca");
+check("Army students get ArmyIgnitED, on an army.mil domain",
+  gArmy.portal.name === "ArmyIgnitED" && /^https:\/\/www\.armyignited\.army\.mil\//.test(gArmy.portal.url), gArmy.portal);
+check("Air Force students get AFVEC, on an af.mil domain",
+  gAf.portal.name === "AFVEC" && /af\.mil/.test(gAf.portal.url), gAf.portal);
+check("the branches don't get each other's portal", gArmy.portal.url !== gAf.portal.url);
+check("AFVEC tells them where AF COOL actually sits", /Education Programs/.test(gAf.portal.hint));
+check("the instructions still point at RBLP's guide per branch",
+  /rblp\.com\/follow-these-steps-to-use-army/.test(gArmy.link) && /air-force/.test(gAf.link));
+const portalPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("the step offers instructions then portal, numbered",
+  /1\. Read the step-by-step/.test(portalPage) && /2\. Open ' \+ esc\(g\.portal\.name\)/.test(portalPage));
+check("non-CA funding has no portal to open", !(await import(`file://${R}/_lib/classroom.js`)).fundingGuidance("self_pay").portal);
 
 // ---------------------------------------------------------------- who to chase
 section("Acceptance: chase the right people");
