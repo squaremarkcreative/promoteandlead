@@ -836,9 +836,11 @@ function renderPipeline(el) {
       var st = (ME.funding && ME.funding.caStages) || [];
       if (!st.length) return "";
       return '<div class="notice warn-notice"><b>Approval does not release the money. You have to go back and ask for it.</b><br><br>' +
-          'Once your supervisor <b>and</b> the ACO have both approved your goal, you return to ArmyIgnitED and ' +
-          '<b>request the funding</b> as a separate action. Until you do that, nothing is coming and nobody will chase you. ' +
-          'This is the step people wait on forever without realizing it was theirs.</div>' +
+          'Once your supervisor <b>and</b> the ACO have both approved your goal, return to ArmyIgnitED, open your request, ' +
+          'and press <b>Request Funding</b>. It\'s a big button &mdash; you won\'t miss it once you\'re on the page. ' +
+          '<b>If it\'s greyed out, you\'ve already done it</b> and you\'re just waiting.<br><br>' +
+          'The catch is that nothing tells you it\'s your turn. Nobody chases you, and the only nudge is a ' +
+          '&ldquo;you have a new message&rdquo; email that doesn\'t say what for. So go and look.</div>' +
         (ME.funding.caNotifications
           ? '<div class="notice"><b>Watch for the vague emails.</b> ' + esc(ME.funding.caNotifications) + "</div>"
           : "") +

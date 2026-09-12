@@ -956,8 +956,11 @@ export const CA_STAGES = [
   // Credentialing Assistance Program Office) — use what a student actually sees on screen.
   { stage: "ACO approves it", who: "Army credentialing office",
     note: "The Army's credentialing assistance office reviews the goal itself. Nothing for you to do while it sits here." },
+  // The portal is clear about this once you're looking at the request — there's a prominent
+  // Request Funding button, greyed out once you've used it. What isn't obvious is that you have
+  // to go back and look at all, since the only prompt is a contentless "new message" email.
   { stage: "You go back in and request the funding", who: "You", yours: true,
-    note: "THIS IS THE ONE PEOPLE MISS. Approval of the goal does not release any money. Once your supervisor AND the ACO have both approved, you have to return to ArmyIgnitED and actually request the funding. Until you do, nothing is coming." },
+    note: "Approving the goal releases no money. Once your supervisor and the ACO have both approved, go back into ArmyIgnitED, open the request, and press Request Funding — it's a big button, hard to miss once you're on the page. If it's greyed out, you've already done it. The catch is that nothing tells you it's your turn, so you have to go and look." },
   { stage: "Funding is released", who: "Army finance",
     note: "The slow part, and it happens after everything above — one of our students waited about two and a half weeks. Approved is still not funded, and you shouldn't start the course until it is." },
   { stage: "RBLP tells us it's funded", who: "RBLP",

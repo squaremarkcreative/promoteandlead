@@ -1308,7 +1308,10 @@ check("approved and funded are separated, with the observed lag",
 check("requesting the funding is shown as a separate step, and as the student's own",
   m.funding.caStages.some((x) => /request the funding/i.test(x.stage) && x.yours === true));
 check("it says plainly that approval releases nothing",
-  m.funding.caStages.some((x) => /does not release any money/i.test(x.note)));
+  m.funding.caStages.some((x) => /releases no money/i.test(x.note)));
+// A student can check whether they already did it: the button greys out once used.
+check("and gives them a way to tell if they've already done it",
+  m.funding.caStages.some((x) => /greyed out/i.test(x.note) && /already done it/i.test(x.note)));
 check("creating the goal is distinguished from requesting funding",
   m.funding.caStages.some((x) => /create the goal/i.test(x.stage) && /not yet a funding request/i.test(x.note)));
 check("and ArmyIgnitED's uninformative emails are called out",
