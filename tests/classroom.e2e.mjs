@@ -481,6 +481,34 @@ m = await (await get(me, student.cookie)).json();
 check("student sees 4.0 of 4 hours", m.hours.attendedHours === 4 && m.hours.percent === 100, m.hours);
 check("pipeline: attend now done", m.pipeline.steps.find(s=>s.key==="attend").done === true);
 
+// During a live session the answers are what get worked on, so a student shouldn't have to
+// leave the cohort tab to sharpen one while the instructor drives it out.
+section("Cohort: prep work to hand, without leaving the room");
+const cnPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("the cohort tab opens their own notes", /function cohortNotesHtml/.test(cnPage) &&
+  /cohortNotesHtml\(\);/.test(cnPage));
+check("one module at a time, picked by button", /data-cnote="' \+ m\.num/.test(cnPage));
+check("with the same ready count as everywhere else", /'<span class="jump-n">' \+ ready \+ "\/"/.test(cnPage));
+check("the open module is marked out from the rest",
+  /m\.num === COHORT_MOD \? "btn-gold"/.test(cnPage));
+check("nothing is open until they pick one", /Pick a module above to open your notes/.test(cnPage));
+check("and it can be closed again", /data-cnote="0">Close/.test(cnPage));
+check("the notes are the real editable task cards, so they autosave",
+  /shown\.tasks\.map\(function \(t\) \{ return taskHtml\(t\); \}\)/.test(cnPage) &&
+  /\$\$\("\.task", el\)\.forEach\(wireTask\)/.test(cnPage));
+check("locked prep work isn't offered here either", /if \(!ME\.worksheets\.unlocked\) return ""/.test(cnPage));
+check("the notebar isn't a second sticky bar competing with the header",
+  /\.notebar\{display:flex/.test(cnPage) && !/\.notebar\{position:sticky/.test(cnPage));
+
+// Two bugs this surfaced, both about a redraw showing something other than the truth.
+check("autosave updates the in-memory copy, so switching module shows what was just typed",
+  /cacheResponse\(payload\)/.test(cnPage) && /function cacheResponse/.test(cnPage));
+check("advancing works on the panel they're looking at, not a hidden one",
+  /\$\('\.panel\[data-panel="' \+ ACTIVE \+ '"\]'\)/.test(cnPage) &&
+  !/\$\('\.panel\[data-panel="worksheets"\]'\)/.test(cnPage));
+check("so it advances within the module on screen rather than jumping off it",
+  /var nodes = \$\$\("\.task", el\)/.test(cnPage));
+
 // ---------------------------------------------------------------- teaching coverage
 // The instructor's Done ticks used to live in localStorage, so they were stranded on whichever
 // device did the ticking. They belong to the instructor, not to the room: students never see them.
@@ -1628,8 +1656,9 @@ check("marking ready moves to the next unfinished task", /else advanceFrom\(key\
 check("Save draft does not move them — they're still writing",
   /if \(btn\.dataset\.save === "draft"\) flash\("Saved\."\)/.test(asPage));
 check("the next task is spotlit so they can see where they landed", /classList\.add\("spotlight"\)/.test(asPage));
-check("finishing the last task says so rather than jumping nowhere",
-  /every task on your track marked ready/.test(asPage));
+// Scoped to what's on screen: the cohort tab shows one module, the worksheets tab shows all.
+check("finishing the last task on screen says so rather than jumping nowhere",
+  /every task here marked ready/.test(asPage));
 // The instructor sinks covered tasks because they only care what's left to teach. A student
 // reviewing before the oral must not have their own answers shuffled under them.
 check("the student's tasks stay in module order, unlike the teaching view",

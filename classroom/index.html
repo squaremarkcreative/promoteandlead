@@ -101,6 +101,8 @@
   .jump{position:sticky;top:var(--hdr,64px);z-index:15;display:flex;align-items:center;gap:.4rem;
     margin:0 0 .8rem;padding:.55rem .6rem;background:var(--ink3);border:1px solid var(--border);
     border-radius:12px;overflow-x:auto;scrollbar-width:thin}
+  .notebar{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.9rem}
+  .notebar button{flex:none}
   .jump-h{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;flex:none;padding:0 .3rem}
   .jump button{flex:none;white-space:nowrap}
   .jump-n{opacity:.75;font-weight:600;margin-left:.3rem}
@@ -1271,24 +1273,23 @@ function openModule(el, num, taskKey) {
 // only care what's left to teach, but a student has to read back through their own answers in
 // module order before the oral, and shuffling their writing around mid-review would fight that.
 function advanceFrom(taskKey) {
-  var el = $('.panel[data-panel="worksheets"]');
+  var el = $('.panel[data-panel="' + ACTIVE + '"]');
   if (!el) return;
-  var flat = [];
-  ME.worksheets.modules.forEach(function (m) {
-    m.tasks.forEach(function (t) { flat.push({ num: m.num, task: t }); });
-  });
+  var nodes = $$(".task", el);
   var at = -1;
-  for (var i = 0; i < flat.length; i++) if (flat[i].task.key === taskKey) { at = i; break; }
+  for (var i = 0; i < nodes.length; i++) if (nodes[i].dataset.task === taskKey) { at = i; break; }
   if (at < 0) return;
-  var order = flat.slice(at + 1).concat(flat.slice(0, at));
+  var order = nodes.slice(at + 1).concat(nodes.slice(0, at));
   for (var j = 0; j < order.length; j++) {
-    var r = order[j].task.response;
-    if (!r || (r.status !== "ready" && r.status !== "expanded")) {
-      openModule(el, order[j].num, order[j].task.key);
+    var st = order[j].dataset.status;
+    if (st !== "ready" && st !== "expanded") {
+      var d = order[j].closest("details.mod");
+      if (d && !d.open) d.open = true;
+      spotlight(order[j]);
       return;
     }
   }
-  flash("That's every task on your track marked ready. Print your exam sheet and review.");
+  flash("That's every task here marked ready. Print your exam sheet and review.");
 }
 
 function firstIncompleteModule() {
@@ -1338,6 +1339,22 @@ function taskHtml(t) {
 var SAVE_TIMERS = {};
 var DIRTY = {};
 var SKIP_BLUR = {};
+
+// Keep the in-memory copy in step with what was just saved, so any redraw — switching module
+// on the cohort tab, changing tabs — shows the current text rather than the last full fetch.
+function cacheResponse(payload) {
+  ((ME.worksheets && ME.worksheets.modules) || []).forEach(function (m) {
+    (m.tasks || []).forEach(function (t) {
+      if (t.key !== payload.task_key) return;
+      t.response = t.response || {};
+      ["what", "why", "life", "story", "notdo", "plan"].forEach(function (f) {
+        t.response[f] = payload[f] || "";
+      });
+      t.response.status = payload.status;
+      t.response.updatedAt = new Date().toISOString();
+    });
+  });
+}
 
 function draftKey(taskKey) { return "pl_draft_" + (ME.profile.id || "x") + "_" + taskKey; }
 
@@ -1395,6 +1412,7 @@ async function autosave(node) {
     delete DIRTY[payload.task_key];
     try { localStorage.removeItem(draftKey(payload.task_key)); } catch (e) {}
     SAVED_ONCE = true;
+    cacheResponse(payload);
     node.dataset.updated = new Date().toISOString();
     refreshBadge(node, payload.status);
     setSaveState(node, "Saved " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), "saved");
@@ -1543,9 +1561,12 @@ function renderCohort(el) {
         : "The password for " + esc(ME.modulePassword.yearMonth) + " hasn't been posted yet.") + "</div>" +
       '<div class="row">' + ME.worksheets.modules.map(function (m) {
         return '<a class="btn btn-ghost btn-sm" href="' + esc(m.url) + '" target="_blank" rel="noopener">Module ' + m.num + " — " + esc(m.title) + "</a>";
-      }).join("") + "</div></div>";
+      }).join("") + "</div></div>" +
+
+    cohortNotesHtml();
 
   wireGo(el);
+  wireCohortNotes(el);
   var copy = $("#copyTeams", el);
   if (copy) copy.addEventListener("click", function () {
     navigator.clipboard.writeText(c.teamsUrl).then(function () { flash("Teams link copied."); });
@@ -1745,6 +1766,7 @@ function runOfDayHtml(blocks, opts) {
 // /api/classroom/me by design; ticking a task off is a note to self, not a signal to the room.
 var COVERED = {};
 var COVERED_COHORT = null;
+var COHORT_MOD = null;   // which module's notes are open on the cohort tab
 var TG_OPEN = null;   // module numbers the instructor has expanded; null = first-visit default
 
 function tgOpenModules(el) {
@@ -2358,6 +2380,46 @@ function renderAdmin(el) {
 
 // Cohorts had to be created in the separate CRM, which meant the journey could promise
 // "we put you in a cohort" with nowhere here to do it.
+// During a live session the answers are what get worked on — the instructor drives one out, the
+// student sharpens theirs. Sending them to another tab to do it loses the thread of the room, so
+// their own notes open here, one module at a time, and save as they type like anywhere else.
+function cohortNotesHtml() {
+  if (!ME.worksheets.unlocked) return "";
+  var mods = ME.worksheets.modules || [];
+  if (!mods.length) return "";
+  var shown = mods.filter(function (m) { return m.num === COHORT_MOD; })[0] || null;
+
+  return '<div class="box no-print"><h3>My prep work, to hand</h3>' +
+    '<p class="muted">Your own answers, open right here. As we drive out an answer together you can ' +
+      'sharpen yours on the spot &mdash; it saves as you type, and you never leave the cohort.</p>' +
+    '<div class="notebar">' + mods.map(function (m) {
+      var ready = readyCount(m), done = ready === m.tasks.length;
+      return '<button class="btn btn-sm ' +
+        (m.num === COHORT_MOD ? "btn-gold" : done ? "btn-green" : "btn-ghost") +
+        '" data-cnote="' + m.num + '" title="Module ' + m.num + " — " + esc(m.title) + '">M' + m.num +
+        '<span class="jump-n">' + ready + "/" + m.tasks.length + "</span></button>";
+    }).join("") +
+      (shown ? '<button class="btn btn-ghost btn-sm" data-cnote="0">Close</button>' : "") +
+    "</div>" +
+    (shown
+      ? '<p class="muted" style="margin-top:.8rem"><b class="soft">Module ' + shown.num + " &mdash; " +
+          esc(shown.title) + '</b> &middot; ' + esc(shown.theme) + "</p>" +
+        shown.tasks.map(function (t) { return taskHtml(t); }).join("")
+      : '<p class="muted" style="margin-top:.8rem">Pick a module above to open your notes for it.</p>') +
+    "</div>";
+}
+
+function wireCohortNotes(el) {
+  $$("[data-cnote]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var n = Number(b.dataset.cnote);
+      COHORT_MOD = n === COHORT_MOD || !n ? null : n;
+      renderCohort(el);
+    });
+  });
+  $$(".task", el).forEach(wireTask);
+}
+
 function renderCohortCreate() {
   return '<div class="box"><h3>Cohorts</h3>' +
     '<p class="muted">The Saturday you pick becomes the session &mdash; 09:00 to 15:30 Central, the standard day. ' +
