@@ -707,9 +707,7 @@ function renderPipeline(el) {
           'Credentialing Assistance system, so CA pays them. Promote and Lead delivers your training in partnership with RLS &mdash; that\'s ' +
           'why theirs is the name on the funding request and ours is the name on your instruction.<br><br>' +
           'With <b>RBLP</b>, your instructor of record stays <b>Promote and Lead Solutions, LLC</b>. And RLS will appear on your completion ' +
-          'certificate as well, so it matches the request your CA office funded.<br><br>' +
-          'If your education counselor questions the two names, email <a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> ' +
-          'and we\'ll send them what they need.</div>' +
+          'certificate as well, so it matches the request your CA office funded.</div>' +
         (ME.funding.caWarnings
           ? '<h4 class="warn-h">Before you file &mdash; the things that bounce packets</h4><ul class="warnlist">' +
             ME.funding.caWarnings.map(function (w) {
@@ -1664,10 +1662,13 @@ function renderAdmin(el) {
   });
   $$("[data-adv]", el).forEach(function (b) {
     b.addEventListener("click", function () {
-      var parts = b.dataset.adv.split("|");
+      if (b.disabled) return;
+      b.disabled = true;                       // a second click before the re-render lands
+      var parts = b.dataset.adv.split("|");    // would otherwise fire the same mark twice
       var on = parts[2] === "1";
       run(function () { return api("student.advance", { id: parts[0], step: parts[1], done: on }); },
-        on ? "Marked — the student has been emailed." : "Unmarked.");
+        on ? "Marked — the student has been emailed." : "Unmarked.")
+        .then(function () { b.disabled = false; });
     });
   });
 }

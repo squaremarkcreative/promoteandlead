@@ -71,8 +71,9 @@ export async function onRequestPost(context) {
       // They can't self-mark `paid` — that's still money, and money is confirmed, not claimed.
       case "pipeline.claimPurchase": {
         const when = data.done === false ? null : new Date().toISOString();
+        const alreadyClaimed = !!me.purchase_claimed_at;
         await db.patch("pl_students", `id=eq.${me.id}`, { purchase_claimed_at: when });
-        if (when) {
+        if (when && !alreadyClaimed) {
           await sendEmail(env, {
             to: env.NOTIFY_TO || "info@promoteandlead.com",
             subject: `Says they've already purchased — ${me.email}`,
@@ -262,10 +263,18 @@ export async function onRequestPost(context) {
         if (!rows.length) return json({ error: "No such student." }, 404);
         const who = rows[0];
 
+        // Marking a step that's ALREADY marked must not send the notification again. Two quick
+        // clicks both read the button as "not yet done" — the re-render hasn't landed — and the
+        // student gets the same congratulations twice. The guard lives here rather than in the
+        // UI so it holds however the call arrives.
+        const existing = await db.select("pl_pipeline_events",
+          `select=completed_at&student_id=eq.${who.id}&step=eq.${encodeURIComponent(step)}&limit=1`);
+        const alreadyDone = !!(existing.length && existing[0].completed_at);
+
         await setPipelineEvent(db, who.id, step, data.done !== false);
 
         let emailed = false;
-        if (data.done !== false && data.notify !== false) {
+        if (data.done !== false && data.notify !== false && !alreadyDone) {
           const note = ADMIN_STEPS[step](who);
           emailed = await sendEmail(env, {
             to: who.email,
@@ -274,7 +283,7 @@ export async function onRequestPost(context) {
             text: note.text
           });
         }
-        return json({ ok: true, emailed });
+        return json({ ok: true, emailed, alreadyDone });
       }
 
       case "student.unlock": {

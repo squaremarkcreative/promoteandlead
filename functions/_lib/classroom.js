@@ -373,7 +373,6 @@ export function fundingGuidance(source) {
           "**Resilient Leadership Solutions (RLS)** is an RBLP Authorized Training Partner and the approved vendor registered in the Credentialing Assistance system. CA pays RLS. Promote and Lead delivers your training in partnership with them, which is why RLS is the company name on your funding request.",
           "**Promote and Lead Solutions, LLC (PLS)** is your instructor of record with RBLP. That's the name to give RBLP, and it's who you'll actually be in the room with.",
           "You'll see RLS on your completion certificate too, for the same reason — that's the name your CA office is expecting to match against the request they funded.",
-          "If your education counselor queries the two names, email info@promoteandlead.com and we'll send them whatever they need.",
           "Once your CA request is approved, come back here and continue your enrollment."
         ],
         link: source === "army_ca"

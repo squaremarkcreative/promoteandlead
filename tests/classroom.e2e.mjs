@@ -171,8 +171,8 @@ check("it separates who gets paid from who teaches",
   /who the government pays/.test(JSON.stringify(guidanceCA)) && /instructor of record/.test(caPage));
 check("it warns the same name appears on the certificate, so that isn't a surprise",
   /completion\s*\n?\s*'? ?\+? ?'?certificate as well/.test(caPage) || /certificate as well/.test(caPage));
-check("and offers to answer the education counselor directly",
-  /education counselor questions the two names/.test(caPage));
+check("the explanation stands on its own, without an escalation footnote",
+  !/education counselor/i.test(caPage));
 
 const noDate = await post(action, { action: "pipeline.caSubmitted", data: {} }, student.cookie);
 check("filing with CA requires the date — the 45-day clock runs from it", noDate.status === 400);
@@ -704,6 +704,37 @@ check("an instructor who IS enrolled keeps their own student tabs",
 const plainStudent = keysOf(tabFn({ ME: { cohort: null, profile: { role: "student" } }, CONSOLE: null }));
 check("a student with no cohort yet still sees their own journey",
   plainStudent.includes("home") && plainStudent.includes("pipeline") && !plainStudent.includes("teaching"), plainStudent);
+
+// ---------------------------------------------------------------- no duplicate notifications
+section("Acceptance: marking a step twice doesn't email twice");
+const dupStudent = await signIn("dup.check@example.com");
+await post(action, { action: "profile.save", data: { display_name: "Dee Check", track: "RBLP" } }, dupStudent.cookie);
+await post(action, { action: "funding.choose", data: { source: "army_ca" } }, dupStudent.cookie);
+const dupId = DB.pl_students.find((x) => x.email === "dup.check@example.com").id;
+
+const dupBefore = SENT.length;
+const first = await (await post(action, { action: "student.advance", data: { id: dupId, step: "rblp_received" } }, boss.cookie)).json();
+check("the first mark emails the student", first.emailed === true && SENT.length === dupBefore + 1, first);
+
+const second = await (await post(action, { action: "student.advance", data: { id: dupId, step: "rblp_received" } }, boss.cookie)).json();
+check("marking it again does NOT email again", second.emailed === false && SENT.length === dupBefore + 1, second);
+check("and the API says why", second.alreadyDone === true);
+check("the step is still marked done", !!DB.pl_pipeline_events.find((e) => e.student_id === dupId && e.step === "rblp_received"));
+
+// Unmark then re-mark is a real correction, and should notify again.
+await post(action, { action: "student.advance", data: { id: dupId, step: "rblp_received", done: false } }, boss.cookie);
+const redo = await (await post(action, { action: "student.advance", data: { id: dupId, step: "rblp_received" } }, boss.cookie)).json();
+check("unmarking and re-marking does email again — that's a genuine correction", redo.emailed === true, redo);
+
+// Same class of bug on the student side: re-ticking "I already bought it" shouldn't re-notify.
+const claimer = await signIn("dup.buyer@example.com");
+const cBefore = SENT.length;
+await post(action, { action: "pipeline.claimPurchase", data: {} }, claimer.cookie);
+await post(action, { action: "pipeline.claimPurchase", data: {} }, claimer.cookie);
+check("claiming a purchase twice only notifies once", SENT.length === cBefore + 1, SENT.length - cBefore);
+
+const advPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("the button also guards against a double-click", /if \(b\.disabled\) return;/.test(advPage));
 
 // ---------------------------------------------------------------- admin is one person
 section("Acceptance: only the company owner is admin");
