@@ -1243,6 +1243,23 @@ check("the site no longer writes CA off as enlisted-only", !/enlisted benefit/.t
 check("Air Force is described on its own terms, not Army's",
   /AF COOL is a Total Force/.test(site) && /E7&ndash;E9/.test(site));
 
+// The CA form demands a course start date the student can't know — they aren't placed until
+// funding lands. So hand them valid dates and say plainly it isn't a commitment.
+const { eligibleCourseDates: eligible, CA_WINDOW: win } = await import(`file://${R}/_lib/curriculum.js`);
+const dates = eligible("2026-09-12");
+check("every suggested date is a Saturday",
+  dates.saturdays.every((d) => new Date(d + "T12:00:00Z").getUTCDay() === 6), dates.saturdays);
+check("none is sooner than the lead time", dates.saturdays.every((d) => d >= dates.earliest), [dates.earliest, dates.saturdays[0]]);
+check("none is beyond the outer limit", dates.saturdays.every((d) => d <= dates.latest));
+check("the window is the published 45 to 90 days", win.minDays === 45 && win.maxDays === 90);
+check("dates that only work on calendar-day counting are flagged separately",
+  dates.tightUntil > dates.earliest && dates.saturdays.some((d) => d < dates.tightUntil) && dates.saturdays.some((d) => d >= dates.tightUntil));
+check("CA students get the list", Array.isArray(m.funding.courseDates && m.funding.courseDates.saturdays));
+check("non-CA students don't", (await (await get(me, payer.cookie)).json()).funding.courseDates === null);
+const datePage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("and it says outright the date isn't their cohort",
+  /will not be your cohort date/.test(datePage) && /not a commitment/.test(datePage));
+
 // The wait between filing and funding is the longest dead stretch in the journey. Naming the
 // stages turns "nothing is happening" into "here is where it is".
 check("CA students are shown what happens during the wait",

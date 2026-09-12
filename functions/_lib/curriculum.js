@@ -948,3 +948,36 @@ export const CA_STAGES = [
   { stage: "RBLP tells us it's funded", who: "RBLP",
     note: "We open your prep work the moment that lands, and email you." }
 ];
+
+// ---------------------------------------------------------------- picking a course date
+//
+// The CA form demands a course start date, and the student cannot know theirs — they aren't
+// placed in a cohort until the funding lands. The portal also refuses anything sooner than the
+// lead time. So they sit stuck on a field they have no answer for.
+//
+// The answer is that the date is a placeholder: pick any Saturday inside the allowed window so
+// the request can be filed. It doesn't bind them to that date, and it isn't their cohort.
+export const CA_WINDOW = { minDays: 45, maxDays: 90 };
+
+export function eligibleCourseDates(today) {
+  const from = today ? new Date(today + "T12:00:00Z") : new Date();
+  const day = (n) => {
+    const d = new Date(from.getTime());
+    d.setUTCDate(d.getUTCDate() + n);
+    return d;
+  };
+  const earliest = day(CA_WINDOW.minDays);
+  const latest = day(CA_WINDOW.maxDays);
+
+  const saturdays = [];
+  for (let d = new Date(earliest.getTime()); d <= latest; d.setUTCDate(d.getUTCDate() + 1)) {
+    if (d.getUTCDay() === 6) saturdays.push(d.toISOString().slice(0, 10));
+  }
+  return {
+    earliest: earliest.toISOString().slice(0, 10),
+    latest: latest.toISOString().slice(0, 10),
+    saturdays,
+    // The first couple are only safe if the office counts calendar days; flag them.
+    tightUntil: day(Math.round(CA_WINDOW.minDays * 1.45)).toISOString().slice(0, 10)
+  };
+}
