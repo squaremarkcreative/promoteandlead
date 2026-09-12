@@ -34,7 +34,14 @@
   tr:hover td{background:var(--surface)}
   .rank{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.88rem}
   .rank b{color:var(--gold2)}
-  input,select,textarea{font-family:inherit;font-size:.88rem;color:var(--cream);background:var(--ink2);border:1px solid var(--bstrong);border-radius:9px;padding:.5rem .7rem;outline:none;width:100%}
+  input,select,textarea{font-family:inherit;font-size:.88rem;color:var(--cream);background:var(--ink2);border:1px solid var(--bstrong);border-radius:9px;padding:.5rem .7rem;outline:none;width:100%;color-scheme:dark}
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator{
+    filter:invert(1) sepia(1) saturate(5) hue-rotate(5deg);
+    opacity:.9;cursor:pointer;padding:.25rem;border-radius:6px;transition:background .15s,opacity .15s}
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover{
+    opacity:1;background:rgba(200,164,21,.28)}
   input:focus,select:focus,textarea:focus{border-color:var(--gold)}
   textarea{resize:vertical;min-height:120px}
   .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1rem;border-radius:9px;border:1px solid transparent;font-weight:600;font-size:.85rem;cursor:pointer;font-family:inherit}

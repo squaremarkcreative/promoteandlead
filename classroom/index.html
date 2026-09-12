@@ -38,7 +38,18 @@
   .card .l{font-size:.72rem;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
   @media(max-width:760px){.grid2{grid-template-columns:1fr}}
 
-  input,select,textarea{font-family:inherit;font-size:.9rem;color:var(--cream);background:var(--ink2);border:1px solid var(--bstrong);border-radius:9px;padding:.55rem .7rem;outline:none;width:100%}
+  /* Tells the browser to render native controls — date pickers, dropdowns, scrollbars — for a
+     dark UI. Without it the calendar glyph is drawn near-black on our near-black field. */
+  input,select,textarea{font-family:inherit;font-size:.9rem;color:var(--cream);background:var(--ink2);border:1px solid var(--bstrong);border-radius:9px;padding:.55rem .7rem;outline:none;width:100%;color-scheme:dark}
+  /* And make the picker button an obvious target rather than a faint glyph. */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator{
+    filter:invert(1) sepia(1) saturate(5) hue-rotate(5deg);
+    opacity:.9;cursor:pointer;padding:.25rem;margin-right:-.15rem;border-radius:6px;transition:background .15s,opacity .15s}
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover{
+    opacity:1;background:rgba(200,164,21,.28)}
+  input[type="date"]:focus-within{border-color:var(--gold)}
   input:focus,select:focus,textarea:focus{border-color:var(--gold)}
   textarea{resize:vertical;min-height:74px}
   label.fld{display:block;margin-bottom:.7rem}
