@@ -717,7 +717,7 @@ function renderPipeline(el) {
         '<label class="row check"><input type="checkbox" id="pInvoice">' +
         "<span>I've received my training invoice from RBLP.</span></label>" +
         '<div class="notice"><b>Nothing after a week?</b> RBLP issues these, so they\'re the fastest people to ask &mdash; ' +
-          'chasing through us just adds a day. Check your spam folder first, then contact them directly:<br>' +
+          'going through us just adds a day. Check your spam folder first, then contact them directly:<br>' +
           '<a href="mailto:' + esc(r.email) + '?subject=' + encodeURIComponent("RBLP invoices for Credentialing Assistance") + '">' + esc(r.email) + '</a>' +
           (r.phone ? ' &middot; ' + esc(r.phone) : "") +
           (r.hours ? '<br><span class="muted">' + esc(r.hours) + (r.expect ? " &middot; " + esc(r.expect) : "") + "</span>" : "") +
@@ -990,7 +990,7 @@ function modulesAccessHtml() {
         '<div class="access-row"><code id="mpVal">' + esc(mp.password) + "</code>" +
           '<button class="btn btn-ghost btn-sm" id="mpCopy">Copy</button></div>'
       : '<p class="muted">This month\'s password hasn\'t been posted yet. Email ' +
-        '<a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> and we\'ll sort it straight away.</p>') +
+        '<a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> and we\'ll fix it right away.</p>') +
     '<div class="row" style="margin-top:.8rem"><a class="btn btn-gold btn-sm" href="https://rblp.com/exam-prep-training/" target="_blank" rel="noopener">Open the modules on rblp.com &rarr;</a></div>' +
     '<p class="muted" style="margin-top:.6rem">Opens in a new tab, so your drafts stay put. Read your module there, then come back and write your answers in your own words.</p>' +
     "</div>";
@@ -1262,7 +1262,7 @@ function renderCohort(el) {
 
 /* ------------------------------------------------------------------ exam */
 // Oral length is per track — RBLP 1.5h, Coach 2h, Trainer 2.5h. This used to be hardcoded to
-// the Trainer number, which told every RBLP student to expect an hour more than they'll sit.
+// the Trainer number, which told every RBLP student to expect an hour more than they'll actually be in.
 function examLength(track) {
   var h = ME.tracks[track] && ME.tracks[track].examHours;
   return h ? (h === 1 ? "1 hour" : h + " hours") : "1.5 hours";
@@ -1278,7 +1278,7 @@ function renderExam(el) {
         "<li>Finish your worksheets and print your exam sheet (glossary + your stories).</li>" +
         '<li>Schedule your exam with RBLP. <a href="https://rblp.com/leadership-certifications/schedule-exam/" target="_blank" rel="noopener">Schedule exam →</a></li>' +
         "<li>Tell us the date — we notify the ATP so your file is ready.</li>" +
-        "<li>Sit the exam. " + esc(p.track) + " orals run about <b>" + examLength(p.track) +
+        "<li>Take the exam. " + esc(p.track) + " orals run about <b>" + examLength(p.track) +
           "</b>; you'll be told at the end when results are released. Your confirmation from RBLP is the authority.</li>" +
         "<li>Let us know how it went — and if you'd share a short review, it helps the next cohort.</li>" +
       "</ol>" +
@@ -1317,7 +1317,7 @@ function renderExam(el) {
       '<div class="box"><h3>Exam-day mindset</h3><ul class="tick soft">' +
         (ME.study.exam.mindset || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") +
       '</ul></div>' +
-      '<div class="box"><h3>Before you sit it</h3><ul class="tick soft">' +
+      '<div class="box"><h3>Before you take it</h3><ul class="tick soft">' +
         (ME.study.exam.checklist || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") +
       '</ul>' +
       (ME.study.exam.note ? '<p class="muted" style="margin-top:.7rem">' + esc(ME.study.exam.note) + '</p>' : '') +

@@ -84,7 +84,7 @@ export const JOURNEY = [
       // funding covered everything, then discover the exam isn't paid for.
       { key: "ca_exam",   owner: "you",  title: "File your second CA request — for the exam", titleDone: "Exam funding requested", only: "CA",
         blurb: "With your certificate issued, RBLP can invoice for the exam — and your training grade posting is what lets you open the second CA goal. Two separate requests by design; they could never have been filed together." },
-      { key: "exam",      owner: "you",  title: "Schedule and sit your RBLP oral exam", titleDone: "Exam scheduled",
+      { key: "exam",      owner: "you",  title: "Schedule and take your RBLP oral exam", titleDone: "Exam scheduled",
         blurb: "The exam is with RBLP, not with us. Your prepared answers stay here for you to rehearse from." },
       { key: "certified", owner: "rblp", title: "Waiting on RBLP to award your credential", titleDone: "You're RBLP certified",
         blurb: "That's it — you're certified." }

@@ -570,6 +570,16 @@ check("no British spellings in the copy",
   !/\bprogramme\b|\borganis[a-z]*|\brecognis[a-z]*|\bwhilst\b|\bamongst\b/i.test(allCopy),
   (allCopy.match(/\bprogramme\b|\borganis[a-z]*|\brecognis[a-z]*|\bwhilst\b|\bamongst\b/gi) || []).slice(0, 5));
 check("invoices are issued or sent, never 'raised'", !/RBLP raise|raise (an |the )?invoice/i.test(allCopy));
+// Spelling isn't the whole problem — idiom gives it away just as fast.
+const briticisms = [
+  [/\bsit (the|an|your|for the) exam/i, "sit the exam (US: take the exam)"],
+  [/\bstraight away\b/i, "straight away (US: right away)"],
+  [/\bsort it\b/i, "sort it (US: fix it)"],
+  [/\bkicked back\b/i, "kicked back (US: sent back / rejected)"],
+  [/\bwhilst\b|\bamongst\b|\bfortnight\b|\bmaths\b/i, "assorted"]
+];
+const found = briticisms.filter(([re]) => re.test(allCopy)).map(([, label]) => label);
+check("no British idiom in the copy — the audience is US military", found.length === 0, found);
 
 check("the old 'email us and we'll chase it' copy is gone",
   !/Email <a href="mailto:info@promoteandlead\.com">info@promoteandlead\.com<\/a> and we\\'ll chase it/.test(chasePage));

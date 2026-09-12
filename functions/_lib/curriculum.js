@@ -323,7 +323,7 @@ export const COACHING = {
     ask: "Who at work actually knew what you were trying to build, and what difference did that make?"
   },
   m3_individual_learning: {
-    open: "Learning sticks when it's applied straight away. Separate constructive feedback from criticism — one improves performance, the other just lands on the person.",
+    open: "Learning sticks when it's applied right away. Separate constructive feedback from criticism — one improves performance, the other just lands on the person.",
     model: "Tommy: I'd send a counselor to a class and put them on a real case that week. The ones who waited a month to use it had lost most of it.",
     ask: "What's something you were trained on and never used? What happened to it?"
   },
@@ -500,7 +500,7 @@ export const EXAM_FACTS = {
   // so plainly beats a student discovering it in a results email.
   retake: {
     lead: "If you don't pass, it isn't the end of it.",
-    detail: "A second attempt is a one-hour exam covering what you missed, booked no sooner than 30 days and no later than 90 days after your first. RBLP charges for it. If that one doesn't go your way either, you can sit the full exam again after a year.",
+    detail: "A second attempt is a one-hour exam covering what you missed, booked no sooner than 30 days and no later than 90 days after your first. RBLP charges for it. If that one doesn't go your way either, you can take the full exam again after a year.",
     ours: "Tell us either way. We'll go back over the domains you missed with you before the retake — that's included."
   },
   fees: "Reschedule at least three days out. Inside that, RBLP charges a reschedule fee, and a no-show costs more again."
@@ -521,7 +521,7 @@ export const EXAM_BOOKING = [
 
 export const EXAM_PREP = {
   // The last four come from what RBLP publish about their own exams and what certified
-  // candidates say about sitting them — it's a live conversation over video with an examiner
+  // candidates say about taking them — it's a live conversation over video with an examiner
   // who is explicitly trying to keep it relaxed, and they're assessing how you think and
   // communicate, not just what you can recall. Students arrive expecting an interrogation;
   // saying otherwise up front takes a lot of the fear out of it.
@@ -846,7 +846,7 @@ const CA_WARNINGS_SHARED = [
 ];
 
 const CA_WARNINGS_ARMY = [
-  { rule: "You must sit the exam, or repay the training", detail: "CA funds the course on the condition you take the credential exam. Don't sit it and the Army recoups what it paid for your training. Two recoupments across TA and CA in the same fiscal year suspends you from both for 12 months." },
+  { rule: "You must take the exam, or repay the training", detail: "CA funds the course on the condition you take the credential exam. Skip it and the Army recoups what it paid for your training. Two recoupments across TA and CA in the same fiscal year suspends you from both for 12 months." },
   { rule: "180 days to open the exam request", detail: "Once you pass the course, the clock starts when your grade posts — you have 180 days from that date to submit the exam funding request. Miss it and you're paying for the exam yourself." },
   { rule: "One credential a fiscal year", detail: "CA is capped at one credential per fiscal year, and the course and exam together count as that one credential. Worth knowing before you plan a second." },
   { rule: "The company field is a search box, and you must type the full name", detail: "Nothing on screen says it's searchable. The list is alphabetical and only loads the first stretch of partners, so scrolling never reaches us. Searching \"RLS\" also finds nothing — the vendor is listed under its full name. Type Resilient Leadership Solutions, starting with Resilient, and it appears. This is the step people give up on, assuming we aren't an approved vendor." },
