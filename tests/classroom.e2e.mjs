@@ -151,9 +151,23 @@ check("student confirms the invoices themselves — RBLP emails those to them", 
 // The step has to hand the student that link — telling them to "send it to their CA office"
 // describes something they never do.
 const caStep = m.pipeline.steps.find((st) => st.key === "ca_submitted");
-check("the CA step describes uploading to the portal, not posting to an office",
-  /upload/i.test(caStep.title + " " + caStep.blurb) && !/send .*office/i.test(caStep.title + " " + caStep.blurb),
-  caStep.title);
+check("the CA step is filed on the portal, not posted to an office",
+  !/send .*office|mail/i.test(caStep.title + " " + caStep.blurb), caStep.title);
+// Two goals, sequential — the exam request can't be opened until the course grade posts.
+check("the CA step is explicitly the TRAINING request only",
+  /training/i.test(caStep.title) && /separate goals?/i.test(caStep.blurb), caStep.title);
+const caExam = m.pipeline.steps.find((st) => st.key === "ca_exam");
+check("there's a later step for the exam funding request", !!caExam, m.pipeline.steps.map((x) => x.key));
+check("and it sits after the training certificate",
+  m.pipeline.steps.findIndex((x) => x.key === "ca_exam") > m.pipeline.steps.findIndex((x) => x.key === "certificate"));
+check("non-CA students never see it",
+  !(await import(`file://${R}/_lib/classroom.js`)).stepsForRoute("Normal")
+    .flatMap((ph) => ph.steps).some((x) => x.key === "ca_exam"));
+// RBLP only invoice for the exam once the certificate proves the course happened.
+const invStep = m.pipeline.steps.find((st) => st.key === "invoice");
+check("the invoice step expects ONE invoice, for the training",
+  /training invoice/i.test(invStep.title) && !/two invoices/i.test(invStep.title), invStep.title);
+check("and explains why the exam invoice isn't there yet", /completion certificate/i.test(invStep.blurb));
 check("the CA step points at RBLP's instructions for their branch", /instructions/i.test(caStep.blurb));
 check("the student payload carries the branch-specific CA instructions link",
   /rblp\.com\/follow-these-steps-to-use-army/.test(m.funding.guidance.link), m.funding.guidance.link);
@@ -1240,8 +1254,14 @@ check("Air Force students do NOT get Army rank language",
 check("Air Force students get their own enlisted / SNCO framing",
   af.some((w) => /enlisted/i.test(w.detail) && /E7–E9/.test(w.detail)));
 check("both still get the shared packet warnings",
-  ["Two separate requests", "The vendor name has to match exactly"].every((r) =>
-    army.some((w) => w.rule === r) && af.some((w) => w.rule === r)));
+  ["Two requests, one after the other", "The vendor name has to match exactly"].every((r) =>
+    army.some((w) => w.rule === r) && af.some((w) => w.rule === r)),
+  army.map((w) => w.rule));
+// Consequences a student can't discover any other way until it costs them.
+check("Army students are warned they must sit the exam or repay the training",
+  army.some((w) => /repay the training/i.test(w.rule) && /recoup/i.test(w.detail)));
+check("and given the 180-day window to open the exam request",
+  army.some((w) => /180 days/.test(w.rule) && /grade posts/i.test(w.detail)));
 check("non-CA students get none of it", warn("self_pay") === null);
 
 // GI Bill reimburses the EXAM fee, not the prep training. A badge saying "GI Bill eligible"

@@ -701,9 +701,11 @@ function renderPipeline(el) {
     },
     invoice: function () {
       var r = ME.rblpSupport || {};
-      return '<p>RBLP emails you <b class="soft">two</b> invoices &mdash; one for the exam, one for the training. You need both before you can file with CA.</p>' +
+      return '<p>RBLP emails you an invoice for the <b class="soft">exam prep training</b>. That\'s the one you file with CA.</p>' +
+        '<p class="muted">There\'s no exam invoice yet, and that\'s correct &mdash; RBLP raise that one later, once your completion ' +
+        'certificate shows you finished the course. You\'ll file a second CA request for it then.</p>' +
         '<label class="row check"><input type="checkbox" id="pInvoice">' +
-        "<span>I've received both invoices from RBLP.</span></label>" +
+        "<span>I've received my training invoice from RBLP.</span></label>" +
         '<div class="notice"><b>Nothing after a week?</b> RBLP raise these, so they\'re the fastest people to ask &mdash; ' +
           'chasing through us just adds a day. Check your spam folder first, then contact them directly:<br>' +
           '<a href="mailto:' + esc(r.email) + '?subject=' + encodeURIComponent("RBLP invoices for Credentialing Assistance") + '">' + esc(r.email) + '</a>' +
@@ -715,8 +717,12 @@ function renderPipeline(el) {
     },
     ca_submitted: function () {
       var g = ME.funding.guidance || {};
-      return '<p>This happens on your branch\'s Credentialing Assistance website &mdash; you <b class="soft">upload</b> both invoices there, ' +
-          'the exam one and the training one.</p>' +
+      return '<div class="notice"><b>This request is for the training only.</b><br><br>' +
+          'CA funds the training and the exam as <b>two separate goals</b> and you can\'t have both open at once. ' +
+          'The exam request comes later &mdash; after you\'ve finished the course and your grade posts. ' +
+          'RBLP won\'t even invoice for the exam until then.</div>' +
+        '<p>This happens on your branch\'s Credentialing Assistance website &mdash; you <b class="soft">upload</b> the ' +
+          'training invoice there.</p>' +
         '<p><b class="soft">Read the instructions first.</b> RBLP keeps a step-by-step guide for your branch that walks the upload ' +
           'screen by screen &mdash; it answers most of what people get stuck on. Then go to the portal and do it.</p>' +
         '<div class="row">' +
@@ -745,9 +751,9 @@ function renderPipeline(el) {
               return "<li><b>" + esc(w.rule) + "</b><span>" + esc(w.detail) + "</span></li>";
             }).join("") + "</ul>"
           : "") +
-        '<label class="fld" style="max-width:240px"><span>Date you uploaded them</span>' +
+        '<label class="fld" style="max-width:240px"><span>Date you filed it</span>' +
         '<input type="date" id="pCaDate" value="' + esc(p.caSubmittedOn || "") + '"></label>' +
-        '<button class="btn btn-gold btn-sm" id="pCaSave">I\'ve uploaded both invoices</button>' +
+        '<button class="btn btn-gold btn-sm" id="pCaSave">I\'ve filed the training request</button>' +
         '<p class="muted">We use that date for the 45-day clock, so it tells us which cohort you can join.</p>';
     },
     paid: function () {

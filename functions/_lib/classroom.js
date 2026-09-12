@@ -53,10 +53,10 @@ export const JOURNEY = [
         blurb: "The RBLP application is free and takes about ten minutes. When it asks for your instructor, choose Promote and Lead Solutions, LLC." },
       { key: "rblp_received", owner: "rblp", title: "Waiting on RBLP to confirm your application", titleDone: "RBLP has your application",
         blurb: "RBLP tells us once your application is in. We'll email you the moment they do." },
-      { key: "invoice",       owner: "rblp", title: "Watch for two invoices from RBLP", titleDone: "Both invoices received", only: "CA",
-        blurb: "One for the exam, one for the training. You need both to file with CA." },
-      { key: "ca_submitted",  owner: "you",  title: "Upload both invoices to your CA portal", titleDone: "Invoices uploaded to CA", only: "CA",
-        blurb: "You do this on your branch's CA website — upload the exam invoice and the training invoice together. RBLP keeps the step-by-step instructions for your branch; open them first and follow them." },
+      { key: "invoice",       owner: "rblp", title: "Watch for your training invoice from RBLP", titleDone: "Training invoice received", only: "CA",
+        blurb: "One invoice, for the exam prep training. The exam is invoiced separately later — RBLP raise that one once your completion certificate shows you've finished the course." },
+      { key: "ca_submitted",  owner: "you",  title: "File your CA request for the training", titleDone: "Training request filed", only: "CA",
+        blurb: "Just the training. CA funds the course and the exam as two separate goals, and you can't have both open at once — the exam request comes after you've finished the course and your grade posts. RBLP keeps the step-by-step instructions for your branch; open them first." },
       { key: "ca_approved",   owner: "ca",   title: "Waiting on your CA decision", titleDone: "Your CA funding is approved", only: "CA",
         blurb: "Your CA office reviews the request. RBLP lets us know the moment it clears, and your prep work opens then — we'll email you." },
       { key: "paid",          owner: "you",  title: "Buy your exam prep on rblp.com", titleDone: "Payment received", only: "Normal",
@@ -79,6 +79,11 @@ export const JOURNEY = [
   {
     phase: "Get certified",
     steps: [
+      // CA funds the course and the exam as two separate goals, and the second can only be
+      // opened once the first has a posted grade. Students who don't know that assume their
+      // funding covered everything, then discover the exam isn't paid for.
+      { key: "ca_exam",   owner: "you",  title: "File your second CA request — for the exam", titleDone: "Exam funding requested", only: "CA",
+        blurb: "With your certificate issued, RBLP can invoice for the exam — and your training grade posting is what lets you open the second CA goal. Two separate requests by design; they could never have been filed together." },
       { key: "exam",      owner: "you",  title: "Schedule and sit your RBLP oral exam", titleDone: "Exam scheduled",
         blurb: "The exam is with RBLP, not with us. Your prepared answers stay here for you to rehearse from." },
       { key: "certified", owner: "rblp", title: "Waiting on RBLP to award your credential", titleDone: "You're RBLP certified",

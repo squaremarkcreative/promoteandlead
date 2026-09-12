@@ -838,7 +838,7 @@ export const WHY_PREP = {
 //     skew SNCO E7–E9. The Air Force's 2024 warrant officer return is tiny and cyber/IT only,
 //     so it is not a meaningful parallel to Army warrants; don't imply it is.
 const CA_WARNINGS_SHARED = [
-  { rule: "Two separate requests", detail: "One for the training, one for the exam. They are funded separately and a single combined request gets kicked back." },
+  { rule: "Two requests, one after the other", detail: "The training and the exam are funded as separate goals. You can't open both at once and you can't combine them — the exam request comes after the training is finished. Budget for a gap of months, not days." },
   { rule: "The vendor name has to match exactly", detail: "On the training request the company is RLS — spelled the way it appears in your portal. A quote in a different name is the most common bounce." },
   { rule: "Don't pay out of pocket to hold a seat", detail: "Credentialing Assistance will not reimburse you afterwards. If you've paid to reserve a place, tell us before you file." },
   { rule: "Don't start the class before it's funded", detail: "Attending before approval can cost you the funding entirely." },
@@ -846,6 +846,9 @@ const CA_WARNINGS_SHARED = [
 ];
 
 const CA_WARNINGS_ARMY = [
+  { rule: "You must sit the exam, or repay the training", detail: "CA funds the course on the condition you take the credential exam. Don't sit it and the Army recoups what it paid for your training. Two recoupments across TA and CA in the same fiscal year suspends you from both for 12 months." },
+  { rule: "180 days to open the exam request", detail: "Once you pass the course, the clock starts when your grade posts — you have 180 days from that date to submit the exam funding request. Miss it and you're paying for the exam yourself." },
+  { rule: "One credential a fiscal year", detail: "CA is capped at one credential per fiscal year, and the course and exam together count as that one credential. Worth knowing before you plan a second." },
   { rule: "The company field is a search box, not a dropdown", detail: "Nothing on screen says so. The list is alphabetical and only loads the first stretch of partners, so scrolling never reaches RLS. Click into the field and start typing R-L-S, and Resilient Leadership Solutions appears. This is the step people give up on, assuming we aren't an approved vendor." },
   { rule: "Commissioned officers are no longer eligible", detail: "As of 19 March 2026, O1–O10 can't open new Army CA goals. Warrant officers W1–W5 and all enlisted Soldiers still can. If you had a credential goal open before that date you may be able to finish that one — ask your education center." },
   { rule: "Get your supervisor's approval early", detail: "Since 19 March 2026 every Army CA request needs commander or supervisor sign-off whatever your rank, and first-time users have ArmyIgnitED training and a MilGears plan to finish first. Start that now, not the week you file." },
