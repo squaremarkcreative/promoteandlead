@@ -389,6 +389,28 @@ check("scrolling clears both sticky bars rather than tucking the target under th
 check("the student module jump clears them too", /if \(task\) spotlight\(task\); else scrollUnderBars\(d\)/.test(tgPage));
 check("the jump bar and the accordions render from one filtered module list",
   /var mods = CONSOLE\.outline\.filter/.test(tgPage) && /tgJumpHtml\(mods\)/.test(tgPage));
+// Back from a break, the job is to jump to where the room left off — not to scroll past the
+// run of day first. So the bar is the first thing in the panel, and sticks from there down.
+check("the teaching jump bar is the first thing on the page",
+  /el\.innerHTML =\s*(\/\/[^\n]*\n\s*)*tgJumpHtml\(mods\)/.test(tgPage));
+
+// The teaching guide is about one cohort. Summing every cohort's roster put a phantom coach in
+// a trainer-only room, because a leftover draft cohort was counted in too.
+section("Teaching guide totals describe one cohort");
+check("track totals come from the cohort being taught, not every cohort",
+  /\(\(teaching && teaching\.roster\) \|\| \[\]\)\.forEach/.test(tgPage) &&
+  !/CONSOLE\.cohorts\.forEach\(function \(c\) \{ \(c\.roster/.test(tgPage));
+check("a draft cohort never becomes the default — an admin sees every cohort",
+  /list\.filter\(function \(c\) \{ return c\.classroomStatus !== "draft"; \}\)\[0\]/.test(tgPage));
+check("the Instructor tab and the teaching guide agree on which cohort",
+  /var pick = activeCohort\(\)/.test(tgPage));
+check("coverage is scoped by the same cohort choice", /var c = activeCohort\(\);/.test(tgPage));
+check("the run of day names the cohort its counts describe",
+  /esc\(teaching\.slug \|\| teaching\.name\)/.test(tgPage));
+// A trainer sits through the coach material without stopping there.
+check("the day reads as who finishes at each point, not who is in the room",
+  /' finishes' : ' finish'\) \+ ' here/.test(tgPage) && /nobody finishes here/.test(tgPage));
+check("and the old roster-count wording is gone", !/on this roster<\/span>/.test(tgPage));
 check("the next task is found by skipping covered ones",
   /\$\(".tg-task:not\(\.covered\)", d\)/.test(tgPage));
 check("finishing a module tells them where they've been moved to",

@@ -1799,12 +1799,18 @@ function spotlight(node) {
   setTimeout(function () { node.classList.remove("spotlight"); }, 1600);
 }
 
+// Every instructor view is about one cohort: the Instructor tab's selection when there is one.
+// Falling back to the newest row picked up leftover drafts — an admin sees every cohort — so a
+// real cohort wins over a draft.
+function activeCohort() {
+  var list = (CONSOLE && CONSOLE.cohorts) || [];
+  return list.filter(function (c) { return c.id === ACTIVE_COHORT; })[0] ||
+    list.filter(function (c) { return c.classroomStatus !== "draft"; })[0] || list[0] || null;
+}
+
 function loadCovered() {
   COVERED = {};
-  var list = (CONSOLE && CONSOLE.cohorts) || [];
-  // Teaching can be opened without visiting the Instructor tab first, so fall back to the
-  // same cohort that tab would have selected.
-  var c = list.filter(function (x) { return x.id === ACTIVE_COHORT; })[0] || list[0] || null;
+  var c = activeCohort();
   COVERED_COHORT = c ? c.id : null;
   if (c) (c.covered || []).forEach(function (k) { COVERED[k] = 1; });
 }
@@ -1833,7 +1839,8 @@ function renderTeaching(el) {
   // Show the modules this instructor's cohorts actually cover, so an RBLP cohort isn't
   // scrolling past module 5.
   var tracks = {};
-  CONSOLE.cohorts.forEach(function (c) { (c.roster || []).forEach(function (r) { tracks[r.track] = (tracks[r.track] || 0) + 1; }); });
+  var teaching = activeCohort();
+  ((teaching && teaching.roster) || []).forEach(function (r) { tracks[r.track] = (tracks[r.track] || 0) + 1; });
   var maxModule = 0;
   Object.keys(tracks).forEach(function (t) {
     var mods = CONSOLE.tracks[t] && CONSOLE.tracks[t].modules;
@@ -1844,6 +1851,10 @@ function renderTeaching(el) {
   var mods = CONSOLE.outline.filter(function (m) { return m.num <= maxModule; });
 
   el.innerHTML =
+    // First thing on the page: coming back from a break, the job is to jump straight to where
+    // the room left off, not to scroll past the run of day to get there.
+    tgJumpHtml(mods) +
+
     '<div class="box"><h2>Teaching guide</h2>' +
       '<p class="muted">How to open each leader task, an example to model with, and the question to put to the room. ' +
         'Budget ~75 minutes a module.</p>' +
@@ -1853,7 +1864,8 @@ function renderTeaching(el) {
       (CONSOLE.mixedCohorts ? '<div class="notice"><b>Mixed cohorts:</b> ' + esc(CONSOLE.mixedCohorts) + '</div>' : '') +
     '</div>' +
 
-    (CONSOLE.day ? '<div class="box"><h3>Run of day <span class="pill">09:00&ndash;15:30</span></h3>' +
+    (CONSOLE.day ? '<div class="box"><h3>Run of day <span class="pill">09:00&ndash;15:30</span>' +
+      (teaching ? ' <span class="pill ok">' + esc(teaching.slug || teaching.name) + '</span>' : '') + '</h3>' +
       '<p class="muted">' + esc(CONSOLE.day.notes.shape) + '</p>' +
       runOfDayHtml(CONSOLE.day.blocks, { showLeavers: true }) +
       '<div class="rod-tracks">' + Object.keys(CONSOLE.day.tracks).map(function (t) {
@@ -1861,7 +1873,8 @@ function renderTeaching(el) {
         var n = (tracks[t] ? tracks[t] : 0);
         return '<div><b>' + esc(t) + '</b> ' + esc(d.start) + '&ndash;' + esc(d.end) +
           ' &middot; ' + (d.taughtMinutes / 60) + 'h' +
-          (n ? ' <span class="pill ok">' + n + ' on this roster</span>' : ' <span class="pill">none</span>') + '</div>';
+          (n ? ' <span class="pill ok">' + n + (n === 1 ? ' finishes' : ' finish') + ' here</span>'
+             : ' <span class="pill">nobody finishes here</span>') + '</div>';
       }).join("") + '</div>' +
       '<p class="muted" style="margin-top:.8rem"><b>Why the breaks land there:</b> ' + esc(CONSOLE.day.notes.breaks) + '</p>' +
       '<p class="muted"><b>Departures:</b> ' + esc(CONSOLE.day.notes.departures) + '</p>' +
@@ -1884,8 +1897,6 @@ function renderTeaching(el) {
       '<div class="glossary" style="margin-top:.8rem">' +
         (CONSOLE.cards || []).map(function (c) { return '<span class="pill">' + esc(c) + '</span>'; }).join("") +
       '</div></div>' +
-
-    tgJumpHtml(mods) +
 
     mods.map(function (m) {
       var isOpen = TG_OPEN ? TG_OPEN.indexOf(m.num) >= 0 : m.num === 1;
@@ -2021,7 +2032,10 @@ function renderInstructor(el) {
     el.innerHTML = '<div class="box"><h2>No cohorts assigned</h2><p class="muted">Ask Tommy to set your email as the instructor on a cohort.</p></div>';
     return;
   }
-  if (!ACTIVE_COHORT || !CONSOLE.cohorts.some(function (c) { return c.id === ACTIVE_COHORT; })) ACTIVE_COHORT = CONSOLE.cohorts[0].id;
+  if (!ACTIVE_COHORT || !CONSOLE.cohorts.some(function (c) { return c.id === ACTIVE_COHORT; })) {
+    var pick = activeCohort();
+    ACTIVE_COHORT = pick ? pick.id : CONSOLE.cohorts[0].id;
+  }
   var c = CONSOLE.cohorts.filter(function (x) { return x.id === ACTIVE_COHORT; })[0];
 
   el.innerHTML =
