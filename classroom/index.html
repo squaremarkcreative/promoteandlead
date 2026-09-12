@@ -250,6 +250,13 @@
   ol.ca-stages .who.you{color:var(--gold);font-weight:700}
   ol.ca-stages li.mine b{color:var(--gold2)}
 
+  .tg-count{font-size:.8rem;color:var(--faint);margin:0 0 .6rem}
+  .tg-count b{color:var(--gold2)}
+  .tg-task{transition:opacity .2s,background .2s}
+  .tg-task.covered{opacity:.5;background:rgba(42,133,64,.07);border-radius:8px;padding:.55rem .7rem;margin-top:.4rem}
+  .tg-task.covered h4{color:var(--green2)}
+  .tg-task .btn-sm{flex:0 0 auto;margin-left:.6rem}
+
   /* ---------------- the journey ---------------- */
   .next-step{border-color:var(--bstrong);padding:1.3rem 1.4rem}
   .next-step.you{border-color:rgba(200,164,21,.5);background:linear-gradient(180deg,rgba(200,164,21,.07),transparent 60%)}
@@ -1489,6 +1496,31 @@ function runOfDayHtml(blocks, opts) {
   }).join("") + '</div>';
 }
 
+/* ------------------------------------------------------------------ covered-it tracking */
+// Teaching live, an instructor wants one thing: what haven't I covered yet. So each task gets a
+// Done button — it turns green and drops to the bottom of its module, leaving whatever is still
+// to do at the top. Nothing hides, so you can still go back to anything.
+//
+// Kept in localStorage per cohort: it's where-you-are-today state, not a record worth storing.
+var COVERED = {};
+
+function coveredKey() { return "pl_covered_" + (ACTIVE_COHORT || "x"); }
+
+function loadCovered() {
+  try { COVERED = JSON.parse(localStorage.getItem(coveredKey()) || "{}") || {}; }
+  catch (e) { COVERED = {}; }
+}
+
+function toggleCovered(key) {
+  if (COVERED[key]) delete COVERED[key]; else COVERED[key] = 1;
+  try { localStorage.setItem(coveredKey(), JSON.stringify(COVERED)); } catch (e) {}
+}
+
+function clearCovered() {
+  COVERED = {};
+  try { localStorage.removeItem(coveredKey()); } catch (e) {}
+}
+
 /* ------------------------------------------------------------------ teaching guide */
 function tgList(title, sub, items) {
   if (!items || !items.length) return "";
@@ -1501,6 +1533,7 @@ function tgList(title, sub, items) {
 // The story is there to prompt the instructor's own — not to be read out as-is.
 function renderTeaching(el) {
   if (!CONSOLE) { el.innerHTML = '<div class="box"><p class="muted">Loading…</p></div>'; return; }
+  loadCovered();
 
   // Show the modules this instructor's cohorts actually cover, so an RBLP cohort isn't
   // scrolling past module 5.
@@ -1565,15 +1598,31 @@ function renderTeaching(el) {
             '<div class="tg-seq">' + m.teaching.sequence.map(function (r) {
               return '<div><span>' + esc(r[0]) + '</span>' + esc(r[1]) + '</div>';
             }).join("") + '</div>' : '') +
-          m.tasks.map(function (t, i) {
-            var c = t.coaching;
-            if (!c) return '<div class="tg-task"><h4>' + (i + 1) + '. ' + esc(t.title) + '</h4></div>';
-            return '<div class="tg-task"><h4>' + (i + 1) + '. ' + esc(t.title) + '</h4>' +
-              '<p><span class="tg-l">Open with</span>' + esc(c.open) + '</p>' +
-              '<p><span class="tg-l">Model it</span><i>' + esc(c.model) + '</i></p>' +
-              '<p><span class="tg-l ask">Ask the room</span><b class="soft">&ldquo;' + esc(c.ask) + '&rdquo;</b></p>' +
-              '</div>';
-          }).join("") +
+          (function () {
+            // Covered ones sink; the running order is preserved inside each group.
+            var ordered = m.tasks.map(function (t, i) { return { t: t, n: i + 1 }; });
+            var todo = ordered.filter(function (x) { return !COVERED[x.t.key]; });
+            var done = ordered.filter(function (x) { return COVERED[x.t.key]; });
+            var left = todo.length;
+            return '<p class="tg-count">' + (left
+                ? "<b>" + left + "</b> of " + ordered.length + " still to cover"
+                : "<b>All " + ordered.length + " covered.</b>") +
+              (done.length ? ' <button class="linkish" data-uncover="' + esc(m.num) + '">reset</button>' : "") + "</p>" +
+              todo.concat(done).map(function (x) {
+                var t = x.t, c = t.coaching, is = !!COVERED[t.key];
+                return '<div class="tg-task' + (is ? " covered" : "") + '">' +
+                  '<div class="row" style="justify-content:space-between;align-items:flex-start">' +
+                    "<h4>" + x.n + ". " + esc(t.title) + "</h4>" +
+                    '<button class="btn btn-sm ' + (is ? "btn-green" : "btn-ghost") + '" data-cover="' + esc(t.key) + '">' +
+                      (is ? "&#10003; Covered" : "Done") + "</button></div>" +
+                  (c && !is
+                    ? '<p><span class="tg-l">Open with</span>' + esc(c.open) + "</p>" +
+                      '<p><span class="tg-l">Model it</span><i>' + esc(c.model) + "</i></p>" +
+                      '<p><span class="tg-l ask">Ask the room</span><b class="soft">&ldquo;' + esc(c.ask) + "&rdquo;</b></p>"
+                    : "") +
+                  "</div>";
+              }).join("");
+          })() +
           (m.teaching ? '<div class="tg-extra">' +
             tgList("Workplace translations", "For the civilians in the room — the same idea outside uniform.", m.teaching.civilian) +
             tgList("Common student misses", "Listen for these; they cost marks in the oral.", m.teaching.misses) +
@@ -1584,6 +1633,22 @@ function renderTeaching(el) {
           }).join("") + '</div>' +
         '</div></details>';
     }).join("");
+
+  $$("[data-cover]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      toggleCovered(b.dataset.cover);
+      renderTeaching(el);
+    });
+  });
+  $$("[data-uncover]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var mod = CONSOLE.outline.filter(function (m) { return String(m.num) === b.dataset.uncover; })[0];
+      if (mod) mod.tasks.forEach(function (t) { delete COVERED[t.key]; });
+      try { localStorage.setItem(coveredKey(), JSON.stringify(COVERED)); } catch (e) {}
+      renderTeaching(el);
+    });
+  });
+
 }
 
 /* ------------------------------------------------------------------ instructor */

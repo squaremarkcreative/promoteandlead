@@ -352,6 +352,20 @@ check("both appear on the printed exam packet", /Not this:/.test(wsPage) && /My 
 // The instructor is shown how to push, because the exam does.
 const mock = (await (await get(consoleEp, boss.cookie)).json()).mockExaminer;
 check("the instructor gets mock-examiner follow-ups", mock && mock.prompts.length >= 5);
+// Teaching live, the only question is "what haven't I covered". Done sinks a task to the
+// bottom of its module so what's left stays at the top.
+const tgPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("every task has a Done control", /data-cover="/.test(tgPage) && /"Covered"|&#10003; Covered/.test(tgPage));
+check("covered tasks sort to the bottom of their module",
+  /todo\.concat\(done\)/.test(tgPage));
+check("their original numbering is kept, so you can still refer to task 3",
+  /x\.n \+ "\. " \+ esc\(t\.title\)/.test(tgPage));
+check("each module shows how many are left", /still to cover/.test(tgPage));
+check("and can be reset without reloading", /data-uncover="/.test(tgPage));
+check("state is per cohort and local — it's where-you-are-today, not a record",
+  /function coveredKey\(\)/.test(tgPage) && /pl_covered_/.test(tgPage) && !/covered/.test(
+    (await import("node:fs")).readFileSync(ROOT + "functions/api/classroom/action.js", "utf8")));
+
 check("and the line that settles nervous students", /introvert/i.test(mock.anxiety), mock.anxiety);
 
 // Navy/USMC/CG COOL funds the exam, not the class. Saying otherwise costs a student money.
