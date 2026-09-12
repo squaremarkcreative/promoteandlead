@@ -948,15 +948,25 @@ export function standardSession(dateStr) {
 // The two-and-a-half week figure is observed, not published: one of our own students, from
 // ACAPO approval to funding actually landing.
 export const CA_STAGES = [
+  { stage: "You create the goal", who: "You", yours: true,
+    note: "In ArmyIgnitED. This is a goal, not yet a funding request — the money is a separate step later. You'll get an email confirming it's submitted." },
   { stage: "Your supervisor approves it", who: "First-line leader",
-    note: "This is the step that most often stalls, and it's the one you can do something about. A nudge in person beats waiting." },
-  { stage: "ACAPO reviews it", who: "Army CA Program Office",
-    note: "The Army's credentialing assistance office checks the request itself. Nothing for you to do here." },
+    note: "This is the step that most often stalls, and the one you can do something about. A word in person beats waiting." },
+  { stage: "ACAPO approves it", who: "Army CA Program Office",
+    note: "The Army's credentialing assistance office reviews the goal itself. Nothing for you to do." },
+  { stage: "You go back in and request the funding", who: "You", yours: true,
+    note: "THIS IS THE ONE PEOPLE MISS. Approval of the goal does not release any money. Once your supervisor AND ACAPO have both approved, you have to return to ArmyIgnitED and actually request the funding. Until you do, nothing is coming." },
   { stage: "Funding is released", who: "Army finance",
-    note: "This is the slow part, and it happens AFTER approval — one of our students waited about two and a half weeks between the two. Approved does not yet mean funded, and you shouldn't start the course until it is." },
+    note: "The slow part, and it happens after everything above — one of our students waited about two and a half weeks. Approved is still not funded, and you shouldn't start the course until it is." },
   { stage: "RBLP tells us it's funded", who: "RBLP",
     note: "We open your prep work the moment that lands, and email you." }
 ];
+
+// ArmyIgnitED notifications say nothing useful on purpose, so people ignore them and stall.
+export const CA_NOTIFICATION_NOTE =
+  "ArmyIgnitED emails you \"you have a new message\" and nothing else — it won't say what happened or what it needs. " +
+  "Treat every one of those as worth opening: sign in and read the status. That vague email is usually how you find out " +
+  "an approval has landed and it's your move again.";
 
 // ---------------------------------------------------------------- picking a course date
 //

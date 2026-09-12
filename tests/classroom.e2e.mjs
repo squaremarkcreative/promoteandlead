@@ -1298,10 +1298,21 @@ check("the supervisor step is named as a first-line leader, not a commander",
 check("ACAPO is named, since students see it in the portal",
   m.funding.caStages.some((x) => /ACAPO/.test(x.who) || /ACAPO/.test(x.stage)));
 check("approved and funded are separated, with the observed lag",
-  m.funding.caStages.some((x) => /two and a half weeks/i.test(x.note) && /AFTER approval/i.test(x.note)));
+  m.funding.caStages.some((x) => /two and a half weeks/i.test(x.note) && /still not funded/i.test(x.note)));
+// The step people stall on forever: approval doesn't release money, you have to go back and
+// ask for it — and nobody chases you.
+check("requesting the funding is shown as a separate step, and as the student's own",
+  m.funding.caStages.some((x) => /request the funding/i.test(x.stage) && x.yours === true));
+check("it says plainly that approval releases nothing",
+  m.funding.caStages.some((x) => /does not release any money/i.test(x.note)));
+check("creating the goal is distinguished from requesting funding",
+  m.funding.caStages.some((x) => /create the goal/i.test(x.stage) && /not yet a funding request/i.test(x.note)));
+check("and ArmyIgnitED's uninformative emails are called out",
+  /you have a new message/i.test(m.funding.caNotifications || ""), m.funding.caNotifications);
 const waitPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
-check("and the waiting step says so outright",
-  /Approved and funded are not the same thing/.test(waitPage));
+check("and the waiting step leads with the step people miss",
+  /Approval does not release the money\. You have to go back and ask for it\./.test(waitPage));
+check("the student's own steps are marked as theirs in the list", /x\.yours \? "mine" : ""/.test(waitPage));
 check("non-CA students get no stages", (await (await get(me, payer.cookie)).json()).funding.caStages === null);
 
 // Army rank rules must not be shown to an Air Force student, and vice versa.

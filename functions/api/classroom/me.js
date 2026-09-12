@@ -9,7 +9,7 @@ import {
   currentModulePassword, worksheetProgress, hoursProgress, buildPipeline, fundingGuidance, routeFor,
   certificateData
 } from "../../_lib/classroom.js";
-import { FACILITATION, SOP_CHECKLIST, STORY_SOURCES, MODULE_STUDY, MODULE_ARC, STUDY_HABITS, EXAM_PREP, EXAM_FACTS, EXAM_BOOKING, caWarningsFor, CA_STAGES, eligibleCourseDates, caBudgetFor, armyCoolUrl, runOfDay, dayFor, DAY_NOTES, WHY_PREP, RBLP_SUPPORT } from "../../_lib/curriculum.js";
+import { FACILITATION, SOP_CHECKLIST, STORY_SOURCES, MODULE_STUDY, MODULE_ARC, STUDY_HABITS, EXAM_PREP, EXAM_FACTS, EXAM_BOOKING, caWarningsFor, CA_STAGES, CA_NOTIFICATION_NOTE, eligibleCourseDates, caBudgetFor, armyCoolUrl, runOfDay, dayFor, DAY_NOTES, WHY_PREP, RBLP_SUPPORT } from "../../_lib/curriculum.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -75,6 +75,7 @@ export async function onRequestGet(context) {
         caWarnings: caWarningsFor(student.payment_source),
         // What's happening during the wait — otherwise it reads as nothing happening.
         caStages: routeFor(student.payment_source) === "CA" ? CA_STAGES : null,
+        caNotifications: routeFor(student.payment_source) === "CA" ? CA_NOTIFICATION_NOTE : null,
         // The form wants a start date they can't know yet — hand them valid ones.
         courseDates: routeFor(student.payment_source) === "CA" ? eligibleCourseDates() : null,
         caBudget: routeFor(student.payment_source) === "CA" ? caBudgetFor(track) : null,

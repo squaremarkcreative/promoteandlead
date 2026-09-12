@@ -229,6 +229,10 @@
   ol.ca-stages .who{display:inline-block;margin-left:.5rem;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
   ol.ca-stages p{font-size:.85rem;color:var(--soft);line-height:1.55;margin-top:.15rem}
 
+  ol.ca-stages li.mine:before{background:var(--gold);border-color:var(--gold);color:#1a1206}
+  ol.ca-stages .who.you{color:var(--gold);font-weight:700}
+  ol.ca-stages li.mine b{color:var(--gold2)}
+
   /* ---------------- the journey ---------------- */
   .next-step{border-color:var(--bstrong);padding:1.3rem 1.4rem}
   .next-step.you{border-color:rgba(200,164,21,.5);background:linear-gradient(180deg,rgba(200,164,21,.07),transparent 60%)}
@@ -824,14 +828,21 @@ function renderPipeline(el) {
     ca_approved: function () {
       var st = (ME.funding && ME.funding.caStages) || [];
       if (!st.length) return "";
-      return '<p>Nothing is required from you right now, but it isn\'t sitting still either. Here\'s what your request is moving through:</p>' +
+      return '<div class="notice warn-notice"><b>Approval does not release the money. You have to go back and ask for it.</b><br><br>' +
+          'Once your supervisor <b>and</b> ACAPO have both approved your goal, you return to ArmyIgnitED and ' +
+          '<b>request the funding</b> as a separate action. Until you do that, nothing is coming and nobody will chase you. ' +
+          'This is the step people wait on forever without realizing it was theirs.</div>' +
+        (ME.funding.caNotifications
+          ? '<div class="notice"><b>Watch for the vague emails.</b> ' + esc(ME.funding.caNotifications) + "</div>"
+          : "") +
+        '<p>Here\'s the whole chain, and which parts are yours:</p>' +
         '<ol class="ca-stages">' + st.map(function (x) {
-          return "<li><b>" + esc(x.stage) + '</b><span class="who">' + esc(x.who) + "</span>" +
+          return '<li class="' + (x.yours ? "mine" : "") + '"><b>' + esc(x.stage) + '</b>' +
+            '<span class="who' + (x.yours ? " you" : "") + '">' + esc(x.who) + "</span>" +
             "<p>" + esc(x.note) + "</p></li>";
         }).join("") + "</ol>" +
-        '<div class="notice"><b>Approved and funded are not the same thing.</b> You can be approved and still be weeks ' +
-        'from the money moving &mdash; and you shouldn\'t start the course until it has. We\'ll email you the moment ' +
-        'RBLP confirm it, and your prep work opens then.</div>';
+        '<p class="muted">Approved is still not funded &mdash; expect a couple of weeks between them. Don\'t start the ' +
+        'course until the money has actually landed. We\'ll email you the moment RBLP confirm it, and your prep work opens then.</p>';
     },
     prep: function () {
       return J.fundingConfirmed
