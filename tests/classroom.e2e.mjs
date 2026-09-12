@@ -1425,6 +1425,41 @@ check("the site warns what bounces a CA packet",
 // September in Chicago is CDT, not CST — "Central" is right all year round.
 check("site doesn't label Central time as CST year-round", !/\bCST\b/.test(site));
 
+// Students write long, personal answers here. Losing a tab used to lose everything typed
+// since the last button press, so the work is now backed up locally on every keystroke and
+// pushed to the server once they pause.
+section("Worksheets: nothing typed can be lost");
+const asPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("typing is captured, not just button presses", /addEventListener\("input"/.test(asPage));
+check("every keystroke is backed up on the device", /localStorage\.setItem\(draftKey/.test(asPage));
+check("the server save is debounced rather than fired per character",
+  /SAVE_TIMERS\[key\] = setTimeout/.test(asPage));
+check("leaving a field flushes it instead of waiting out the timer",
+  /addEventListener\("blur"/.test(asPage));
+check("closing the tab mid-sentence warns first", /beforeunload/.test(asPage));
+check("the student can see whether their work is saved", /class="save-state"/.test(asPage));
+check("a failed save says the work is still safe locally",
+  /your work is safe on this device/.test(asPage));
+check("work stranded by a failed save is restored on return",
+  /Restored unsaved work from this device/.test(asPage));
+// The trap: worksheet.save defaults a missing status to "draft", so an autosave that omitted
+// it would silently un-ready a task the student had already marked ready for cohort.
+check("autosave carries the task's existing status", /payload\.status = currentStatus\(node\)/.test(asPage));
+check("the saved status is on the task node for autosave to read", /data-status="/.test(asPage));
+check("a save button still sets the status it names", /payload\.status = btn\.dataset\.save/.test(asPage));
+
+// Prove the server half: saving content with status "ready" keeps it ready.
+await post(action, { action: "worksheet.save", data: { task_key: "m1_respect", what: "Treating people as people", status: "ready" } }, student.cookie);
+let wsm = await (await get(me, student.cookie)).json();
+check("a task marked ready is stored as ready", wsm.worksheets.responses.m1_respect.status === "ready",
+  wsm.worksheets.responses.m1_respect.status);
+await post(action, { action: "worksheet.save", data: { task_key: "m1_respect", what: "Treating people as people, even when it costs me", status: "ready" } }, student.cookie);
+wsm = await (await get(me, student.cookie)).json();
+check("an autosave replaying that status does not demote it to draft",
+  wsm.worksheets.responses.m1_respect.status === "ready", wsm.worksheets.responses.m1_respect.status);
+check("and the newly typed text is what was kept",
+  /even when it costs me/.test(wsm.worksheets.responses.m1_respect.what));
+
 // ---------------------------------------------------------------- licence
 section("Acceptance: no RBLP curriculum body text republished");
 const fs = await import("node:fs");

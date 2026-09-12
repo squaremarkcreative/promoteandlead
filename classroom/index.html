@@ -208,7 +208,12 @@
   ul.warnlist span{font-size:.82rem;color:var(--soft);line-height:1.55}
 
   .deeper{margin-top:.6rem;padding:.7rem .85rem;border:1px dashed var(--border);border-radius:10px;background:rgba(200,164,21,.04)}
-  .deeper-h{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:.5rem}
+  .save-state{margin-left:auto;align-self:center;font-size:.8rem;color:#64748b}
+.save-state.saving{color:#b45309}
+.save-state.saved{color:#15803d}
+.save-state.warn{color:#b45309;font-weight:600}
+.save-state.err{color:#b91c1c;font-weight:600}
+.deeper-h{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:.5rem}
   .deeper .fld:last-child{margin-bottom:0}
 
   .track-why{margin:-.35rem 0 .9rem;padding:.6rem .8rem;border-left:3px solid var(--gold);background:var(--surface2);border-radius:0 8px 8px 0}
@@ -1218,7 +1223,7 @@ function taskHtml(t) {
   var badge = r.status === "expanded" ? '<span class="pill ok">Expanded after session</span>'
     : r.status === "ready" ? '<span class="pill ok">Ready</span>'
     : r.status === "draft" ? '<span class="pill warn">Draft</span>' : '<span class="pill">Not started</span>';
-  return '<div class="task" data-task="' + esc(t.key) + '">' +
+  return '<div class="task" data-task="' + esc(t.key) + '" data-status="' + esc(r.status === "empty" ? "draft" : r.status) + '">' +
     '<div class="row" style="justify-content:space-between;align-items:flex-start"><h4>' + esc(t.title) + "</h4>" + badge + "</div>" +
     '<div class="starter"><b>Starter — what:</b> ' + esc(t.what) + (t.why ? ' &middot; <b>why:</b> ' + esc(t.why) : "") + "</div>" +
     '<label class="fld"><span>1. What is it?</span><textarea data-f="what">' + esc(r.what) + "</textarea></label>" +
@@ -1232,21 +1237,122 @@ function taskHtml(t) {
       '<textarea data-f="plan" placeholder="One or two sentences. Applying it forward is the hardest thing they ask for.">' + esc(r.plan || "") + "</textarea></label></div>" +
     '<div class="row"><button class="btn btn-ghost btn-sm" data-save="draft">Save draft</button>' +
     '<button class="btn btn-green btn-sm" data-save="ready">Mark ready for cohort</button>' +
-    '<button class="btn btn-ghost btn-sm" data-save="expanded">Expanded after session</button></div></div>';
+    '<button class="btn btn-ghost btn-sm" data-save="expanded">Expanded after session</button>' +
+    '<span class="save-state">Saves as you type</span></div></div>';
+}
+
+// Worksheets are long-form personal writing — the most expensive content on the site to
+// produce and the easiest to lose. Nothing used to be saved until a button was pressed, so a
+// closed tab, a dead battery or a stray back-button took the lot.
+//
+// Two layers now. Every keystroke writes a local backup, which costs nothing and survives a
+// crash. A debounced save then puts it on the server a second and a half after they stop
+// typing. Autosave deliberately does NOT re-render — rebuilding the page under someone's
+// cursor while they write is its own kind of data loss.
+var SAVE_TIMERS = {};
+var DIRTY = {};
+var SKIP_BLUR = {};
+
+function draftKey(taskKey) { return "pl_draft_" + (ME.profile.id || "x") + "_" + taskKey; }
+
+function collectTask(node) {
+  var out = { task_key: node.dataset.task };
+  $$("textarea[data-f]", node).forEach(function (ta) { out[ta.dataset.f] = ta.value; });
+  return out;
+}
+
+function setSaveState(node, text, cls) {
+  var el = $(".save-state", node);
+  if (el) { el.textContent = text; el.className = "save-state " + (cls || ""); }
+}
+
+// Autosave must never change their status. Editing an answer already marked ready shouldn't
+// quietly demote it to draft.
+function currentStatus(node) {
+  return node.dataset.status || "draft";
+}
+
+async function autosave(node) {
+  var payload = collectTask(node);
+  payload.status = currentStatus(node);
+  setSaveState(node, "Saving…", "saving");
+  try {
+    await api("worksheet.save", payload);
+    delete DIRTY[payload.task_key];
+    try { localStorage.removeItem(draftKey(payload.task_key)); } catch (e) {}
+    setSaveState(node, "Saved " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), "saved");
+  } catch (e) {
+    // The local copy is still there, so nothing is lost — say so rather than just failing.
+    setSaveState(node, "Couldn't reach the server — your work is safe on this device", "err");
+  }
 }
 
 function wireTask(node) {
+  var key = node.dataset.task;
+
+  // Anything typed is backed up locally at once, then pushed to the server once they pause.
+  $$("textarea[data-f]", node).forEach(function (ta) {
+    ta.addEventListener("input", function () {
+      DIRTY[key] = true;
+      try { localStorage.setItem(draftKey(key), JSON.stringify({ at: Date.now(), v: collectTask(node) })); } catch (e) {}
+      setSaveState(node, "Unsaved…", "saving");
+      clearTimeout(SAVE_TIMERS[key]);
+      SAVE_TIMERS[key] = setTimeout(function () { autosave(node); }, 1500);
+    });
+    // Leaving a field is a natural moment to flush rather than wait out the timer.
+    ta.addEventListener("blur", function () {
+      if (!DIRTY[key] || SKIP_BLUR[key]) return;
+      clearTimeout(SAVE_TIMERS[key]);
+      autosave(node);
+    });
+  });
+
+  $$("[data-save]", node).forEach(function (btn) {
+    btn.addEventListener("mousedown", function () { SKIP_BLUR[key] = true; });
+  });
+
+  // A draft left in local storage means an autosave never made it through. Put the work back
+  // in front of them and try again now, rather than letting the server's older copy win.
+  var stashed = null;
+  try { stashed = JSON.parse(localStorage.getItem(draftKey(key)) || "null"); } catch (e) {}
+  if (stashed && stashed.v) {
+    var restored = false;
+    $$("textarea[data-f]", node).forEach(function (ta) {
+      var v = stashed.v[ta.dataset.f];
+      if (typeof v === "string" && v !== ta.value) { ta.value = v; restored = true; }
+    });
+    if (restored) {
+      DIRTY[key] = true;
+      setSaveState(node, "Restored unsaved work from this device", "warn");
+      autosave(node);
+    }
+  }
+
   $$("[data-save]", node).forEach(function (btn) {
     btn.addEventListener("click", async function () {
-      var payload = { task_key: node.dataset.task, status: btn.dataset.save };
-      $$("textarea[data-f]", node).forEach(function (ta) { payload[ta.dataset.f] = ta.value; });
+      clearTimeout(SAVE_TIMERS[key]);
+      var payload = collectTask(node);
+      payload.status = btn.dataset.save;
       btn.disabled = true;
-      try { await api("worksheet.save", payload); ME = await (await fetch("/api/classroom/me")).json(); renderAll(); flash("Saved."); }
-      catch (e) { flash(e.message, "err"); }
-      finally { btn.disabled = false; }
+      try {
+        await api("worksheet.save", payload);
+        delete DIRTY[key];
+        try { localStorage.removeItem(draftKey(key)); } catch (e) {}
+        ME = await (await fetch("/api/classroom/me")).json();
+        renderAll();
+        flash("Saved.");
+      } catch (e) { flash(e.message, "err"); }
+      finally { btn.disabled = false; delete SKIP_BLUR[key]; }
     });
   });
 }
+
+// A tab closed mid-sentence would otherwise take the last second and a half of typing with it.
+window.addEventListener("beforeunload", function (e) {
+  if (!Object.keys(DIRTY).length) return;
+  e.preventDefault();
+  e.returnValue = "";
+});
 
 /* ------------------------------------------------------------------ cohort */
 function renderCohort(el) {
