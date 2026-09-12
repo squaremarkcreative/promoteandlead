@@ -946,16 +946,18 @@ export function standardSession(dateStr) {
 // can start, and are then told they're not funded.
 //
 // The two-and-a-half week figure is observed, not published: one of our own students, from
-// ACAPO approval to funding actually landing.
+// ACO approval to funding actually landing.
 export const CA_STAGES = [
   { stage: "You create the goal", who: "You", yours: true,
     note: "In ArmyIgnitED. This is a goal, not yet a funding request — the money is a separate step later. You'll get an email confirming it's submitted." },
   { stage: "Your supervisor approves it", who: "First-line leader",
     note: "This is the step that most often stalls, and the one you can do something about. A word in person beats waiting." },
-  { stage: "ACAPO approves it", who: "Army CA Program Office",
-    note: "The Army's credentialing assistance office reviews the goal itself. Nothing for you to do." },
+  // The portal shows this as ACO. Army policy documents call the same office ACAPO (Army
+  // Credentialing Assistance Program Office) — use what a student actually sees on screen.
+  { stage: "ACO approves it", who: "Army credentialing office",
+    note: "The Army's credentialing assistance office reviews the goal itself. Nothing for you to do while it sits here." },
   { stage: "You go back in and request the funding", who: "You", yours: true,
-    note: "THIS IS THE ONE PEOPLE MISS. Approval of the goal does not release any money. Once your supervisor AND ACAPO have both approved, you have to return to ArmyIgnitED and actually request the funding. Until you do, nothing is coming." },
+    note: "THIS IS THE ONE PEOPLE MISS. Approval of the goal does not release any money. Once your supervisor AND the ACO have both approved, you have to return to ArmyIgnitED and actually request the funding. Until you do, nothing is coming." },
   { stage: "Funding is released", who: "Army finance",
     note: "The slow part, and it happens after everything above — one of our students waited about two and a half weeks. Approved is still not funded, and you shouldn't start the course until it is." },
   { stage: "RBLP tells us it's funded", who: "RBLP",

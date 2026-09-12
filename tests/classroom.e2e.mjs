@@ -1296,8 +1296,11 @@ const armyRulesNow = (await import(`file://${R}/_lib/curriculum.js`)).caWarnings
 check("the supervisor step is named as a first-line leader, not a commander",
   armyRulesNow.some((w) => /first-line leader/i.test(w.detail) && /does not have to go to your commander/i.test(w.detail)),
   armyRulesNow.map((w) => w.rule));
-check("ACAPO is named, since students see it in the portal",
-  m.funding.caStages.some((x) => /ACAPO/.test(x.who) || /ACAPO/.test(x.stage)));
+// Name it the way the portal does, or the student won't match the status to the step.
+check("the credentialing office is named as the portal shows it",
+  m.funding.caStages.some((x) => /\bACO\b/.test(x.stage)) &&
+  !m.funding.caStages.some((x) => /ACAPO/.test(x.stage) || /ACAPO/.test(x.who)),
+  m.funding.caStages.map((x) => x.stage));
 check("approved and funded are separated, with the observed lag",
   m.funding.caStages.some((x) => /two and a half weeks/i.test(x.note) && /still not funded/i.test(x.note)));
 // The step people stall on forever: approval doesn't release money, you have to go back and
