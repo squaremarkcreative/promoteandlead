@@ -987,6 +987,40 @@ check("the instructor console explains how pay works",
 check("pay is explained as per-student and funding-dependent",
   /per student/.test(adminNow.pay.basis) && /funded/.test(adminNow.pay.basis));
 
+section("Security: escalation and cross-user writes");
+// Anything the browser sends that isn't on the whitelist must be ignored, silently.
+const before2 = { role: DB.pl_students[0].role, email: DB.pl_students[0].email };
+await post(action, { action: "profile.save", data: { display_name: "Pat Jones", role: "admin", email: "hijack@example.com", referred_by: DB.pl_students[0].id } }, student.cookie);
+check("profile.save ignores a smuggled role", DB.pl_students[0].role === before2.role, DB.pl_students[0].role);
+check("profile.save ignores a smuggled email", DB.pl_students[0].email === before2.email);
+check("profile.save ignores a smuggled referrer", !DB.pl_students[0].referred_by || DB.pl_students[0].referred_by !== DB.pl_students[0].id);
+
+// The student id always comes from the signed cookie, never the request body.
+await post(action, { action: "worksheet.save", data: { task_key: "m1_fun", what: "mine", student_id: DB.pl_students[1].id } }, student.cookie);
+check("worksheet writes land on the session owner, not a supplied id",
+  DB.pl_worksheet_responses.filter((r) => r.task_key === "m1_fun").every((r) => r.student_id === DB.pl_students[0].id));
+
+// Every privileged action, attempted by a plain student.
+for (const [act, data] of [
+  ["student.role", { id: DB.pl_students[0].id, role: "admin" }],
+  ["student.advance", { id: DB.pl_students[0].id, step: "ca_approved" }],
+  ["student.unlock", { id: DB.pl_students[0].id, step: "prep" }],
+  ["student.sendCode", { id: DB.pl_students[1].id }],
+  ["student.referral", { id: DB.pl_students[0].id, instructor_id: null }],
+  ["password.set", { year_month: "2026-09", password: "x" }],
+  ["cohort.create", { name: "pwned" }],
+  ["member.place", { student_id: DB.pl_students[0].id, cohort_id: cohortId }],
+  ["session.addStandard", { cohort_id: cohortId, date: "2026-11-07" }],
+  ["cohort.classroom", { id: cohortId, slug: "hax" }]
+]) {
+  check(`a student cannot ${act}`, (await post(action, { action: act, data }, student.cookie)).status === 403, act);
+}
+
+// User-supplied ids go into PostgREST filter strings, so they must be encoded.
+const actSrc = (await import("node:fs")).readFileSync(ROOT + "functions/api/classroom/action.js", "utf8");
+const rawFilters = [...actSrc.matchAll(/`[^`]*\$\{data\.[a-zA-Z_]+\}/g)].map((x) => x[0]);
+check("no user input is interpolated raw into a query filter", rawFilters.length === 0, rawFilters.slice(0, 3));
+
 section("Authorization");
 const studentConsole = await get(consoleEp, student.cookie);
 check("student cannot open the instructor console (403)", studentConsole.status === 403);

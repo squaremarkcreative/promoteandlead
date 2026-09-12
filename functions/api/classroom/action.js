@@ -98,7 +98,7 @@ export async function onRequestPost(context) {
           return json({ ok: true, referredBy: null });
         }
         const inst = await db.select("pl_students",
-          `select=id,role,display_name&id=eq.${data.instructor_id}&limit=1`);
+          `select=id,role,display_name&id=eq.${encodeURIComponent(data.instructor_id)}&limit=1`);
         if (!inst.length || inst[0].role !== "instructor") return json({ error: "That isn't one of our instructors." }, 400);
         if (inst[0].id === me.id) return json({ error: "You can't refer yourself." }, 400);
         await db.patch("pl_students", `id=eq.${me.id}`, { referred_by: inst[0].id, referred_via: "named" });
@@ -109,13 +109,13 @@ export async function onRequestPost(context) {
       case "student.referral": {
         if (me.role !== "admin") return json({ error: "Admins only." }, 403);
         if (!data.instructor_id) {
-          await db.patch("pl_students", `id=eq.${data.id}`, { referred_by: null, referred_via: "admin" });
+          await db.patch("pl_students", `id=eq.${encodeURIComponent(data.id)}`, { referred_by: null, referred_via: "admin" });
           return json({ ok: true });
         }
-        const inst2 = await db.select("pl_students", `select=id,role&id=eq.${data.instructor_id}&limit=1`);
+        const inst2 = await db.select("pl_students", `select=id,role&id=eq.${encodeURIComponent(data.instructor_id)}&limit=1`);
         if (!inst2.length || inst2[0].role !== "instructor") return json({ error: "Not an instructor." }, 400);
         if (inst2[0].id === data.id) return json({ error: "A student can't refer themselves." }, 400);
-        await db.patch("pl_students", `id=eq.${data.id}`, { referred_by: inst2[0].id, referred_via: "admin" });
+        await db.patch("pl_students", `id=eq.${encodeURIComponent(data.id)}`, { referred_by: inst2[0].id, referred_via: "admin" });
         return json({ ok: true });
       }
 
@@ -186,7 +186,7 @@ export async function onRequestPost(context) {
       case "cohort.notes": {
         const gate = await requireCohortAccess(env, db, me, data.cohort_id);
         if (gate) return gate;
-        await db.patch("pl_cohorts", `id=eq.${data.cohort_id}`, { instructor_notes: text(data.notes, 8000) });
+        await db.patch("pl_cohorts", `id=eq.${encodeURIComponent(data.cohort_id)}`, { instructor_notes: text(data.notes, 8000) });
         return json({ ok: true });
       }
 
@@ -196,7 +196,7 @@ export async function onRequestPost(context) {
       case "member.certify": {
         const gate = await requireCohortAccess(env, db, me, data.cohort_id);
         if (gate) return gate;
-        await db.patch("pl_cohort_members", `id=eq.${data.member_id}`, {
+        await db.patch("pl_cohort_members", `id=eq.${encodeURIComponent(data.member_id)}`, {
           certified_on: data.certified_on || new Date().toISOString().slice(0, 10),
           status: "completed"
         });
@@ -217,7 +217,7 @@ export async function onRequestPost(context) {
         const present = new Set(att.filter((a) => a.present).map((a) => (a.student_email || "").toLowerCase()));
         if (!present.size) return json({ error: "Mark attendance first — nobody is recorded as present." }, 400);
 
-        const members = await db.select("pl_cohort_members", `select=*&cohort_id=eq.${data.cohort_id}`);
+        const members = await db.select("pl_cohort_members", `select=*&cohort_id=eq.${encodeURIComponent(data.cohort_id)}`);
         const on = data.certified_on || new Date().toISOString().slice(0, 10);
         let completed = 0;
         for (const mem of members) {
@@ -240,7 +240,7 @@ export async function onRequestPost(context) {
             ? data.tracks_allowed.filter((t) => ["RBLP", "RBLP-C", "RBLP-T"].includes(t))
             : null;
         }
-        await db.patch("pl_cohorts", `id=eq.${data.id}`, patch);
+        await db.patch("pl_cohorts", `id=eq.${encodeURIComponent(data.id)}`, patch);
         return json({ ok: true });
       }
 
@@ -277,7 +277,7 @@ export async function onRequestPost(context) {
 
       case "session.delete": {
         if (me.role !== "admin") return json({ error: "Admins only." }, 403);
-        await db.remove("pl_cohort_sessions", `id=eq.${data.id}`);
+        await db.remove("pl_cohort_sessions", `id=eq.${encodeURIComponent(data.id)}`);
         return json({ ok: true });
       }
 
@@ -298,14 +298,14 @@ export async function onRequestPost(context) {
         if (!["student", "instructor"].includes(data.role)) {
           return json({ error: "Roles here are student or instructor. Admin is set in CLASSROOM_ADMINS." }, 400);
         }
-        await db.patch("pl_students", `id=eq.${data.id}`, { role: data.role });
+        await db.patch("pl_students", `id=eq.${encodeURIComponent(data.id)}`, { role: data.role });
         // A new instructor needs a share link straight away, or referral pay has no mechanism.
         if (data.role === "instructor") {
-          const who2 = await db.select("pl_students", `select=email,referral_code&id=eq.${data.id}&limit=1`);
+          const who2 = await db.select("pl_students", `select=email,referral_code&id=eq.${encodeURIComponent(data.id)}&limit=1`);
           if (who2.length && !who2[0].referral_code) {
             const all = await db.select("pl_students", "select=referral_code&referral_code=neq.null&limit=500");
             const code = referralCodeFor(who2[0].email, all.map((x) => x.referral_code).filter(Boolean));
-            await db.patch("pl_students", `id=eq.${data.id}`, { referral_code: code });
+            await db.patch("pl_students", `id=eq.${encodeURIComponent(data.id)}`, { referral_code: code });
           }
         }
         return json({ ok: true });
@@ -318,7 +318,7 @@ export async function onRequestPost(context) {
         if (me.role !== "admin") return json({ error: "Admins only." }, 403);
         const step = String(data.step || "");
         if (!ADMIN_STEPS[step]) return json({ error: "Not a step we can mark." }, 400);
-        const rows = await db.select("pl_students", `select=*&id=eq.${data.id}&limit=1`);
+        const rows = await db.select("pl_students", `select=*&id=eq.${encodeURIComponent(data.id)}&limit=1`);
         if (!rows.length) return json({ error: "No such student." }, 404);
         const who = rows[0];
 
@@ -389,7 +389,7 @@ export async function onRequestPost(context) {
 
       case "member.place": {
         if (me.role !== "admin") return json({ error: "Admins only." }, 403);
-        const studentRows = await db.select("pl_students", `select=*&id=eq.${data.student_id}&limit=1`);
+        const studentRows = await db.select("pl_students", `select=*&id=eq.${encodeURIComponent(data.student_id)}&limit=1`);
         if (!studentRows.length) return json({ error: "No such student." }, 404);
         const st = studentRows[0];
         const email = (st.email || "").toLowerCase();
@@ -401,7 +401,7 @@ export async function onRequestPost(context) {
           return json({ ok: true, placed: false });
         }
 
-        const cohorts = await db.select("pl_cohorts", `select=id&id=eq.${data.cohort_id}&limit=1`);
+        const cohorts = await db.select("pl_cohorts", `select=id&id=eq.${encodeURIComponent(data.cohort_id)}&limit=1`);
         if (!cohorts.length) return json({ error: "No such cohort." }, 404);
 
         const track = normalizeTrack(data.rblp_type || st.track);
@@ -427,7 +427,7 @@ export async function onRequestPost(context) {
       // address. This is the equivalent: send them a fresh one. It goes to them, never to us.
       case "student.sendCode": {
         if (me.role !== "admin") return json({ error: "Admins only." }, 403);
-        const rows2 = await db.select("pl_students", `select=email,display_name&id=eq.${data.id}&limit=1`);
+        const rows2 = await db.select("pl_students", `select=email,display_name&id=eq.${encodeURIComponent(data.id)}&limit=1`);
         if (!rows2.length) return json({ error: "No such student." }, 404);
         const target = rows2[0];
         const { code, ttlMinutes } = await issueCode(env, db, target.email);
