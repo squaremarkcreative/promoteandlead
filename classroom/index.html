@@ -106,6 +106,9 @@
   .jump-n{opacity:.75;font-weight:600;margin-left:.3rem}
   @media (max-width:560px){ .jump-h{display:none} }
   .task.spotlight,.tg-task.spotlight{outline:2px solid var(--gold);outline-offset:3px;transition:outline-color .4s}
+  .tg-wrap{margin:1rem 0 .2rem;padding:.9rem 1rem;border:1px solid var(--gold);border-radius:12px;
+    background:rgba(212,175,55,.07)}
+  .tg-wrap p{margin:0 0 .6rem}
   details.mod{border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-bottom:.8rem;overflow:hidden}
   details.mod>summary{padding:.9rem 1.1rem;cursor:pointer;font-weight:700;display:flex;justify-content:space-between;gap:.7rem;align-items:center;flex-wrap:wrap;list-style:none}
   details.mod>summary::-webkit-details-marker{display:none}
@@ -1898,7 +1901,7 @@ function renderTeaching(el) {
         (CONSOLE.cards || []).map(function (c) { return '<span class="pill">' + esc(c) + '</span>'; }).join("") +
       '</div></div>' +
 
-    mods.map(function (m) {
+    mods.map(function (m, i) {
       var isOpen = TG_OPEN ? TG_OPEN.indexOf(m.num) >= 0 : m.num === 1;
       return '<details class="mod tg" data-mod="' + m.num + '"' + (isOpen ? " open" : "") + '><summary>' +
         '<span>Module ' + m.num + ' — ' + esc(m.title) + '</span>' +
@@ -1939,11 +1942,30 @@ function renderTeaching(el) {
             tgList("Common student misses", "Listen for these; they cost marks in the oral.", m.teaching.misses) +
             tgList("Likely oral angles", "Coverage check, not an answer key.", m.teaching.angles) +
           '</div>' : '') +
+          // Ticking the last task used to leave straight for the next module, skipping the
+          // misses and oral angles — which is the part that costs students marks. Covering the
+          // module now stops here, and moving on is a deliberate second click.
+          (m.tasks.every(function (t) { return COVERED[t.key]; })
+            ? '<div class="tg-wrap"><p><b>Module ' + m.num + ' covered.</b> Before you move the room on, ' +
+                'go over the misses and the oral angles above.</p>' +
+              (mods[i + 1]
+                ? '<button class="btn btn-gold btn-sm" data-tgnext="' + mods[i + 1].num + '">' +
+                    'Done &mdash; go to module ' + mods[i + 1].num + ' &rarr;</button>'
+                : '<b class="soft">That is the whole guide covered.</b>') +
+              '</div>'
+            : '') +
           '<div class="glossary">' + m.glossary.map(function (g) {
             return '<span class="pill" title="' + esc(g[1]) + '">' + esc(g[0]) + "</span>";
           }).join("") + '</div>' +
         '</div></details>';
     }).join("");
+
+  // Moving to the next module is now a deliberate click, taken from the wrap-up gate.
+  $$("[data-tgnext]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!tgAdvance(el, Number(b.dataset.tgnext))) flash("That's every module covered — good session.");
+    });
+  });
 
   $$("[data-tgjump]", el).forEach(function (b) {
     b.addEventListener("click", function () {
@@ -1982,13 +2004,25 @@ function renderTeaching(el) {
       cacheCovered();
       redraw(null);
       // Un-ticking is a correction, not progress: hold their place instead of moving them.
-      var landed = !was && modNum ? tgAdvance(el, modNum) : 0;
-      if (!landed) {
-        window.scrollTo(0, y);
-        if (!was && modNum) flash("That's every module covered — good session.");
-      } else if (landed !== modNum) {
-        flash("Module " + modNum + " covered — on to module " + landed + ".");
+      var moved = false;
+      if (!was && modNum) {
+        var mod = $('details.mod.tg[data-mod="' + modNum + '"]', el);
+        var stillToCover = mod ? $(".tg-task:not(.covered)", mod) : null;
+        if (stillToCover) {
+          spotlight(stillToCover);
+          moved = true;
+        } else if (mod) {
+          // Module finished: land on the wrap-up, not on the next module. Leaving for module 3
+          // the instant task 7 is ticked skipped the misses and oral angles entirely.
+          var wrap = $(".tg-extra", mod) || $(".tg-wrap", mod);
+          if (wrap) {
+            scrollUnderBars(wrap);
+            moved = true;
+            flash("Module " + modNum + " covered — go over the misses, then move on.");
+          }
+        }
       }
+      if (!moved) window.scrollTo(0, y);
 
       try {
         await api("coverage.mark", { cohort_id: COVERED_COHORT, task_key: key, covered: !was });

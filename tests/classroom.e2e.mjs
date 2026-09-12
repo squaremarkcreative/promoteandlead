@@ -365,15 +365,22 @@ check("the module they're teaching stays open across a Done",
 check("every teaching module is addressable by number", /class="mod tg" data-mod="/.test(tgPage));
 check("what they expanded is remembered, not reset to a default",
   /addEventListener\("toggle", function \(\) \{ TG_OPEN = tgOpenModules\(el\)/.test(tgPage));
-check("Done lands on the next task still to cover", /tgAdvance\(el, modNum\)/.test(tgPage));
-// Finishing a module hides its coaching notes, so the page shortens and restoring the old
-// scroll position clamps to the top. Carry on into the next module instead of stopping.
-check("finishing a module carries on into the next one",
-  /nums\.slice\(at\)\.concat\(nums\.slice\(0, at\)\)/.test(tgPage));
-check("and says which module it moved them to",
-  /on to module " \+ landed/.test(tgPage));
+check("Done lands on the next task still to cover", /spotlight\(stillToCover\)/.test(tgPage));
+// Ticking task 7 of 7 used to leave for the next module immediately, skipping the misses and
+// oral angles — the part that actually costs students marks in the oral.
+check("finishing a module stops at the wrap-up instead of leaving",
+  /\$\(".tg-extra", mod\) \|\| \$\(".tg-wrap", mod\)/.test(tgPage));
+check("and says why it stopped there", /go over the misses, then move on/.test(tgPage));
+check("the finished module carries a gate to the next one", /data-tgnext="/.test(tgPage));
+check("the gate only appears once every task in the module is ticked",
+  /m\.tasks\.every\(function \(t\) \{ return COVERED\[t\.key\]; \}\)/.test(tgPage));
+check("the gate sits under the misses and angles, so the two read together",
+  tgPage.indexOf('tgList("Likely oral angles"') < tgPage.indexOf('data-tgnext='));
+check("moving on is a second, deliberate click", /tgAdvance\(el, Number\(b\.dataset\.tgnext\)\)/.test(tgPage));
 check("a collapsed next module is opened before scrolling, or there's nothing to scroll to",
   /if \(!d\.open\) d\.open = true/.test(tgPage));
+check("the last module says the guide is finished rather than offering a next",
+  /That is the whole guide covered/.test(tgPage));
 check("only a genuinely finished guide falls back to holding position",
   /That's every module covered/.test(tgPage));
 
@@ -413,8 +420,7 @@ check("the day reads as who finishes at each point, not who is in the room",
 check("and the old roster-count wording is gone", !/on this roster<\/span>/.test(tgPage));
 check("the next task is found by skipping covered ones",
   /\$\(".tg-task:not\(\.covered\)", d\)/.test(tgPage));
-check("finishing a module tells them where they've been moved to",
-  /Module " \+ modNum \+ " covered/.test(tgPage));
+check("finishing a module says so", /Module " \+ modNum \+ " covered/.test(tgPage));
 check("un-ticking holds their place instead of moving them",
   /Un-ticking is a correction, not progress/.test(tgPage) && /window\.scrollTo\(0, y\)/.test(tgPage));
 check("their original numbering is kept, so you can still refer to task 3",
