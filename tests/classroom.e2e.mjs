@@ -705,6 +705,33 @@ const plainStudent = keysOf(tabFn({ ME: { cohort: null, profile: { role: "studen
 check("a student with no cohort yet still sees their own journey",
   plainStudent.includes("home") && plainStudent.includes("pipeline") && !plainStudent.includes("teaching"), plainStudent);
 
+// ---------------------------------------------------------------- instructor funnel
+section("Acceptance: Trainers get invited to instruct");
+// RBLP-T is RBLP's own bar for an ATP instructor, so the invitation is for Trainers only.
+const trainer = await signIn("new.trainer@example.com");
+const trainerId = DB.pl_students.find((x) => x.email === "new.trainer@example.com").id;
+DB.pl_cohort_members.push({ id: randomUUID(), cohort_id: cohortId, email: "new.trainer@example.com", rblp_type: "RBLP-T", status: "applied" });
+await post(action, { action: "student.advance", data: { id: trainerId, step: "certified" } }, boss.cookie);
+const tMail = SENT[SENT.length - 1];
+check("a Trainer's certification email invites them to instruct",
+  /certified/.test(tMail.subject) && /eligible to instruct/.test(tMail.html), tMail.subject);
+check("it says why they're eligible", /RBLP-T is the qualification/.test(tMail.html));
+check("it sets the expectation — one Saturday a month, paid per student",
+  /one Saturday a month/.test(tMail.html) && /paid per student/.test(tMail.html));
+check("and it nods at referral pay without quoting rates",
+  /more for the ones you bring/.test(tMail.html) && !/60%|40%|percent/.test(tMail.html));
+check("the plain-text version carries it too", /qualifies you to instruct/.test(tMail.text));
+
+// A Coach or base graduate can't instruct, so must not be invited.
+const coachGrad = await signIn("coach.grad@example.com");
+const coachId = DB.pl_students.find((x) => x.email === "coach.grad@example.com").id;
+DB.pl_cohort_members.push({ id: randomUUID(), cohort_id: cohortId, email: "coach.grad@example.com", rblp_type: "RBLP-C", status: "applied" });
+await post(action, { action: "student.advance", data: { id: coachId, step: "certified" } }, boss.cookie);
+const cMail = SENT[SENT.length - 1];
+check("an RBLP-C graduate is congratulated but NOT invited to instruct",
+  /certified/.test(cMail.subject) && !/eligible to instruct/.test(cMail.html), cMail.subject);
+check("they still get the review ask", /share a short review/.test(cMail.html));
+
 // ---------------------------------------------------------------- module access
 section("Acceptance: the door and the key together");
 // The password rotates monthly and the classroom is the only reliable place to find the

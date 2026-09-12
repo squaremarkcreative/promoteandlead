@@ -334,7 +334,10 @@ export async function onRequestPost(context) {
 
         let emailed = false;
         if (data.done !== false && data.notify !== false && !alreadyDone) {
-          const note = ADMIN_STEPS[step](who);
+          // The roster's rblp_type wins over the self-selected track, same as everywhere else.
+          const mem = await loadMembership(db, who.email);
+          const theirTrack = normalizeTrack((mem && mem.rblp_type) || who.track);
+          const note = ADMIN_STEPS[step](who, theirTrack);
           emailed = await sendEmail(env, {
             to: who.email,
             subject: note.subject,
@@ -486,12 +489,23 @@ const ADMIN_STEPS = {
       `<p style="margin:0"><a href="https://promoteandlead.com/classroom">Open your classroom</a></p>`,
     text: "Payment received — your prep work is unlocked at promoteandlead.com/classroom."
   }),
-  certified: () => ({
+  // RBLP-T is the qualification RBLP require of an ATP instructor, so someone who has just
+  // earned it is both eligible and at the most enthusiastic they will ever be about this
+  // material. Only ever sent to Trainers — inviting an RBLP or Coach graduate to teach would
+  // be a promise we can't keep.
+  certified: (s, track) => ({
     subject: "You're RBLP certified — congratulations",
     html: `<p style="margin:0 0 14px"><strong>You passed.</strong> RBLP has awarded your credential — congratulations.</p>` +
       `<p style="margin:0 0 14px">Your classroom stays open. Your answers and stories are yours to come back to whenever you need them.</p>` +
-      `<p style="margin:0">If you'd share a short review, it genuinely helps the next cohort.</p>`,
-    text: "You passed — RBLP has awarded your credential. Congratulations."
+      (track === "RBLP-T"
+        ? `<p style="margin:0 0 14px">One more thing. <strong>RBLP-T is the qualification RBLP require to teach this</strong>, which means you're now eligible to instruct — and you've just been through the whole thing from the other side, which is the best preparation there is.</p>` +
+          `<p style="margin:0 0 14px">Our instructors run one Saturday a month, teaching the material you've just worked through. You'd be paid per student, and more for the ones you bring yourself. We give you the full facilitator guide, the run of day and the cohort — you bring the stories.</p>` +
+          `<p style="margin:0 0 14px"><strong>If that sounds like you, just reply to this email</strong> and we'll set up a conversation. No pressure either way.</p>`
+        : "") +
+      `<p style="margin:0">And if you'd share a short review, it genuinely helps the next cohort.</p>`,
+    text: track === "RBLP-T"
+      ? "You passed — RBLP has awarded your credential. Congratulations. You're now RBLP-T, which qualifies you to instruct for Promote and Lead. Reply if you'd like to talk about teaching a cohort."
+      : "You passed — RBLP has awarded your credential. Congratulations."
   })
 };
 
