@@ -829,6 +829,19 @@ check("the first CA-fundable cohort after the reopening is 7 November",
   SITE_COHORTS.filter((d) => d >= plus(reopens, 45))[0] === "2026-11-07",
   SITE_COHORTS.filter((d) => d >= plus(reopens, 45)));
 
+// Two doors, both obvious: sign in if you have an account, get started if you don't. The nav
+// used to offer neither — "Cohort Prep" jumped to a section the classroom now replaces.
+check("the nav has a real sign-in button", /class="btn btn-ghost btn-sm" href="\/classroom">Sign In</.test(site));
+check("mobile gets one too", /mm-signin" href="\/classroom">Sign in to my classroom</.test(site));
+check("the dead Cohort Prep nav link is gone", !/href="#prep">Cohort Prep</.test(site));
+check("the prep section now sends enrolled students to their classroom",
+  /Already signed up\? Everything lives in your classroom/.test(site) &&
+  /Sign In to My Classroom/.test(site));
+// The classroom issues the month password itself; telling people to email for it invites the
+// support tickets the research flagged.
+check("the site no longer tells students to ask us for the module password",
+  !/haven't received your module password/.test(site) && /password is in your classroom/i.test(site));
+
 // Sign-up is account-first now: we own the walkthrough, RBLP owns the credential. Every primary
 // CTA has to land on the classroom, not bounce someone to rblp.com to work it out alone.
 check("the primary calls to action start an account", /Create Your Free Account/.test(site) && /href="\/classroom"/.test(site));
