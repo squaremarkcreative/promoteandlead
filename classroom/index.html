@@ -219,6 +219,16 @@
 
   .notice.warn-notice{border-color:rgba(200,164,21,.55);background:rgba(200,164,21,.1)}
 
+  ol.ca-stages{list-style:none;margin:.7rem 0;counter-reset:cas}
+  ol.ca-stages li{counter-increment:cas;position:relative;padding:.55rem 0 .55rem 2.1rem;border-top:1px solid var(--border)}
+  ol.ca-stages li:first-child{border-top:0}
+  ol.ca-stages li:before{content:counter(cas);position:absolute;left:0;top:.62rem;width:1.4rem;height:1.4rem;border-radius:50%;
+    background:var(--surface2);border:1px solid var(--bstrong);color:var(--gold2);font-size:.7rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+  ol.ca-stages b{color:var(--cream);font-size:.9rem}
+  ol.ca-stages .who{display:inline-block;margin-left:.5rem;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+  ol.ca-stages p{font-size:.85rem;color:var(--soft);line-height:1.55;margin-top:.15rem}
+
   /* ---------------- the journey ---------------- */
   .next-step{border-color:var(--bstrong);padding:1.3rem 1.4rem}
   .next-step.you{border-color:rgba(200,164,21,.5);background:linear-gradient(180deg,rgba(200,164,21,.07),transparent 60%)}
@@ -769,6 +779,18 @@ function renderPipeline(el) {
           : '<label class="row check"><input type="checkbox" id="pBought">' +
             "<span>I've already bought my exam prep through RBLP.</span></label>" +
             '<p class="muted">Tick that and we\'ll check with RBLP rather than making you buy it twice.</p>');
+    },
+    ca_approved: function () {
+      var st = (ME.funding && ME.funding.caStages) || [];
+      if (!st.length) return "";
+      return '<p>Nothing is required from you right now, but it isn\'t sitting still either. Here\'s what your request is moving through:</p>' +
+        '<ol class="ca-stages">' + st.map(function (x) {
+          return "<li><b>" + esc(x.stage) + '</b><span class="who">' + esc(x.who) + "</span>" +
+            "<p>" + esc(x.note) + "</p></li>";
+        }).join("") + "</ol>" +
+        '<div class="notice"><b>Approved and funded are not the same thing.</b> You can be approved and still be weeks ' +
+        'from the money moving &mdash; and you shouldn\'t start the course until it has. We\'ll email you the moment ' +
+        'RBLP confirm it, and your prep work opens then.</div>';
     },
     prep: function () {
       return J.fundingConfirmed

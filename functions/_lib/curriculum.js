@@ -851,7 +851,7 @@ const CA_WARNINGS_ARMY = [
   { rule: "One credential a fiscal year", detail: "CA is capped at one credential per fiscal year, and the course and exam together count as that one credential. Worth knowing before you plan a second." },
   { rule: "The company field is a search box, not a dropdown", detail: "Nothing on screen says so. The list is alphabetical and only loads the first stretch of partners, so scrolling never reaches RLS. Click into the field and start typing R-L-S, and Resilient Leadership Solutions appears. This is the step people give up on, assuming we aren't an approved vendor." },
   { rule: "Commissioned officers are no longer eligible", detail: "As of 19 March 2026, O1–O10 can't open new Army CA goals. Warrant officers W1–W5 and all enlisted Soldiers still can. If you had a credential goal open before that date you may be able to finish that one — ask your education center." },
-  { rule: "Get your supervisor's approval early", detail: "Since 19 March 2026 every Army CA request needs commander or supervisor sign-off whatever your rank, and first-time users have ArmyIgnitED training and a MilGears plan to finish first. Start that now, not the week you file." },
+  { rule: "Line up your supervisor first", detail: "Since 19 March 2026 every Army CA request needs supervisor approval, whatever your rank. In practice that's your first-line leader — it does not have to go to your commander. Tell them it's coming. First-time users also have ArmyIgnitED training and a MilGears plan to finish, so start those now rather than the week you file." },
   { rule: "Plan on 45 to 90 days", detail: "That's the window from submitting in ArmyIgnitED to a decision, and it decides which cohort you can realistically join." }
 ];
 
@@ -928,3 +928,23 @@ export function standardSession(dateStr) {
     window: `${first.at}–${end} Central`
   };
 }
+
+// ---------------------------------------------------------------- after you file
+//
+// The gap between filing a CA request and the money moving is the longest dead stretch in the
+// whole journey, and a student sitting in it has no idea whether anything is happening. Worse,
+// "approved" and "funded" are different events weeks apart — people see approval, assume they
+// can start, and are then told they're not funded.
+//
+// The two-and-a-half week figure is observed, not published: one of our own students, from
+// ACAPO approval to funding actually landing.
+export const CA_STAGES = [
+  { stage: "Your supervisor approves it", who: "First-line leader",
+    note: "This is the step that most often stalls, and it's the one you can do something about. A nudge in person beats waiting." },
+  { stage: "ACAPO reviews it", who: "Army CA Program Office",
+    note: "The Army's credentialing assistance office checks the request itself. Nothing for you to do here." },
+  { stage: "Funding is released", who: "Army finance",
+    note: "This is the slow part, and it happens AFTER approval — one of our students waited about two and a half weeks between the two. Approved does not yet mean funded, and you shouldn't start the course until it is." },
+  { stage: "RBLP tells us it's funded", who: "RBLP",
+    note: "We open your prep work the moment that lands, and email you." }
+];

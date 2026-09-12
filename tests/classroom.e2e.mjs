@@ -1243,6 +1243,23 @@ check("the site no longer writes CA off as enlisted-only", !/enlisted benefit/.t
 check("Air Force is described on its own terms, not Army's",
   /AF COOL is a Total Force/.test(site) && /E7&ndash;E9/.test(site));
 
+// The wait between filing and funding is the longest dead stretch in the journey. Naming the
+// stages turns "nothing is happening" into "here is where it is".
+check("CA students are shown what happens during the wait",
+  Array.isArray(m.funding.caStages) && m.funding.caStages.length >= 3, m.funding.caStages);
+const armyRulesNow = (await import(`file://${R}/_lib/curriculum.js`)).caWarningsFor("army_ca");
+check("the supervisor step is named as a first-line leader, not a commander",
+  armyRulesNow.some((w) => /first-line leader/i.test(w.detail) && /does not have to go to your commander/i.test(w.detail)),
+  armyRulesNow.map((w) => w.rule));
+check("ACAPO is named, since students see it in the portal",
+  m.funding.caStages.some((x) => /ACAPO/.test(x.who) || /ACAPO/.test(x.stage)));
+check("approved and funded are separated, with the observed lag",
+  m.funding.caStages.some((x) => /two and a half weeks/i.test(x.note) && /AFTER approval/i.test(x.note)));
+const waitPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("and the waiting step says so outright",
+  /Approved and funded are not the same thing/.test(waitPage));
+check("non-CA students get no stages", (await (await get(me, payer.cookie)).json()).funding.caStages === null);
+
 // Army rank rules must not be shown to an Air Force student, and vice versa.
 const warn = (await import(`file://${R}/_lib/curriculum.js`)).caWarningsFor;
 const army = warn("army_ca"), af = warn("af_ca");
