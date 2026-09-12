@@ -807,7 +807,8 @@ export const CA_WARNINGS = [
   { rule: "The vendor name has to match exactly", detail: "On the training request the company is RLS — spelled the way it appears in ArmyIgnitED. A quote in a different name is the most common bounce." },
   { rule: "Don't pay out of pocket to hold a seat", detail: "CA will not reimburse you afterwards. If you've paid to reserve a place, tell us before you file." },
   { rule: "Don't start the class before it's funded", detail: "Attending before approval can cost you the funding entirely." },
-  { rule: "Get your supervisor's approval early", detail: "Since March 2026 all CA requests need commander or supervisor sign-off, and first-time users have ArmyIgnitED training and a MilGears plan to complete first. Start that now, not the week you file." },
+  { rule: "Get your supervisor's approval early", detail: "Since 19 March 2026 every CA request needs commander or supervisor sign-off whatever your rank, and first-time users have ArmyIgnitED training and a MilGears plan to complete first. Start that now, not the week you file." },
+  { rule: "Commissioned officers are no longer eligible", detail: "As of 19 March 2026, O1–O10 can't use Army CA. Warrant officers W1–W5 and all enlisted Soldiers still can. If you had a credential goal open before that date you may be able to finish it — ask your education center." },
   { rule: "Allow the full window", detail: "Requests take 45 to 90 days depending on where it sits. That's the clock we use to pick your cohort." }
 ];
 

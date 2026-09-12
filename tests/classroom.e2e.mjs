@@ -856,8 +856,19 @@ check("the sign-in page says this is also how you create an account",
 
 // CA is an enlisted benefit; rank bands describe experience. An officer shouldn't build a
 // timeline around funding they can't get.
-check("the site separates experience bands from funding eligibility",
-  /not funding eligibility/.test(site) && /enlisted benefit/.test(site));
+// Army CA eligibility changed on 19 Mar 2026: commissioned officers O1-O10 are out, warrant
+// officers W1-W5 and enlisted are still in. Calling it "an enlisted benefit" writes off every
+// warrant officer — and RBLP's own Coach/Trainer bands are largely warrant officers.
+check("the site separates experience bands from funding eligibility", /not funding eligibility/.test(site));
+check("warrant officers are told they ARE eligible for CA",
+  /Warrant officers W1&ndash;W5 are eligible/.test(site));
+check("commissioned officers are told they are not, with the date",
+  /O1&ndash;O10 became ineligible on 19 March 2026/.test(site));
+check("the site no longer writes CA off as enlisted-only", !/enlisted benefit/.test(site));
+const caRules = (await import(`file://${R}/_lib/curriculum.js`)).CA_WARNINGS;
+check("the classroom carries the same eligibility rule",
+  caRules.some((w) => /W1–W5/.test(w.detail) && /O1–O10/.test(w.detail)),
+  caRules.map((w) => w.rule));
 
 // GI Bill reimburses the EXAM fee, not the prep training. A badge saying "GI Bill eligible"
 // beside a $395 prep price reads as coverage it doesn't have.
