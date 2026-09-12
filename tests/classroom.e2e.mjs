@@ -185,10 +185,17 @@ check("the step explains WHY it's RLS, not just that it is",
 const armyWarn = (await import(`file://${R}/_lib/classroom.js`)).fundingGuidance("army_ca");
 const armyRules = (await import(`file://${R}/_lib/curriculum.js`)).caWarningsFor("army_ca");
 check("Army students are told the company field is a search box",
-  armyRules.some((w) => /search box/i.test(w.rule) && /typing/i.test(w.detail)), armyRules.map((w) => w.rule));
+  armyRules.some((w) => /search box/i.test(w.rule) && /\btyp/i.test(w.detail)),
+  armyRules.filter((w) => /search box/i.test(w.rule)).map((w) => w.rule));
 check("the step itself says it, not just the warnings list",
   /looks like a dropdown\. It is actually a search box/.test(caPage));
-check("and says exactly what to type", /start typing R&#8209;L&#8209;S/.test(caPage));
+// The vendor is listed under its full name, so searching the acronym returns nothing — the
+// obvious thing to type is the thing that fails.
+check("it says to type the full name, not the acronym",
+  /type <b>Resilient Leadership Solutions<\/b>/.test(caPage) && /Searching for &ldquo;RLS&rdquo; finds nothing/.test(caPage));
+check("and the warning list agrees",
+  armyRules.some((w) => /full name/i.test(w.rule) && /Searching "RLS" also finds nothing/.test(w.detail)),
+  armyRules.filter((w) => /search box/i.test(w.rule)).map((w) => w.detail));
 check("it's shown only to Army — the Air Force portal is different",
   /p\.paymentSource === "army_ca"/.test(caPage));
 
