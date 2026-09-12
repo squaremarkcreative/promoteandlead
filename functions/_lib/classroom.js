@@ -432,3 +432,27 @@ export function fundingGuidance(source) {
 }
 
 export { TRACKS, MODULES, modulesForTrack, tasksForTrack };
+
+// ---------------------------------------------------------------- referrals
+//
+// Instructors are paid more for a seat they brought than for one that was already in the room,
+// so "who referred this student" is a money fact. It has to be recorded at the moment it
+// happens and then left alone — reconstructing it later from memory is how people fall out.
+//
+// Two ways in. The link is the good one: an instructor hands out their own URL and the code
+// rides along to account creation. The named fallback catches everyone who signed up without
+// it. Either way the student sets it once; only an admin can change it afterwards.
+export const REFERRAL_VIA = { link: "Referral link", named: "Named at signup", admin: "Set by admin" };
+
+// Human-typeable, derived from their address so it's guessable in a good way — Mary can say
+// "use my link" or read it out loud. Falls back to a suffix on collision.
+export function referralCodeFor(email, taken) {
+  const base = String(email || "").split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 14) || "coach";
+  if (!taken || !taken.includes(base)) return base;
+  for (let i = 2; i < 100; i++) if (!taken.includes(base + i)) return base + i;
+  return base + Date.now().toString(36).slice(-4);
+}
+
+export function referralLink(code) {
+  return code ? `https://promoteandlead.com/classroom/?ref=${encodeURIComponent(code)}` : null;
+}

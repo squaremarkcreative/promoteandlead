@@ -705,6 +705,67 @@ const plainStudent = keysOf(tabFn({ ME: { cohort: null, profile: { role: "studen
 check("a student with no cohort yet still sees their own journey",
   plainStudent.includes("home") && plainStudent.includes("pipeline") && !plainStudent.includes("teaching"), plainStudent);
 
+// ---------------------------------------------------------------- referrals
+section("Acceptance: who brought this student");
+// Making someone an instructor issues their share link — referral pay needs a mechanism.
+const instId = DB.pl_students.find((x) => x.email === "instructor@promoteandlead.com").id;
+await post(action, { action: "student.role", data: { id: instId, role: "instructor" } }, boss.cookie);
+const instRow = DB.pl_students.find((x) => x.id === instId);
+check("becoming an instructor issues a referral code", !!instRow.referral_code, instRow.referral_code);
+const { referralLink: mkLink } = await import(`file://${R}/_lib/classroom.js`);
+check("the link is a real classroom URL carrying the code",
+  /^https:\/\/promoteandlead\.com\/classroom\/\?ref=/.test(mkLink(instRow.referral_code)));
+
+// The link path: the code rides to account creation and is stamped there.
+const viaLink = await (async () => {
+  await post(auth, { action: "request-code", email: "via.link@example.com" });
+  const c = /\b(\d{6})\b/.exec(SENT[SENT.length - 1].subject)[1];
+  const r = await post(auth, { action: "verify-code", email: "via.link@example.com", code: c, ref: instRow.referral_code });
+  return { cookie: r.headers.get("set-cookie").split(";")[0] };
+})();
+const linkStudent = DB.pl_students.find((x) => x.email === "via.link@example.com");
+check("a student arriving on the link is attributed to that instructor",
+  linkStudent.referred_by === instId && linkStudent.referred_via === "link", linkStudent.referred_via);
+
+// A bogus code must attribute to nobody rather than erroring or guessing.
+await post(auth, { action: "request-code", email: "bad.ref@example.com" });
+const bc = /\b(\d{6})\b/.exec(SENT[SENT.length - 1].subject)[1];
+await post(auth, { action: "verify-code", email: "bad.ref@example.com", code: bc, ref: "not-a-real-code" });
+check("an unknown code attributes to nobody", !DB.pl_students.find((x) => x.email === "bad.ref@example.com").referred_by);
+
+// The fallback, for anyone who signed up without the link.
+const noLink = await signIn("no.link@example.com");
+let nlMe = await (await get(me, noLink.cookie)).json();
+check("a student with no attribution is offered the instructor list", Array.isArray(nlMe.instructors) && nlMe.instructors.length >= 1);
+check("naming an instructor records it",
+  (await post(action, { action: "referral.name", data: { instructor_id: instId } }, noLink.cookie)).ok &&
+  DB.pl_students.find((x) => x.email === "no.link@example.com").referred_via === "named");
+check("but only once — it decides who gets paid",
+  (await post(action, { action: "referral.name", data: { instructor_id: instId } }, noLink.cookie)).status === 400);
+nlMe = await (await get(me, noLink.cookie)).json();
+check("and once set, the list stops being offered", nlMe.instructors === null);
+check("a student can't be attributed to a non-instructor",
+  (await post(action, { action: "referral.name", data: { instructor_id: DB.pl_students[0].id } }, (await signIn("self.ref@example.com")).cookie)).status === 400);
+
+// Corrections move money, so they're admin-only.
+check("a student cannot reassign their own referrer",
+  (await post(action, { action: "student.referral", data: { id: linkStudent.id, instructor_id: null } }, noLink.cookie)).status === 403);
+check("an admin can", (await post(action, { action: "student.referral", data: { id: linkStudent.id, instructor_id: instId } }, boss.cookie)).ok);
+
+// The instructor sees their own link and pipeline; the admin sees and can change attribution.
+const instCon = await (await get(consoleEp, instructor.cookie)).json();
+check("the instructor gets their link", instCon.referrals && /ref=/.test(instCon.referrals.link || ""), instCon.referrals);
+check("and the students it brought", instCon.referrals.students.some((r) => r.email === "via.link@example.com"),
+  instCon.referrals.students.map((r) => r.email));
+const adminRef = await (await get(consoleEp, boss.cookie)).json();
+check("the admin can pick a referrer per student", (adminRef.admin.instructorList || []).length >= 1);
+// (the admin reassignment just above rewrites that student's `via` to "admin", by design)
+check("and sees how each attribution was made",
+  adminRef.admin.students.filter((x) => x.referredBy).every((x) => ["link", "named", "admin"].includes(x.referredVia)),
+  adminRef.admin.students.filter((x) => x.referredBy).map((x) => x.referredVia));
+check("reassigning by hand is recorded as such",
+  adminRef.admin.students.some((x) => x.referredVia === "admin"));
+
 // ---------------------------------------------------------------- placing students
 section("Acceptance: the admin can actually run cohorts");
 const placeMe = await signIn("place.me@example.com");

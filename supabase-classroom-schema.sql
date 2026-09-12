@@ -23,6 +23,9 @@ create table if not exists pl_students (
   rblp_applied_at timestamptz,                       -- student confirmed they filed the free RBLP application
   ca_submitted_on date,                              -- date they sent both invoices to their CA office (drives the 45-day clock)
   purchase_claimed_at timestamptz,                   -- student says they already bought prep on rblp.com; admin confirms
+  referral_code   text unique,                       -- instructors only: the code in their share link
+  referred_by     uuid references pl_students(id),   -- which instructor brought this student
+  referred_via    text,                              -- link | named | admin — how the attribution was made
   created_at      timestamptz not null default now(),
   last_login_at   timestamptz
 );
@@ -127,3 +130,7 @@ alter table pl_module_passwords   enable row level security;
 alter table pl_worksheet_responses add column if not exists notdo_text text;
 alter table pl_worksheet_responses add column if not exists plan_text  text;
 alter table pl_students add column if not exists purchase_claimed_at timestamptz;
+alter table pl_students add column if not exists referral_code text;
+alter table pl_students add column if not exists referred_by uuid references pl_students(id);
+alter table pl_students add column if not exists referred_via text;
+create unique index if not exists pl_students_referral_code_idx on pl_students (referral_code) where referral_code is not null;

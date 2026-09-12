@@ -62,7 +62,9 @@ export async function onRequestGet(context) {
         branch: student.branch || null,
         rblpAppliedAt: student.rblp_applied_at || null,
         caSubmittedOn: student.ca_submitted_on || null,
-        purchaseClaimedAt: student.purchase_claimed_at || null
+        purchaseClaimedAt: student.purchase_claimed_at || null,
+        referredBy: student.referred_by || null,
+        referredVia: student.referred_via || null
       },
       pipeline,
       funding: {
@@ -104,6 +106,11 @@ export async function onRequestGet(context) {
       modulePassword,
       // How to study, how the modules build, and what exam day asks of them.
       rblpSupport: RBLP_SUPPORT,
+      // Only shown when they haven't already been attributed, so they can name who sent them.
+      instructors: student.referred_by || student.referred_via
+        ? null
+        : (await db.select("pl_students", "select=id,display_name,email&role=eq.instructor&order=display_name&limit=100"))
+            .map((i) => ({ id: i.id, name: i.display_name || i.email.split("@")[0] })),
       study: { habits: STUDY_HABITS, arc: MODULE_ARC, exam: EXAM_PREP, whyPrep: WHY_PREP,
                examFacts: EXAM_FACTS, booking: EXAM_BOOKING },
       // The whole cohort day, marked up for this student: which blocks are theirs, and where

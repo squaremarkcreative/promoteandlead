@@ -7,7 +7,7 @@ import { sb, json } from "../../_lib/db.js";
 import { currentStudent, effectiveRole } from "../../_lib/session.js";
 import {
   MODULES, TRACKS, normalizeTrack, loadSessions, worksheetProgress, hoursProgress, monthKey, routeFor,
-  buildPipeline, certificateForMember
+  buildPipeline, certificateForMember, referralLink, REFERRAL_VIA
 } from "../../_lib/classroom.js";
 import {
   FACILITATION, SOP_CHECKLIST, COACHING, MODULE_OPENINGS, MODULE_TEACHING,
@@ -146,8 +146,25 @@ export async function onRequestGet(context) {
       tracks: TRACKS
     };
 
+    // An instructor's own share link, and the students it brought — their recruiting pipeline,
+    // and the evidence behind their referral pay.
+    const meRow = await db.select("pl_students", `select=referral_code&id=eq.${me.id}&limit=1`);
+    const myCode = meRow.length ? meRow[0].referral_code : null;
+    if (myCode || me.role === "instructor") {
+      const mine = await db.select("pl_students",
+        `select=id,email,display_name,track,payment_source,referred_via,created_at&referred_by=eq.${me.id}&order=created_at.desc&limit=200`);
+      payload.referrals = {
+        code: myCode,
+        link: referralLink(myCode),
+        students: mine.map((x) => ({
+          name: x.display_name || x.email, email: x.email, track: x.track || null,
+          via: x.referred_via, joined: x.created_at
+        }))
+      };
+    }
+
     if (isAdmin) {
-      const students = await db.select("pl_students", "select=id,email,display_name,role,track,payment_source,ca_submitted_on,purchase_claimed_at,rblp_applied_at,created_at,last_login_at&order=created_at.desc&limit=500");
+      const students = await db.select("pl_students", "select=id,email,display_name,role,track,payment_source,ca_submitted_on,purchase_claimed_at,rblp_applied_at,referral_code,referred_by,referred_via,created_at,last_login_at&order=created_at.desc&limit=500");
       // Which handoffs have already been marked, so the admin buttons show state instead of
       // Tommy having to remember whether he already told someone their CA came through.
       const evs = await db.select("pl_pipeline_events", "select=student_id,step,completed_at&limit=5000");
@@ -202,6 +219,9 @@ export async function onRequestGet(context) {
             ? { id: membership.cohort.id, label: membership.cohort.slug || membership.cohort.name }
             : null,
           memberTrack: membership ? membership.rblp_type : null,
+          referredBy: s.referred_by || null,
+          referredVia: s.referred_via || null,
+          referralCode: s.referral_code || null,
           stage: {
             key: jp.current.key, title: jp.current.title, phase: jp.current.phase,
             owner: jp.current.owner, ownerLabel: jp.current.ownerLabel,
@@ -235,6 +255,9 @@ export async function onRequestGet(context) {
         certificates,
         stalledAfterDays: STALLED_AFTER_DAYS,
         handoffs: ADMIN_HANDOFFS,
+        referralVia: REFERRAL_VIA,
+        instructorList: students.filter((x) => effectiveRole(env, x) === "instructor")
+          .map((x) => ({ id: x.id, name: x.display_name || x.email, code: x.referral_code, link: referralLink(x.referral_code) })),
         allCohorts: (await db.select("pl_cohorts", "select=id,name,slug,session_date&order=created_at.desc&limit=200"))
           .map((c) => ({ id: c.id, label: c.slug || c.name, name: c.name, date: c.session_date || null })),
         passwords: await db.select("pl_module_passwords", "select=*&order=year_month.desc&limit=24"),

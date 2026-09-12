@@ -498,7 +498,11 @@ $("#codeForm").addEventListener("submit", async function (e) {
   try {
     var res = await fetch("/api/classroom/auth", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "verify-code", email: pendingEmail, code: $("#siCode").value })
+      body: JSON.stringify({
+        action: "verify-code", email: pendingEmail, code: $("#siCode").value,
+        // Only used when this creates the account; ignored for an existing one.
+        ref: (function () { try { return localStorage.getItem("pl_ref") || ""; } catch (e) { return ""; } })()
+      })
     });
     var out = await res.json().catch(function () { return {}; });
     if (!res.ok) throw new Error(out.error || "That code didn't work.");
@@ -669,6 +673,14 @@ function renderPipeline(el) {
         ME.funding.options.map(function (o) {
           return '<option value="' + esc(o.key) + '"' + (o.key === p.paymentSource ? " selected" : "") + ">" + esc(o.label) + "</option>";
         }).join("") + "</select></label>" +
+        (ME.instructors && ME.instructors.length
+          ? '<label class="fld"><span>Did one of our instructors send you here?</span><select id="pRef">' +
+            '<option value="">No &mdash; I found you myself</option>' +
+            ME.instructors.map(function (i) {
+              return '<option value="' + esc(i.id) + '">' + esc(i.name) + "</option>";
+            }).join("") + "</select></label>" +
+            '<p class="muted fld-note">Only asked once. If someone pointed you our way we like to know, and it matters for how they\'re paid.</p>'
+          : "") +
         '<button class="btn btn-gold btn-sm" id="pSaveProfile">Save and continue</button>';
     },
     rblp_apply: function () {
@@ -808,10 +820,15 @@ function renderPipeline(el) {
   wireTrackPicker(el, "pTrack");
   if (save) save.addEventListener("click", function () {
     var fund = $("#pFunding", el);
+    var refSel = $("#pRef", el);
     run(function () {
       return api("profile.save", { display_name: $("#pDisplay").value, track: $("#pTrack") ? $("#pTrack").value : p.track })
-        .then(function () { return fund && fund.value ? api("funding.choose", { source: fund.value }) : null; });
-    }, "Saved — here's your next step.").then(function () { window.scrollTo({ top: 0 }); });
+        .then(function () { return fund && fund.value ? api("funding.choose", { source: fund.value }) : null; })
+        .then(function () { return refSel ? api("referral.name", { instructor_id: refSel.value || null }) : null; });
+    }, "Saved — here's your next step.").then(function () {
+      try { localStorage.removeItem("pl_ref"); } catch (e) {}
+      window.scrollTo({ top: 0 });
+    });
   });
   var applied = $("#pApplied", el);
   if (applied) applied.addEventListener("change", function () {
@@ -1514,6 +1531,24 @@ function renderInstructor(el) {
           (here ? "" : '<p class="muted">Nothing to complete yet &mdash; mark who attended first.</p>');
       })() + "</div>" +
 
+    (CONSOLE.referrals ? '<div class="box"><h3>Your referral link</h3>' +
+      (CONSOLE.referrals.link
+        ? '<p class="muted">Anyone who creates an account from this link is recorded as yours, automatically and permanently. ' +
+          'Put it in a signature block, a unit newsletter, a text to a buddy.</p>' +
+          '<div class="row"><input id="refLink" value="' + esc(CONSOLE.referrals.link) + '" readonly style="max-width:430px">' +
+          '<button class="btn btn-ghost btn-sm" id="refCopy">Copy</button></div>'
+        : '<p class="muted">No link yet &mdash; ask Tommy to generate one.</p>') +
+      '<h4 style="margin-top:1rem;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)">Students you brought (' +
+        CONSOLE.referrals.students.length + ")</h4>" +
+      (CONSOLE.referrals.students.length
+        ? '<div class="scroll"><table><tbody>' + CONSOLE.referrals.students.map(function (r) {
+            return "<tr><td>" + esc(r.name) + '<br><span class="muted">' + esc(r.email) + "</span></td>" +
+              "<td>" + esc(r.track || "—") + "</td>" +
+              '<td class="muted">' + esc(fmtDay(r.joined)) + " &middot; " + esc(r.via === "link" ? "via your link" : "named you") + "</td></tr>";
+          }).join("") + "</tbody></table></div>"
+        : '<p class="muted">Nobody yet. Share the link and they\'ll appear here as they sign up.</p>') +
+      "</div>" : "") +
+
     '<div class="box"><h3>How you get paid</h3>' +
       '<p>' + esc(CONSOLE.pay.basis) + "</p>" +
       '<ol style="margin:.7rem 0 0 1.1rem;font-size:.88rem" class="soft">' +
@@ -1539,6 +1574,13 @@ function renderInstructor(el) {
         return api("attendance.mark", { cohort_id: c.id, session_id: p[0], student_email: p[1], present: p[2] === "1" });
       }, "Attendance saved.");
     });
+  });
+  var refCopy = $("#refCopy", el);
+  if (refCopy) refCopy.addEventListener("click", function () {
+    var f = $("#refLink", el);
+    f.select();
+    try { navigator.clipboard.writeText(f.value); flash("Link copied."); }
+    catch (e) { document.execCommand("copy"); flash("Link copied."); }
   });
   $$("[data-complete]", el).forEach(function (b) {
     b.addEventListener("click", function () {
@@ -1666,6 +1708,12 @@ function renderAdmin(el) {
       });
     }, "Cohort created.");
   });
+  $$("[data-ref]", el).forEach(function (sel) {
+    sel.addEventListener("change", function () {
+      run(function () { return api("student.referral", { id: sel.dataset.ref, instructor_id: sel.value || null }); },
+        "Referral updated.");
+    });
+  });
   $$("[data-place]", el).forEach(function (sel) {
     sel.addEventListener("change", function () {
       run(function () { return api("member.place", { student_id: sel.dataset.place, cohort_id: sel.value || null }); },
@@ -1741,7 +1789,15 @@ function renderLearnerTable(a, learners) {
               }).join("") + "</select></div>" +
             // They bought straight from RBLP's storefront and told us. Confirm it, then mark paid.
             (s.purchase_claimed_at && !s.steps.paid
-              ? '<br><span class="pill warn">says they paid ' + esc(fmtDay(s.purchase_claimed_at)) + "</span>" : "") + "</td>" +
+              ? '<br><span class="pill warn">says they paid ' + esc(fmtDay(s.purchase_claimed_at)) + "</span>" : "") +
+            '<div class="place"><select data-ref="' + s.id + '" title="Who referred this student — this decides referral pay">' +
+              '<option value="">&mdash; no referrer &mdash;</option>' +
+              (a.instructorList || []).map(function (i) {
+                return '<option value="' + esc(i.id) + '"' + (s.referredBy === i.id ? " selected" : "") + ">" +
+                  esc(i.name) + "</option>";
+              }).join("") + "</select>" +
+              (s.referredVia ? '<span class="muted"> ' + esc((a.referralVia || {})[s.referredVia] || s.referredVia) + "</span>" : "") +
+            "</div></td>" +
           '<td><span class="own own-' + esc(st.owner) + '">' + esc(st.ownerLabel) + "</span>" +
             '<div class="stage-t">' + esc(st.title) + "</div>" +
             '<span class="muted">' + st.completed + " of " + st.total + " done</span></td>" +
@@ -1804,9 +1860,10 @@ function renderStaffTable(staff) {
   return '<div class="box"><h3>Instructors &amp; admins (' + staff.length + ")</h3>" +
     '<p class="muted">Staff accounts. They don\'t have a student journey &mdash; an instructor isn\'t working toward a credential here.</p>' +
     '<p class="muted">Company admin is granted by the <b class="soft">CLASSROOM_ADMINS</b> setting, not from this table, so nobody can be promoted to admin from here.</p>' +
-    '<div class="scroll"><table><thead><tr><th>Account</th><th>Role</th></tr></thead><tbody>' +
+    '<div class="scroll"><table><thead><tr><th>Account</th><th>Referral link</th><th>Role</th></tr></thead><tbody>' +
     staff.map(function (s) {
       return "<tr><td>" + esc(s.email) + '<br><span class="muted">' + esc(s.display_name || "no name yet") + "</span></td>" +
+        '<td class="muted">' + (s.referralCode ? "?ref=" + esc(s.referralCode) : "&mdash;") + "</td>" +
         '<td><select data-role="' + s.id + '" style="max-width:120px">' +
           ["student", "instructor"].map(function (r) {
             return '<option value="' + r + '"' + (r === s.role ? " selected" : "") + ">" + r + "</option>";
@@ -1816,6 +1873,18 @@ function renderStaffTable(staff) {
 }
 
 /* ------------------------------------------------------------------ start */
+// An instructor's share link lands here as ?ref=code. Hold it until they finish signing in —
+// account creation is where it gets stamped — and survive them closing the tab in between.
+(function () {
+  try {
+    var ref = new URLSearchParams(location.search).get("ref");
+    if (ref) {
+      localStorage.setItem("pl_ref", ref.slice(0, 40));
+      history.replaceState({}, "", location.pathname + location.hash);
+    }
+  } catch (e) {}
+})();
+
 (function () {
   var h = (location.hash || "").replace("#/", "");
   if (h) ACTIVE = h;

@@ -6,7 +6,7 @@
 
 import { sb, json } from "../../_lib/db.js";
 import { currentStudent } from "../../_lib/session.js";
-import { FUNDING, normalizeTrack, loadMembership, loadSessions, PIPELINE_STEPS, JOURNEY, routeFor } from "../../_lib/classroom.js";
+import { FUNDING, normalizeTrack, loadMembership, loadSessions, PIPELINE_STEPS, JOURNEY, routeFor, referralCodeFor } from "../../_lib/classroom.js";
 import { transactionalEmail, sendEmail } from "../../_lib/email.js";
 import { issueCode } from "../../_lib/session.js";
 import { allTaskKeys } from "../../_lib/curriculum.js";
@@ -85,6 +85,36 @@ export async function onRequestPost(context) {
             text: `${me.email} says they already purchased exam prep. Confirm with RBLP, then mark it in the Admin tab.`
           });
         }
+        return json({ ok: true });
+      }
+
+      // No link used? They can name the instructor who sent them, once. After that only an
+      // admin can change it — this decides who gets paid, so it isn't a field to fiddle with.
+      case "referral.name": {
+        if (me.referred_by) return json({ error: "Your referral is already recorded. Email us if it's wrong." }, 400);
+        if (!data.instructor_id) {
+          await db.patch("pl_students", `id=eq.${me.id}`, { referred_via: "named", referred_by: null });
+          return json({ ok: true, referredBy: null });
+        }
+        const inst = await db.select("pl_students",
+          `select=id,role,display_name&id=eq.${data.instructor_id}&limit=1`);
+        if (!inst.length || inst[0].role !== "instructor") return json({ error: "That isn't one of our instructors." }, 400);
+        if (inst[0].id === me.id) return json({ error: "You can't refer yourself." }, 400);
+        await db.patch("pl_students", `id=eq.${me.id}`, { referred_by: inst[0].id, referred_via: "named" });
+        return json({ ok: true, referredBy: inst[0].display_name || null });
+      }
+
+      // Corrections are an admin job, because they move money.
+      case "student.referral": {
+        if (me.role !== "admin") return json({ error: "Admins only." }, 403);
+        if (!data.instructor_id) {
+          await db.patch("pl_students", `id=eq.${data.id}`, { referred_by: null, referred_via: "admin" });
+          return json({ ok: true });
+        }
+        const inst2 = await db.select("pl_students", `select=id,role&id=eq.${data.instructor_id}&limit=1`);
+        if (!inst2.length || inst2[0].role !== "instructor") return json({ error: "Not an instructor." }, 400);
+        if (inst2[0].id === data.id) return json({ error: "A student can't refer themselves." }, 400);
+        await db.patch("pl_students", `id=eq.${data.id}`, { referred_by: inst2[0].id, referred_via: "admin" });
         return json({ ok: true });
       }
 
@@ -250,6 +280,15 @@ export async function onRequestPost(context) {
           return json({ error: "Roles here are student or instructor. Admin is set in CLASSROOM_ADMINS." }, 400);
         }
         await db.patch("pl_students", `id=eq.${data.id}`, { role: data.role });
+        // A new instructor needs a share link straight away, or referral pay has no mechanism.
+        if (data.role === "instructor") {
+          const who2 = await db.select("pl_students", `select=email,referral_code&id=eq.${data.id}&limit=1`);
+          if (who2.length && !who2[0].referral_code) {
+            const all = await db.select("pl_students", "select=referral_code&referral_code=neq.null&limit=500");
+            const code = referralCodeFor(who2[0].email, all.map((x) => x.referral_code).filter(Boolean));
+            await db.patch("pl_students", `id=eq.${data.id}`, { referral_code: code });
+          }
+        }
         return json({ ok: true });
       }
 

@@ -78,7 +78,20 @@ async function verifyCode(env, db, email, body) {
   let rows = await db.select("pl_students", `select=*&email=eq.${encodeURIComponent(email)}&limit=1`);
   if (!rows.length) {
     const displayName = (body.display_name || "").toString().trim().slice(0, 120) || null;
-    await db.insert("pl_students", { email, display_name: displayName });
+    // A ?ref= code carried from an instructor's link. Resolved here, at account creation,
+    // because that's the only moment it's unambiguous — and only to a real instructor.
+    let referredBy = null;
+    const ref = String(body.ref || "").trim().toLowerCase().slice(0, 40);
+    if (ref) {
+      const owner = await db.select("pl_students",
+        `select=id,role&referral_code=eq.${encodeURIComponent(ref)}&limit=1`);
+      if (owner.length && owner[0].role === "instructor") referredBy = owner[0].id;
+    }
+    await db.insert("pl_students", {
+      email, display_name: displayName,
+      referred_by: referredBy,
+      referred_via: referredBy ? "link" : null
+    });
     rows = await db.select("pl_students", `select=*&email=eq.${encodeURIComponent(email)}&limit=1`);
     if (!rows.length) return json({ error: "Couldn't create your account. Please try again." }, 500);
     try {
