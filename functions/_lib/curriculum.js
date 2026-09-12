@@ -879,3 +879,16 @@ export const MOCK_EXAMINER = {
   ],
   anxiety: "Say this out loud early: an oral exam feels like an interview, and introverts do fine — as long as the stories are written down first. Nobody here is going to let you wing it, and that's the point."
 };
+
+// RBLP's own support line, from rblp.com/home/about-us/contact (checked 12 Sep 2026). Kept in
+// one place so it can't drift out of date in three different bits of copy.
+//
+// Where something is RBLP's to fix — invoices, exam scheduling, the credential itself — send
+// the student straight to them. We're a hop in the middle, and routing through us adds a day
+// for no benefit. We still want telling, so it shows up on the stalled list.
+export const RBLP_SUPPORT = {
+  email: "support@rblp.com",
+  phone: "(213) 205-6100",
+  hours: "Mon–Fri, 8:30am–4:30pm Mountain",
+  expect: "They ask for 1–2 business days to reply."
+};

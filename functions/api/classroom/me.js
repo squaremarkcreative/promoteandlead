@@ -9,7 +9,7 @@ import {
   currentModulePassword, worksheetProgress, hoursProgress, buildPipeline, fundingGuidance, routeFor,
   certificateData
 } from "../../_lib/classroom.js";
-import { FACILITATION, SOP_CHECKLIST, STORY_SOURCES, MODULE_STUDY, MODULE_ARC, STUDY_HABITS, EXAM_PREP, EXAM_FACTS, EXAM_BOOKING, caWarningsFor, runOfDay, dayFor, DAY_NOTES, WHY_PREP } from "../../_lib/curriculum.js";
+import { FACILITATION, SOP_CHECKLIST, STORY_SOURCES, MODULE_STUDY, MODULE_ARC, STUDY_HABITS, EXAM_PREP, EXAM_FACTS, EXAM_BOOKING, caWarningsFor, runOfDay, dayFor, DAY_NOTES, WHY_PREP, RBLP_SUPPORT } from "../../_lib/curriculum.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -103,6 +103,7 @@ export async function onRequestGet(context) {
       },
       modulePassword,
       // How to study, how the modules build, and what exam day asks of them.
+      rblpSupport: RBLP_SUPPORT,
       study: { habits: STUDY_HABITS, arc: MODULE_ARC, exam: EXAM_PREP, whyPrep: WHY_PREP,
                examFacts: EXAM_FACTS, booking: EXAM_BOOKING },
       // The whole cohort day, marked up for this student: which blocks are theirs, and where

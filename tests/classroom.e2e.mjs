@@ -487,6 +487,21 @@ check("track windows match the locked academy day shapes",
 check("payback hours still 3 / 4 / 5",
   m.tracks.RBLP.paybackHours === 3 && m.tracks["RBLP-C"].paybackHours === 4 && m.tracks["RBLP-T"].paybackHours === 5);
 
+// ---------------------------------------------------------------- who to chase
+section("Acceptance: chase the right people");
+m = await (await get(me, student.cookie)).json();
+check("RBLP's own support details reach the student",
+  m.rblpSupport && /@rblp\.com$/.test(m.rblpSupport.email) && m.rblpSupport.phone, m.rblpSupport);
+const chasePage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+// Invoices are RBLP's to raise; routing the chase through us just adds a day.
+check("missing invoices send the student to RBLP, not to us",
+  /Nothing after a week\?<\/b> RBLP raise these/.test(chasePage) &&
+  /mailto:' \+ esc\(r\.email\)/.test(chasePage));
+check("but we still ask to be told, so it shows up as stalled",
+  /Tell us too/.test(chasePage) && /info@promoteandlead\.com/.test(chasePage));
+check("the old 'email us and we'll chase it' copy is gone",
+  !/Email <a href="mailto:info@promoteandlead\.com">info@promoteandlead\.com<\/a> and we\\'ll chase it/.test(chasePage));
+
 // ---------------------------------------------------------------- run of day
 section("Acceptance: one cohort day, planned for Trainers");
 const CURRIC = await import(`file://${R}/_lib/curriculum.js`);

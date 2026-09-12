@@ -677,10 +677,18 @@ function renderPipeline(el) {
         "<span>I've submitted my RBLP application and named Promote and Lead Solutions.</span></label>";
     },
     invoice: function () {
+      var r = ME.rblpSupport || {};
       return '<p>RBLP emails you <b class="soft">two</b> invoices &mdash; one for the exam, one for the training. You need both before you can file with CA.</p>' +
         '<label class="row check"><input type="checkbox" id="pInvoice">' +
         "<span>I've received both invoices from RBLP.</span></label>" +
-        '<p class="muted">Nothing after a week? Email <a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> and we\'ll chase it.</p>';
+        '<div class="notice"><b>Nothing after a week?</b> RBLP raise these, so they\'re the fastest people to ask &mdash; ' +
+          'chasing through us just adds a day. Check your spam folder first, then contact them directly:<br>' +
+          '<a href="mailto:' + esc(r.email) + '?subject=' + encodeURIComponent("RBLP invoices for Credentialing Assistance") + '">' + esc(r.email) + '</a>' +
+          (r.phone ? ' &middot; ' + esc(r.phone) : "") +
+          (r.hours ? '<br><span class="muted">' + esc(r.hours) + (r.expect ? " &middot; " + esc(r.expect) : "") + "</span>" : "") +
+        "</div>" +
+        '<p class="muted">Tell us too &mdash; <a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> &mdash; so we know you\'re waiting ' +
+        'and can push from our side if it drags.</p>';
     },
     ca_submitted: function () {
       var g = ME.funding.guidance || {};
