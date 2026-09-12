@@ -758,6 +758,17 @@ function renderPipeline(el) {
           'why theirs is the name on the funding request and ours is the name on your instruction.<br><br>' +
           'With <b>RBLP</b>, your instructor of record stays <b>Promote and Lead Solutions, LLC</b>. And RLS will appear on your completion ' +
           'certificate as well, so it matches the request your CA office funded.</div>' +
+        (function () {
+          var b = ME.funding.caBudget;
+          if (!b) return "";
+          return '<h4 class="warn-h">What this uses of your CA budget</h4>' +
+            '<p class="muted">The Army allows <b class="soft">$' + b.yearCap + '</b> of Credentialing Assistance a fiscal year, ' +
+            'from a combined $' + b.combinedCap + ' pool shared with Tuition Assistance. Your ' + esc(ME.profile.track) +
+            ' is <b class="soft">$' + b.prep + '</b> for the training and <b class="soft">$' + b.exam + '</b> for the exam &mdash; ' +
+            '<b class="soft">$' + b.total + '</b> in total, leaving $' + b.remaining + ' of this year\'s allowance.' +
+            (b.tight ? ' That\'s most of it, so plan any other credential around it.' : '') +
+            ' Spending CA also reduces what\'s left for tuition, since they draw on the same pool.</p>';
+        })() +
         (ME.funding.caWarnings
           ? '<h4 class="warn-h">Before you file &mdash; the things that bounce packets</h4><ul class="warnlist">' +
             ME.funding.caWarnings.map(function (w) {

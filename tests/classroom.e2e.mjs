@@ -1318,6 +1318,27 @@ check("both still get the shared packet warnings",
     army.some((w) => w.rule === r) && af.some((w) => w.rule === r)),
   army.map((w) => w.rule));
 // Consequences a student can't discover any other way until it costs them.
+// FY26 caps, researched: $2,000 CA a year from a combined $4,500 TA+CA pool. RBLP-T at $1,590
+// uses most of it, which a student should know before committing, not after.
+const { caBudgetFor: budget, TRACKS: PRICED } = await import(`file://${R}/_lib/curriculum.js`);
+check("every track carries its prep price and exam fee",
+  Object.values(PRICED).every((t) => t.prepPrice > 0 && t.examFee > 0),
+  Object.entries(PRICED).map(([k, t]) => `${k}:${t.prepPrice}/${t.examFee}`));
+check("all three fit inside the $2,000 annual cap",
+  Object.keys(PRICED).every((t) => budget(t).remaining >= 0),
+  Object.keys(PRICED).map((t) => `${t}:${budget(t).total}`));
+check("Trainer is flagged as using most of the year's allowance",
+  budget("RBLP-T").tight === true && budget("RBLP").tight === false,
+  [budget("RBLP-T").total, budget("RBLP").total]);
+check("the combined TA+CA ceiling is stated", budget("RBLP").combinedCap === 4500);
+check("CA students see the budget", !!m.funding.caBudget && m.funding.caBudget.yearCap === 2000);
+check("non-CA students don't", (await (await get(me, payer.cookie)).json()).funding.caBudget === null);
+check("the warnings carry the cap and the career limit",
+  army.some((w) => /\$2,000/.test(w.rule)) &&
+  army.some((w) => /three credentials per ten years/i.test(w.detail)));
+check("and that CA spending eats into tuition assistance",
+  army.some((w) => /same \$4,500 pool/.test(w.detail) && /reduces what's left for tuition/.test(w.detail)));
+
 // Army CA Policy (11 Dec 2024): recoupment on day 181 after the passing training grade posts,
 // and the trigger is failing to SUBMIT the exam funding request — not failing to take the exam.
 check("Army students get the 180-day clock, measured from the grade posting",

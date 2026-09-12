@@ -21,7 +21,7 @@
 // with no context otherwise — "RBLP-C" means nothing on its own.
 export const TRACKS = {
   RBLP: {
-    label: "RBLP", modules: [1, 2, 3], paybackHours: 3, reflectionHours: 6,
+    label: "RBLP", prepPrice: 395, examFee: 595, modules: [1, 2, 3], paybackHours: 3, reflectionHours: 6,
     window: "09:00–12:30", examHours: 1.5,
     who: "First-line and aspiring supervisors",
     experience: "Typically 2+ years leading a team",
@@ -29,7 +29,7 @@ export const TRACKS = {
     covers: "Team Climate, Team Cohesion, Individual Purpose"
   },
   "RBLP-C": {
-    label: "RBLP-C", modules: [1, 2, 3, 4], paybackHours: 4, reflectionHours: 8,
+    label: "RBLP-C", prepPrice: 495, examFee: 795, modules: [1, 2, 3, 4], paybackHours: 4, reflectionHours: 8,
     window: "09:00–14:30", examHours: 2,
     who: "Managers, and Army warrant officers W1–W3",
     experience: "Typically 5+ years",
@@ -37,7 +37,7 @@ export const TRACKS = {
     covers: "Everything in RBLP, plus Team Learning"
   },
   "RBLP-T": {
-    label: "RBLP-T", modules: [1, 2, 3, 4, 5], paybackHours: 5, reflectionHours: 10,
+    label: "RBLP-T", prepPrice: 595, examFee: 995, modules: [1, 2, 3, 4, 5], paybackHours: 5, reflectionHours: 10,
     window: "09:00–15:30", examHours: 2.5,
     who: "Senior managers, and Army warrant officers W3–W5",
     experience: "Typically 10+ years",
@@ -853,7 +853,11 @@ const CA_WARNINGS_ARMY = [
   { rule: "180 days to request your exam funding", detail: "The clock starts the day your passing training grade is entered — not the day of the class. You have 180 days to submit the exam funding request; on day 181 it goes to recoupment. Since the request itself needs lead time, start it as soon as your grade posts rather than near the deadline." },
   { rule: "Recoupment means repaying the training", detail: "Miss that window and the Army takes back what it paid for your course. Failing the course or the exam can trigger it too. And two recoupments across TA and CA in the same fiscal year suspends you from both for 12 months, so it's worth protecting." },
   { rule: "A year from start to finish", detail: "Separately, the end date of anything CA funds has to fall within 365 days of its start date. Not usually a problem on a one-day course, but it's the outer boundary." },
-  { rule: "One credential a fiscal year", detail: "CA is capped at one credential per fiscal year, and the course and exam together count as that one credential. Worth knowing before you plan a second." },
+  // FY26 caps: $2,000 CA per fiscal year, drawn from a combined TA+CA ceiling of $4,500. One
+  // credential per FY; three per ten years of service from the Basic Active Service Date, and
+  // another three after ten years — which is where "about six across a career" comes from.
+  { rule: "$2,000 of CA a fiscal year", detail: "The Army cut the annual CA cap from $4,000 to $2,000. Your course and exam both come out of that, and out of the same $4,500 pool as Tuition Assistance — so CA spending reduces what's left for tuition." },
+  { rule: "One credential a fiscal year", detail: "The course and the exam together are one credential, so RBLP counts once. You're also limited to three credentials per ten years of service, counted from your Basic Active Service Date, with another three after ten years." },
   { rule: "The company field is a search box, and you must type the full name", detail: "Nothing on screen says it's searchable. The list is alphabetical and only loads the first stretch of partners, so scrolling never reaches us. Searching \"RLS\" also finds nothing — the vendor is listed under its full name. Type Resilient Leadership Solutions, starting with Resilient, and it appears. This is the step people give up on, assuming we aren't an approved vendor." },
   { rule: "Commissioned officers are no longer eligible", detail: "As of 19 March 2026, O1–O10 can't open new Army CA goals. Warrant officers W1–W5 and all enlisted Soldiers still can. If you had a credential goal open before that date you may be able to finish that one — ask your education center." },
   { rule: "Line up your supervisor first", detail: "Since 19 March 2026 every Army CA request needs supervisor approval, whatever your rank. In practice that's your first-line leader — it does not have to go to your commander. Tell them it's coming. First-time users also have ArmyIgnitED training and a MilGears plan to finish, so start those now rather than the week you file." },
@@ -984,5 +988,24 @@ export function eligibleCourseDates(today) {
     saturdays,
     // The first couple are only safe if the office counts calendar days; flag them.
     tightUntil: day(Math.round(CA_WINDOW.minDays * 1.45)).toISOString().slice(0, 10)
+  };
+}
+
+// What this credential costs against the Army's annual CA budget. Shown to CA students so the
+// decision is made with the numbers in front of them rather than after the money is committed.
+export const CA_BUDGET = { yearCap: 2000, combinedCap: 4500 };
+
+export function caBudgetFor(track) {
+  const t = TRACKS[track] || TRACKS.RBLP;
+  const total = t.prepPrice + t.examFee;
+  return {
+    prep: t.prepPrice,
+    exam: t.examFee,
+    total,
+    yearCap: CA_BUDGET.yearCap,
+    remaining: CA_BUDGET.yearCap - total,
+    combinedCap: CA_BUDGET.combinedCap,
+    // Trainer leaves very little of the year's allowance behind.
+    tight: total > CA_BUDGET.yearCap * 0.7
   };
 }
