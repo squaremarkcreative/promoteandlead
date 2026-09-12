@@ -864,7 +864,9 @@ DB.pl_students.push({ id: randomUUID(), email: "tommy@promoteandlead.com", displ
 const tommy = await signIn("tommy@promoteandlead.com");
 check("CLASSROOM_ADMINS grants admin regardless of stored role", tommy.body.role === "admin");
 const adminCon = await (await get(consoleEp, tommy.cookie)).json();
-check("admin sees every cohort", adminCon.cohorts.length === 2);
+// Count the DB rather than a magic number — earlier sections create cohorts too.
+check("admin sees every cohort", adminCon.cohorts.length === DB.pl_cohorts.length,
+  [adminCon.cohorts.length, DB.pl_cohorts.length]);
 // Where each student is, and how long they've been there — so Tommy can spot who's gone quiet
 // instead of reading down a list of email addresses.
 const roster = adminCon.admin.students;
