@@ -9,7 +9,7 @@ import {
   currentModulePassword, worksheetProgress, hoursProgress, buildPipeline, fundingGuidance, routeFor,
   certificateData
 } from "../../_lib/classroom.js";
-import { FACILITATION, SOP_CHECKLIST, STORY_SOURCES, MODULE_STUDY, MODULE_ARC, STUDY_HABITS, EXAM_PREP, EXAM_FACTS, EXAM_BOOKING, CA_WARNINGS, runOfDay, dayFor, DAY_NOTES, WHY_PREP } from "../../_lib/curriculum.js";
+import { FACILITATION, SOP_CHECKLIST, STORY_SOURCES, MODULE_STUDY, MODULE_ARC, STUDY_HABITS, EXAM_PREP, EXAM_FACTS, EXAM_BOOKING, caWarningsFor, runOfDay, dayFor, DAY_NOTES, WHY_PREP } from "../../_lib/curriculum.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -69,7 +69,8 @@ export async function onRequestGet(context) {
         options: Object.entries(FUNDING).map(([k, v]) => ({ key: k, label: v.label })),
         guidance: student.payment_source ? fundingGuidance(student.payment_source) : null,
         // Only for the CA route — everyone else has no packet to bounce.
-        caWarnings: routeFor(student.payment_source) === "CA" ? CA_WARNINGS : null
+        // Branch-specific: Army and Air Force have genuinely different rules.
+        caWarnings: caWarningsFor(student.payment_source)
       },
       cohort: cohort
         ? {

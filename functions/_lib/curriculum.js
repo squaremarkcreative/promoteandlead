@@ -802,15 +802,40 @@ export const WHY_PREP = {
 //
 // Every line here exists because RBLP or the Army publish a "don't do X" about it — which is
 // evidence X happens and bounces packets. Shown on the CA upload step.
-export const CA_WARNINGS = [
+// Army and Air Force are NOT the same rule set, and pasting Army's rank language onto an
+// Air Force student is worse than saying nothing.
+//
+//   Army CA (AR 621-5, 19 Mar 2026): commissioned O1–O10 cut from new goals; warrant officers
+//     W1–W5 and all enlisted stay eligible; officers with a goal opened before that date may
+//     finish that one. Supervisor/commander approval now required at every rank.
+//   AF COOL/CA: already a Total Force ENLISTED programme — commissioned, separated and retired
+//     are ineligible, and that isn't a 2026 "officer cut" to announce. Leadership credentials
+//     skew SNCO E7–E9. The Air Force's 2024 warrant officer return is tiny and cyber/IT only,
+//     so it is not a meaningful parallel to Army warrants; don't imply it is.
+const CA_WARNINGS_SHARED = [
   { rule: "Two separate requests", detail: "One for the training, one for the exam. They are funded separately and a single combined request gets kicked back." },
-  { rule: "The vendor name has to match exactly", detail: "On the training request the company is RLS — spelled the way it appears in ArmyIgnitED. A quote in a different name is the most common bounce." },
-  { rule: "Don't pay out of pocket to hold a seat", detail: "CA will not reimburse you afterwards. If you've paid to reserve a place, tell us before you file." },
+  { rule: "The vendor name has to match exactly", detail: "On the training request the company is RLS — spelled the way it appears in your portal. A quote in a different name is the most common bounce." },
+  { rule: "Don't pay out of pocket to hold a seat", detail: "Credentialing Assistance will not reimburse you afterwards. If you've paid to reserve a place, tell us before you file." },
   { rule: "Don't start the class before it's funded", detail: "Attending before approval can cost you the funding entirely." },
-  { rule: "Get your supervisor's approval early", detail: "Since 19 March 2026 every CA request needs commander or supervisor sign-off whatever your rank, and first-time users have ArmyIgnitED training and a MilGears plan to complete first. Start that now, not the week you file." },
-  { rule: "Commissioned officers are no longer eligible", detail: "As of 19 March 2026, O1–O10 can't use Army CA. Warrant officers W1–W5 and all enlisted Soldiers still can. If you had a credential goal open before that date you may be able to finish it — ask your education center." },
-  { rule: "Allow the full window", detail: "Requests take 45 to 90 days depending on where it sits. That's the clock we use to pick your cohort." }
+  { rule: "Allow the full window", detail: "Requests take time to clear, and that's the clock we use to pick your cohort. Funding is subject to availability even once you're eligible." }
 ];
+
+const CA_WARNINGS_ARMY = [
+  { rule: "Commissioned officers are no longer eligible", detail: "As of 19 March 2026, O1–O10 can't open new Army CA goals. Warrant officers W1–W5 and all enlisted Soldiers still can. If you had a credential goal open before that date you may be able to finish that one — ask your education center." },
+  { rule: "Get your supervisor's approval early", detail: "Since 19 March 2026 every Army CA request needs commander or supervisor sign-off whatever your rank, and first-time users have ArmyIgnitED training and a MilGears plan to finish first. Start that now, not the week you file." },
+  { rule: "Plan on 45 to 90 days", detail: "That's the window from submitting in ArmyIgnitED to a decision, and it decides which cohort you can realistically join." }
+];
+
+const CA_WARNINGS_AF = [
+  { rule: "AF COOL is an enlisted programme", detail: "Total Force enlisted. Commissioned officers, and anyone separated or retired, aren't eligible — the leadership credentials in particular are aimed at SNCOs, E7–E9." },
+  { rule: "Check your timeline with your education office", detail: "Air Force processing differs from the Army's, so confirm the lead time before you count on a particular cohort date." }
+];
+
+export function caWarningsFor(paymentSource) {
+  if (paymentSource === "army_ca") return [...CA_WARNINGS_ARMY, ...CA_WARNINGS_SHARED];
+  if (paymentSource === "af_ca") return [...CA_WARNINGS_AF, ...CA_WARNINGS_SHARED];
+  return null;
+}
 
 // ---------------------------------------------------------------- mock examiner
 //

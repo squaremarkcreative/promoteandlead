@@ -319,6 +319,10 @@
   .ca-gotchas { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 0.8rem; }
   .ca-gotchas div { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 12px; padding: 0.85rem 1rem; color: var(--text-soft); font-size: 0.86rem; line-height: 1.55; }
   .ca-gotchas b { display: block; color: var(--cream); font-size: 0.92rem; margin-bottom: 0.2rem; }
+  .elig { display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 0.8rem; max-width: 900px; margin: 1.1rem auto 0; text-align: left; }
+  .elig div { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1.1rem; }
+  .elig b { display: block; font-family: "Clash Display", sans-serif; color: var(--gold-2); font-size: 0.95rem; margin-bottom: 0.25rem; }
+  .elig span { color: var(--text-soft); font-size: 0.86rem; line-height: 1.6; }
   .cohort-list { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin: 1.75rem 0 0; padding: 0; }
   .cohort-list li { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0.7rem 1.1rem; text-align: left; min-width: 190px; }
   .cohort-list li b { display: block; font-family: "Clash Display", sans-serif; color: var(--cream); font-size: 1rem; }
@@ -760,7 +764,17 @@
         <div class="grade"><div class="rk">E7&ndash;E9 &middot; W3&ndash;W5</div><div class="lv">RBLP Trainer</div></div>
       </div>
       <p style="color:var(--text-soft);font-size:0.88rem;text-align:center;margin:0.9rem auto 0;max-width:70ch;">These are RBLP&rsquo;s suggested bands for <em>experience</em>, not funding eligibility &mdash; what matters for the exam is the leadership you can speak to.</p>
-      <p style="color:var(--text-soft);font-size:0.88rem;text-align:center;margin:0.6rem auto 0;max-width:70ch;"><strong style="color:var(--cream)">Warrant officers W1&ndash;W5 are eligible for Army Credentialing Assistance</strong>, along with all enlisted Soldiers. <strong style="color:var(--cream)">Commissioned officers O1&ndash;O10 became ineligible on 19 March 2026</strong> &mdash; if that&rsquo;s you, plan on GI Bill&reg; reimbursement for the exam, unit funding via SF&#8209;182, or paying directly. (Officers with a credential goal already open before that date may still be able to finish it.) Your education center is the authority on your own eligibility.</p>
+      <div class="elig">
+        <div>
+          <b>Army</b>
+          <span><strong style="color:var(--cream)">Warrant officers W1&ndash;W5 are eligible</strong> for Credentialing Assistance, along with all enlisted Soldiers. Commissioned officers O1&ndash;O10 became ineligible for new goals on 19 March 2026 &mdash; though a goal opened before that date may still be finishable. Every rank now needs commander or supervisor approval.</span>
+        </div>
+        <div>
+          <b>Air Force</b>
+          <span>AF COOL is a Total Force <strong style="color:var(--cream)">enlisted</strong> programme, and the leadership credentials are aimed squarely at SNCOs, <strong style="color:var(--cream)">E7&ndash;E9</strong>. Commissioned officers, and anyone separated or retired, aren&rsquo;t eligible.</span>
+        </div>
+      </div>
+      <p style="color:var(--text-soft);font-size:0.86rem;text-align:center;margin:0.9rem auto 0;max-width:66ch;">Not eligible, or funds unavailable? The exam is still reimbursable under the GI Bill&reg;, and units can fund training with SF&#8209;182. Your education center is the authority on your own eligibility.</p>
 
       <div class="hero-cta reveal" style="justify-content:center;margin:2rem 0 0;">
         <a class="btn btn-gold" href="/classroom">Create Your Free Account</a>

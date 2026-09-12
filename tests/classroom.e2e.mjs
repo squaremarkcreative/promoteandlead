@@ -860,15 +860,28 @@ check("the sign-in page says this is also how you create an account",
 // officers W1-W5 and enlisted are still in. Calling it "an enlisted benefit" writes off every
 // warrant officer — and RBLP's own Coach/Trainer bands are largely warrant officers.
 check("the site separates experience bands from funding eligibility", /not funding eligibility/.test(site));
-check("warrant officers are told they ARE eligible for CA",
+check("warrant officers are told they ARE eligible for Army CA",
   /Warrant officers W1&ndash;W5 are eligible/.test(site));
 check("commissioned officers are told they are not, with the date",
-  /O1&ndash;O10 became ineligible on 19 March 2026/.test(site));
+  /O1&ndash;O10 became ineligible for new goals on 19 March 2026/.test(site));
 check("the site no longer writes CA off as enlisted-only", !/enlisted benefit/.test(site));
-const caRules = (await import(`file://${R}/_lib/curriculum.js`)).CA_WARNINGS;
-check("the classroom carries the same eligibility rule",
-  caRules.some((w) => /W1–W5/.test(w.detail) && /O1–O10/.test(w.detail)),
-  caRules.map((w) => w.rule));
+check("Air Force is described on its own terms, not Army's",
+  /AF COOL is a Total Force/.test(site) && /E7&ndash;E9/.test(site));
+
+// Army rank rules must not be shown to an Air Force student, and vice versa.
+const warn = (await import(`file://${R}/_lib/curriculum.js`)).caWarningsFor;
+const army = warn("army_ca"), af = warn("af_ca");
+check("Army students get the O1–O10 / W1–W5 rule",
+  army.some((w) => /W1–W5/.test(w.detail) && /O1–O10/.test(w.detail)));
+check("Air Force students do NOT get Army rank language",
+  !JSON.stringify(af).includes("W1–W5") && !JSON.stringify(af).includes("O1–O10") &&
+  !JSON.stringify(af).includes("ArmyIgnitED"), af.map((w) => w.rule));
+check("Air Force students get their own enlisted / SNCO framing",
+  af.some((w) => /enlisted/i.test(w.detail) && /E7–E9/.test(w.detail)));
+check("both still get the shared packet warnings",
+  ["Two separate requests", "The vendor name has to match exactly"].every((r) =>
+    army.some((w) => w.rule === r) && af.some((w) => w.rule === r)));
+check("non-CA students get none of it", warn("self_pay") === null);
 
 // GI Bill reimburses the EXAM fee, not the prep training. A badge saying "GI Bill eligible"
 // beside a $395 prep price reads as coverage it doesn't have.
