@@ -83,7 +83,7 @@ export const JOURNEY = [
       // opened once the first has a posted grade. Students who don't know that assume their
       // funding covered everything, then discover the exam isn't paid for.
       { key: "ca_exam",   owner: "you",  title: "File your second CA request — for the exam", titleDone: "Exam funding requested", only: "CA",
-        blurb: "With your certificate issued, RBLP can invoice for the exam — and your training grade posting is what lets you open the second CA goal. Two separate requests by design; they could never have been filed together." },
+        blurb: "With your certificate issued, RBLP can invoice for the exam, and your training grade posting is what lets you open the second CA goal. Don't sit on it: you have 180 days from that grade posting to submit the request, and on day 181 the Army recoups what it paid for your training." },
       { key: "exam",      owner: "you",  title: "Schedule and take your RBLP oral exam", titleDone: "Exam scheduled",
         blurb: "The exam is with RBLP, not with us. Your prepared answers stay here for you to rehearse from." },
       { key: "certified", owner: "rblp", title: "Waiting on RBLP to award your credential", titleDone: "You're RBLP certified",

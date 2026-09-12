@@ -846,8 +846,13 @@ const CA_WARNINGS_SHARED = [
 ];
 
 const CA_WARNINGS_ARMY = [
-  { rule: "You must take the exam, or repay the training", detail: "CA funds the course on the condition you take the credential exam. Skip it and the Army recoups what it paid for your training. Two recoupments across TA and CA in the same fiscal year suspends you from both for 12 months." },
-  { rule: "180 days to open the exam request", detail: "Once you pass the course, the clock starts when your grade posts — you have 180 days from that date to submit the exam funding request. Miss it and you're paying for the exam yourself." },
+  // Army CA Policy (11 Dec 2024): the request goes to recoupment on day 181 after the passing
+  // training grade is entered. Note the trigger is failing to SUBMIT the exam funding request,
+  // not failing to take the exam — so the deadline is earlier than people assume, and it starts
+  // at the grade posting rather than the class date.
+  { rule: "180 days to request your exam funding", detail: "The clock starts the day your passing training grade is entered — not the day of the class. You have 180 days to submit the exam funding request; on day 181 it goes to recoupment. Since the request itself needs lead time, start it as soon as your grade posts rather than near the deadline." },
+  { rule: "Recoupment means repaying the training", detail: "Miss that window and the Army takes back what it paid for your course. Failing the course or the exam can trigger it too. And two recoupments across TA and CA in the same fiscal year suspends you from both for 12 months, so it's worth protecting." },
+  { rule: "A year from start to finish", detail: "Separately, the end date of anything CA funds has to fall within 365 days of its start date. Not usually a problem on a one-day course, but it's the outer boundary." },
   { rule: "One credential a fiscal year", detail: "CA is capped at one credential per fiscal year, and the course and exam together count as that one credential. Worth knowing before you plan a second." },
   { rule: "The company field is a search box, and you must type the full name", detail: "Nothing on screen says it's searchable. The list is alphabetical and only loads the first stretch of partners, so scrolling never reaches us. Searching \"RLS\" also finds nothing — the vendor is listed under its full name. Type Resilient Leadership Solutions, starting with Resilient, and it appears. This is the step people give up on, assuming we aren't an approved vendor." },
   { rule: "Commissioned officers are no longer eligible", detail: "As of 19 March 2026, O1–O10 can't open new Army CA goals. Warrant officers W1–W5 and all enlisted Soldiers still can. If you had a credential goal open before that date you may be able to finish that one — ask your education center." },

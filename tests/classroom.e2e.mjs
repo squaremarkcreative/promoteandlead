@@ -1318,10 +1318,19 @@ check("both still get the shared packet warnings",
     army.some((w) => w.rule === r) && af.some((w) => w.rule === r)),
   army.map((w) => w.rule));
 // Consequences a student can't discover any other way until it costs them.
-check("Army students are warned they must sit the exam or repay the training",
-  army.some((w) => /repay the training/i.test(w.rule) && /recoup/i.test(w.detail)));
-check("and given the 180-day window to open the exam request",
-  army.some((w) => /180 days/.test(w.rule) && /grade posts/i.test(w.detail)));
+// Army CA Policy (11 Dec 2024): recoupment on day 181 after the passing training grade posts,
+// and the trigger is failing to SUBMIT the exam funding request — not failing to take the exam.
+check("Army students get the 180-day clock, measured from the grade posting",
+  army.some((w) => /180 days/.test(w.rule) && /grade is entered/i.test(w.detail) && /not the day of the class/i.test(w.detail)),
+  army.filter((w) => /180/.test(w.rule)).map((w) => w.detail));
+check("and it's clear day 181 means recoupment",
+  army.some((w) => /day 181/.test(w.detail)));
+check("recoupment is explained as repaying the training",
+  army.some((w) => /Recoupment/i.test(w.rule) && /takes back what it paid/i.test(w.detail)));
+check("failing the course or exam is named as a trigger too",
+  army.some((w) => /Failing the course or the exam/i.test(w.detail)));
+check("and the 12-month suspension for two recoupments",
+  army.some((w) => /12 months/.test(w.detail)));
 check("non-CA students get none of it", warn("self_pay") === null);
 
 // GI Bill reimburses the EXAM fee, not the prep training. A badge saying "GI Bill eligible"
