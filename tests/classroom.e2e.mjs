@@ -376,6 +376,19 @@ check("a collapsed next module is opened before scrolling, or there's nothing to
   /if \(!d\.open\) d\.open = true/.test(tgPage));
 check("only a genuinely finished guide falls back to holding position",
   /That's every module covered/.test(tgPage));
+
+// The instructor asked for the same jump bar the students got.
+check("the teaching guide has a jump button per module", /data-tgjump="/.test(tgPage));
+check("counted the way an instructor reads it — what's still to cover",
+  /still to cover"/.test(tgPage) && /left \? "btn-ghost" : "btn-green"/.test(tgPage));
+check("jumping opens the module even when collapsed", /d\.open = true;\n      scrollUnderBars\(d\)/.test(tgPage));
+// Two sticky bars sit above the content, so a plain scrollIntoView hides what you asked for.
+check("scrolling clears both sticky bars rather than tucking the target under them",
+  /function scrollUnderBars/.test(tgPage) &&
+  /\(hdr \? hdr\.offsetHeight : 0\) \+ \(bar \? bar\.offsetHeight : 0\)/.test(tgPage));
+check("the student module jump clears them too", /if \(task\) spotlight\(task\); else scrollUnderBars\(d\)/.test(tgPage));
+check("the jump bar and the accordions render from one filtered module list",
+  /var mods = CONSOLE\.outline\.filter/.test(tgPage) && /tgJumpHtml\(mods\)/.test(tgPage));
 check("the next task is found by skipping covered ones",
   /\$\(".tg-task:not\(\.covered\)", d\)/.test(tgPage));
 check("finishing a module tells them where they've been moved to",

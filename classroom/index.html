@@ -1259,11 +1259,7 @@ function openModule(el, num, taskKey) {
   if (!d) return null;
   d.open = true;
   var task = taskKey ? $('.task[data-task="' + taskKey + '"]', d) : null;
-  (task || d).scrollIntoView({ behavior: "smooth", block: task ? "center" : "start" });
-  if (task) {
-    task.classList.add("spotlight");
-    setTimeout(function () { task.classList.remove("spotlight"); }, 1600);
-  }
+  if (task) spotlight(task); else scrollUnderBars(d);
   return task || d;
 }
 
@@ -1758,6 +1754,20 @@ function tgOpenModules(el) {
 // rather than stopping at the module boundary: covering the last task hides that module's
 // coaching notes, so the page shortens and restoring the old scroll position lands at the top.
 // Returns the module number it landed in, or 0 if there is nothing left to cover anywhere.
+// Same idea as the student jump bar, counted the other way round: an instructor cares what is
+// still to cover, so the count is covered-of-total and the button greens out when a module is done.
+function tgJumpHtml(mods) {
+  return '<div class="jump no-print"><span class="jump-h">Jump to</span>' +
+    mods.map(function (m) {
+      var done = m.tasks.filter(function (t) { return COVERED[t.key]; }).length;
+      var left = m.tasks.length - done;
+      return '<button class="btn btn-sm ' + (left ? "btn-ghost" : "btn-green") + '" data-tgjump="' + m.num +
+        '" title="Module ' + m.num + " — " + esc(m.title) +
+        (left ? " · " + left + " still to cover" : " · all covered") + '">M' + m.num +
+        '<span class="jump-n">' + done + "/" + m.tasks.length + "</span></button>";
+    }).join("") + "</div>";
+}
+
 function tgAdvance(el, fromMod) {
   var nums = $$("details.mod.tg", el).map(function (d) { return Number(d.dataset.mod); });
   var at = nums.indexOf(fromMod);
@@ -1774,6 +1784,13 @@ function tgAdvance(el, fromMod) {
     return order[i];
   }
   return 0;
+}
+
+function scrollUnderBars(node) {
+  var hdr = $("header.top"), bar = $(".jump");
+  var offset = (hdr ? hdr.offsetHeight : 0) + (bar ? bar.offsetHeight : 0) + 10;
+  var top = node.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
 }
 
 function spotlight(node) {
@@ -1824,6 +1841,8 @@ function renderTeaching(el) {
   });
   if (!maxModule) maxModule = 5;
 
+  var mods = CONSOLE.outline.filter(function (m) { return m.num <= maxModule; });
+
   el.innerHTML =
     '<div class="box"><h2>Teaching guide</h2>' +
       '<p class="muted">How to open each leader task, an example to model with, and the question to put to the room. ' +
@@ -1866,7 +1885,9 @@ function renderTeaching(el) {
         (CONSOLE.cards || []).map(function (c) { return '<span class="pill">' + esc(c) + '</span>'; }).join("") +
       '</div></div>' +
 
-    CONSOLE.outline.filter(function (m) { return m.num <= maxModule; }).map(function (m) {
+    tgJumpHtml(mods) +
+
+    mods.map(function (m) {
       var isOpen = TG_OPEN ? TG_OPEN.indexOf(m.num) >= 0 : m.num === 1;
       return '<details class="mod tg" data-mod="' + m.num + '"' + (isOpen ? " open" : "") + '><summary>' +
         '<span>Module ' + m.num + ' — ' + esc(m.title) + '</span>' +
@@ -1912,6 +1933,16 @@ function renderTeaching(el) {
           }).join("") + '</div>' +
         '</div></details>';
     }).join("");
+
+  $$("[data-tgjump]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var d = $('details.mod.tg[data-mod="' + b.dataset.tgjump + '"]', el);
+      if (!d) return;
+      d.open = true;
+      scrollUnderBars(d);
+    });
+  });
+  syncHeaderOffset();
 
   // Remember what they expanded, so a re-render puts the room back the way they had it.
   $$("details.mod.tg", el).forEach(function (d) {
