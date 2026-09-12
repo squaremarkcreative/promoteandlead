@@ -118,6 +118,19 @@ create table if not exists pl_module_passwords (
   updated_at timestamptz not null default now()
 );
 
+-- ------------------------------------------------------------------ teaching coverage
+-- What the instructor ticked off while teaching a cohort. It is their own guide and students
+-- never see it, but it has to follow them from laptop to phone and survive a cleared browser,
+-- so it can't live in localStorage.
+create table if not exists pl_cohort_coverage (
+  cohort_id  uuid not null references pl_cohorts(id) on delete cascade,
+  task_key   text not null,
+  covered_by text,
+  covered_at timestamptz not null default now(),
+  primary key (cohort_id, task_key)
+);
+create index if not exists idx_pl_coverage_cohort on pl_cohort_coverage (cohort_id);
+
 -- ------------------------------------------------------------------ lock down
 alter table pl_students           enable row level security;
 alter table pl_login_codes        enable row level security;
@@ -126,6 +139,7 @@ alter table pl_worksheet_responses enable row level security;
 alter table pl_cohort_sessions    enable row level security;
 alter table pl_attendance         enable row level security;
 alter table pl_module_passwords   enable row level security;
+alter table pl_cohort_coverage    enable row level security;
 
 alter table pl_worksheet_responses add column if not exists notdo_text text;
 alter table pl_worksheet_responses add column if not exists plan_text  text;

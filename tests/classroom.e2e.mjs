@@ -376,8 +376,11 @@ check("their original numbering is kept, so you can still refer to task 3",
   /x\.n \+ "\. " \+ esc\(t\.title\)/.test(tgPage));
 check("each module shows how many are left", /still to cover/.test(tgPage));
 check("and can be reset without reloading", /data-uncover="/.test(tgPage));
-check("state is per cohort and local — it's where-you-are-today, not a record",
-  /function coveredKey\(\)/.test(tgPage) && /pl_covered_/.test(tgPage) && !/covered/.test(
+// This state was per-browser once. It is the instructor's record of their own teaching, so it
+// is per cohort and server-held — it must survive a new laptop.
+check("state is per cohort and held on the server, not in a browser",
+  /COVERED_COHORT/.test(tgPage) && !/pl_covered_/.test(tgPage) &&
+  /case "coverage\.mark"/.test(
     (await import("node:fs")).readFileSync(ROOT + "functions/api/classroom/action.js", "utf8")));
 
 check("and the line that settles nervous students", /introvert/i.test(mock.anxiety), mock.anxiety);
@@ -426,6 +429,74 @@ check("attendance marked", att.ok);
 m = await (await get(me, student.cookie)).json();
 check("student sees 4.0 of 4 hours", m.hours.attendedHours === 4 && m.hours.percent === 100, m.hours);
 check("pipeline: attend now done", m.pipeline.steps.find(s=>s.key==="attend").done === true);
+
+// ---------------------------------------------------------------- teaching coverage
+// The instructor's Done ticks used to live in localStorage, so they were stranded on whichever
+// device did the ticking. They belong to the instructor, not to the room: students never see them.
+section("Acceptance: teaching coverage follows the instructor, not the browser");
+DB.pl_cohort_coverage = [];
+let cov = await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m1_earn_trust" } }, instructor.cookie);
+check("instructor can tick a task off", cov.ok);
+con = await (await get(consoleEp, instructor.cookie)).json();
+check("the tick comes back from the server, not the browser",
+  con.cohorts[0].covered.includes("m1_earn_trust"), con.cohorts[0].covered);
+check("it records who ticked it", DB.pl_cohort_coverage[0].covered_by === "instructor@promoteandlead.com");
+
+await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m1_respect" } }, instructor.cookie);
+con = await (await get(consoleEp, instructor.cookie)).json();
+check("a second tick is added rather than replacing the first", con.cohorts[0].covered.length === 2);
+
+// Ticking the same task twice must not duplicate the row — the primary key is (cohort, task).
+await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m1_respect" } }, instructor.cookie);
+con = await (await get(consoleEp, instructor.cookie)).json();
+check("re-ticking the same task doesn't duplicate it", con.cohorts[0].covered.length === 2, con.cohorts[0].covered);
+
+await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m1_respect", covered: false } }, instructor.cookie);
+con = await (await get(consoleEp, instructor.cookie)).json();
+check("un-ticking removes it", con.cohorts[0].covered.join() === "m1_earn_trust", con.cohorts[0].covered);
+
+const resetKeys = ["m1_earn_trust", "m1_analyze_climate"];
+await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m1_analyze_climate" } }, instructor.cookie);
+const rst = await post(action, { action: "coverage.reset", data: { cohort_id: cohortId, task_keys: resetKeys } }, instructor.cookie);
+check("resetting a module clears its ticks in one call", rst.ok);
+con = await (await get(consoleEp, instructor.cookie)).json();
+check("and the module comes back empty", con.cohorts[0].covered.length === 0, con.cohorts[0].covered);
+
+// Same gate as attendance: a cohort you don't teach is not yours to annotate.
+const badKey = await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m9_not_real" } }, instructor.cookie);
+check("an unknown task key is refused", badKey.status === 400);
+const stuCov = await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m1_respect" } }, student.cookie);
+check("a student cannot tick anything off", stuCov.status === 403, stuCov.status);
+DB.pl_students.push({ id: randomUUID(), email: "other.coach@promoteandlead.com", display_name: "Other", role: "instructor", created_at: new Date().toISOString() });
+const otherCoach = await signIn("other.coach@promoteandlead.com");
+const foreign = await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m1_respect" } }, otherCoach.cookie);
+check("an instructor cannot tick off a cohort that isn't theirs", foreign.status === 403, foreign.status);
+const emptyReset = await post(action, { action: "coverage.reset", data: { cohort_id: cohortId, task_keys: [] } }, instructor.cookie);
+check("a reset with no valid keys is refused rather than clearing everything", emptyReset.status === 400);
+
+// The point the instructor made: ticking Done is a note to self, not a signal to the room.
+await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m1_respect" } }, instructor.cookie);
+const stuView = await (await get(me, student.cookie)).json();
+// Task keys appear in a student's payload legitimately — they're their own worksheet answers —
+// so the thing to assert is that no `covered` field exists anywhere in it.
+const hasKey = (o, name) => !!o && typeof o === "object" &&
+  (!Array.isArray(o) && Object.prototype.hasOwnProperty.call(o, name) ||
+   Object.values(o).some((v) => hasKey(v, name)));
+check("coverage never reaches the student payload", !hasKey(stuView, "covered"));
+check("and that check isn't vacuous — the instructor console does carry it",
+  hasKey(await (await get(consoleEp, instructor.cookie)).json(), "covered"));
+await post(action, { action: "coverage.mark", data: { cohort_id: cohortId, task_key: "m1_respect", covered: false } }, instructor.cookie);
+
+const tgSrc = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("the browser no longer stores coverage at all",
+  !/pl_covered_/.test(tgSrc) && !/coveredKey/.test(tgSrc));
+check("ticks are read from the server payload", /\(c\.covered \|\| \[\]\)\.forEach/.test(tgSrc));
+check("the tick is optimistic so a live room never waits on a round trip",
+  /Tick first, save second/.test(tgSrc));
+check("a failed write is put back rather than left looking saved",
+  /Couldn't save that tick/.test(tgSrc) && /if \(was\) COVERED\[key\] = 1; else delete COVERED\[key\]/.test(tgSrc));
+check("teaching opened without picking a cohort falls back rather than silently dropping ticks",
+  /Pick a cohort on the Instructor tab first/.test(tgSrc));
 
 // ---------------------------------------------------------------- certificate
 section("Acceptance: CA completion certificate");

@@ -1741,8 +1741,11 @@ function runOfDayHtml(blocks, opts) {
 // Done button — it turns green and drops to the bottom of its module, leaving whatever is still
 // to do at the top. Nothing hides, so you can still go back to anything.
 //
-// Kept in localStorage per cohort: it's where-you-are-today state, not a record worth storing.
+// Held on the server per cohort, so it follows the instructor from laptop to phone and
+// survives a cleared browser. Students never see any of it — it is absent from
+// /api/classroom/me by design; ticking a task off is a note to self, not a signal to the room.
 var COVERED = {};
+var COVERED_COHORT = null;
 var TG_OPEN = null;   // module numbers the instructor has expanded; null = first-visit default
 
 function tgOpenModules(el) {
@@ -1764,21 +1767,21 @@ function tgSpotlightNext(el, modNum) {
   return true;
 }
 
-function coveredKey() { return "pl_covered_" + (ACTIVE_COHORT || "x"); }
-
 function loadCovered() {
-  try { COVERED = JSON.parse(localStorage.getItem(coveredKey()) || "{}") || {}; }
-  catch (e) { COVERED = {}; }
-}
-
-function toggleCovered(key) {
-  if (COVERED[key]) delete COVERED[key]; else COVERED[key] = 1;
-  try { localStorage.setItem(coveredKey(), JSON.stringify(COVERED)); } catch (e) {}
-}
-
-function clearCovered() {
   COVERED = {};
-  try { localStorage.removeItem(coveredKey()); } catch (e) {}
+  var list = (CONSOLE && CONSOLE.cohorts) || [];
+  // Teaching can be opened without visiting the Instructor tab first, so fall back to the
+  // same cohort that tab would have selected.
+  var c = list.filter(function (x) { return x.id === ACTIVE_COHORT; })[0] || list[0] || null;
+  COVERED_COHORT = c ? c.id : null;
+  if (c) (c.covered || []).forEach(function (k) { COVERED[k] = 1; });
+}
+
+// Keep the cached console in step so switching tabs doesn't show a stale tick.
+function cacheCovered() {
+  var list = (CONSOLE && CONSOLE.cohorts) || [];
+  var c = list.filter(function (x) { return x.id === COVERED_COHORT; })[0];
+  if (c) c.covered = Object.keys(COVERED);
 }
 
 /* ------------------------------------------------------------------ teaching guide */
@@ -1900,30 +1903,64 @@ function renderTeaching(el) {
     d.addEventListener("toggle", function () { TG_OPEN = tgOpenModules(el); });
   });
 
+  // Redraw in place: keep the modules they had open and hold their scroll unless we are
+  // deliberately moving them on.
+  function redraw(y) {
+    TG_OPEN = tgOpenModules(el);
+    renderTeaching(el);
+    if (y != null) window.scrollTo(0, y);
+  }
+
   $$("[data-cover]", el).forEach(function (b) {
-    b.addEventListener("click", function () {
+    b.addEventListener("click", async function () {
+      if (!COVERED_COHORT) { flash("Pick a cohort on the Instructor tab first.", "err"); return; }
       var key = b.dataset.cover;
       var host = b.closest("details.mod");
       var modNum = host ? Number(host.dataset.mod) : 0;
       var y = window.scrollY;
-      toggleCovered(key);
-      TG_OPEN = tgOpenModules(el);
-      renderTeaching(el);
+      var was = !!COVERED[key];
+
+      // Tick first, save second — a live room can't wait on a round trip.
+      if (was) delete COVERED[key]; else COVERED[key] = 1;
+      cacheCovered();
+      redraw(null);
       // Un-ticking is a correction, not progress: hold their place instead of moving them.
-      if (COVERED[key] && modNum && tgSpotlightNext(el, modNum)) return;
-      window.scrollTo(0, y);
-      if (COVERED[key] && modNum) flash("Module " + modNum + " covered — every task ticked off.");
+      if (!was && modNum && tgSpotlightNext(el, modNum)) { /* moved them on */ }
+      else {
+        window.scrollTo(0, y);
+        if (!was && modNum) flash("Module " + modNum + " covered — every task ticked off.");
+      }
+
+      try {
+        await api("coverage.mark", { cohort_id: COVERED_COHORT, task_key: key, covered: !was });
+      } catch (e) {
+        // Put it back rather than leave a tick that isn't really saved.
+        if (was) COVERED[key] = 1; else delete COVERED[key];
+        cacheCovered();
+        redraw(y);
+        flash("Couldn't save that tick — check your connection and try again.", "err");
+      }
     });
   });
   $$("[data-uncover]", el).forEach(function (b) {
-    b.addEventListener("click", function () {
+    b.addEventListener("click", async function () {
+      if (!COVERED_COHORT) { flash("Pick a cohort on the Instructor tab first.", "err"); return; }
       var mod = CONSOLE.outline.filter(function (m) { return String(m.num) === b.dataset.uncover; })[0];
-      if (mod) mod.tasks.forEach(function (t) { delete COVERED[t.key]; });
-      try { localStorage.setItem(coveredKey(), JSON.stringify(COVERED)); } catch (e) {}
+      if (!mod) return;
       var y = window.scrollY;
-      TG_OPEN = tgOpenModules(el);
-      renderTeaching(el);
-      window.scrollTo(0, y);
+      var keys = mod.tasks.map(function (t) { return t.key; }).filter(function (k) { return COVERED[k]; });
+      if (!keys.length) return;
+      keys.forEach(function (k) { delete COVERED[k]; });
+      cacheCovered();
+      redraw(y);
+      try {
+        await api("coverage.reset", { cohort_id: COVERED_COHORT, task_keys: keys });
+      } catch (e) {
+        keys.forEach(function (k) { COVERED[k] = 1; });
+        cacheCovered();
+        redraw(y);
+        flash("Couldn't reset those — check your connection and try again.", "err");
+      }
     });
   });
 

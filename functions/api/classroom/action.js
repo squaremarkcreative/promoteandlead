@@ -275,6 +275,38 @@ export async function onRequestPost(context) {
         return json({ ok: true });
       }
 
+      // The instructor's own teaching guide: what they've ticked off in this cohort. Students
+      // never see it, but it has to follow them between devices, so the server holds it.
+      case "coverage.mark": {
+        const gate = await requireCohortAccess(env, db, me, data.cohort_id);
+        if (gate) return gate;
+        const taskKey = String(data.task_key || "");
+        if (!VALID_TASKS.has(taskKey)) return json({ error: "Unknown task." }, 400);
+        if (data.covered === false) {
+          await db.remove("pl_cohort_coverage",
+            `cohort_id=eq.${encodeURIComponent(data.cohort_id)}&task_key=eq.${encodeURIComponent(taskKey)}`);
+        } else {
+          await db.upsert("pl_cohort_coverage", {
+            cohort_id: data.cohort_id,
+            task_key: taskKey,
+            covered_by: me.email,
+            covered_at: new Date().toISOString()
+          }, "cohort_id,task_key");
+        }
+        return json({ ok: true });
+      }
+
+      case "coverage.reset": {
+        const gate = await requireCohortAccess(env, db, me, data.cohort_id);
+        if (gate) return gate;
+        const keys = (Array.isArray(data.task_keys) ? data.task_keys : [])
+          .map(String).filter((k) => VALID_TASKS.has(k));
+        if (!keys.length) return json({ error: "No tasks to reset." }, 400);
+        await db.remove("pl_cohort_coverage",
+          `cohort_id=eq.${encodeURIComponent(data.cohort_id)}&task_key=in.(${keys.map(encodeURIComponent).join(",")})`);
+        return json({ ok: true });
+      }
+
       case "session.delete": {
         if (me.role !== "admin") return json({ error: "Admins only." }, 403);
         await db.remove("pl_cohort_sessions", `id=eq.${encodeURIComponent(data.id)}`);

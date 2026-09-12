@@ -57,6 +57,8 @@ export async function onRequestGet(context) {
         ? await db.select("pl_attendance", `select=*&session_id=in.(${sessionIds.join(",")})`)
         : [];
 
+      const coverage = await db.select("pl_cohort_coverage", `select=task_key&cohort_id=eq.${c.id}`);
+
       const emails = members.map((m) => (m.email || "").toLowerCase()).filter(Boolean);
       const students = emails.length
         ? await db.select("pl_students", `select=id,email,display_name,role,track,payment_source,rblp_applied_at&email=in.(${emails.map(encodeURIComponent).join(",")})`)
@@ -81,6 +83,8 @@ export async function onRequestGet(context) {
         classroomStatus: c.classroom_status || c.status,
         passwordMonthKey: c.password_month_key || null,
         notes: c.instructor_notes || "",
+        // Instructor-only teaching progress. Deliberately absent from /api/classroom/me.
+        covered: coverage.map((x) => x.task_key),
         sessions: sessions.map((s) => ({
           id: s.id, label: s.label, startsAt: s.starts_at, endsAt: s.ends_at,
           instructionalMinutes: s.instructional_minutes
