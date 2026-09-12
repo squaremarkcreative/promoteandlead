@@ -1754,17 +1754,32 @@ function tgOpenModules(el) {
   return out;
 }
 
-// Teaching live, Done means "move me on" — so land on the next task still to cover rather
-// than dumping them at the top of a collapsed accordion.
-function tgSpotlightNext(el, modNum) {
-  var d = $('details.mod.tg[data-mod="' + modNum + '"]', el);
-  if (!d) return false;
-  var next = $(".tg-task:not(.covered)", d);
-  if (!next) return false;
-  next.scrollIntoView({ behavior: "smooth", block: "center" });
-  next.classList.add("spotlight");
-  setTimeout(function () { next.classList.remove("spotlight"); }, 1600);
-  return true;
+// Teaching live, Done means "move me on". Finishing a module has to carry on into the next one
+// rather than stopping at the module boundary: covering the last task hides that module's
+// coaching notes, so the page shortens and restoring the old scroll position lands at the top.
+// Returns the module number it landed in, or 0 if there is nothing left to cover anywhere.
+function tgAdvance(el, fromMod) {
+  var nums = $$("details.mod.tg", el).map(function (d) { return Number(d.dataset.mod); });
+  var at = nums.indexOf(fromMod);
+  var order = at >= 0 ? nums.slice(at).concat(nums.slice(0, at)) : nums;
+  for (var i = 0; i < order.length; i++) {
+    var d = $('details.mod.tg[data-mod="' + order[i] + '"]', el);
+    if (!d) continue;
+    var next = $(".tg-task:not(.covered)", d);
+    if (!next) continue;
+    // A collapsed module's contents can't be scrolled to, so open it first. Setting .open
+    // fires toggle, which is what keeps TG_OPEN current.
+    if (!d.open) d.open = true;
+    spotlight(next);
+    return order[i];
+  }
+  return 0;
+}
+
+function spotlight(node) {
+  node.scrollIntoView({ behavior: "smooth", block: "center" });
+  node.classList.add("spotlight");
+  setTimeout(function () { node.classList.remove("spotlight"); }, 1600);
 }
 
 function loadCovered() {
@@ -1925,10 +1940,12 @@ function renderTeaching(el) {
       cacheCovered();
       redraw(null);
       // Un-ticking is a correction, not progress: hold their place instead of moving them.
-      if (!was && modNum && tgSpotlightNext(el, modNum)) { /* moved them on */ }
-      else {
+      var landed = !was && modNum ? tgAdvance(el, modNum) : 0;
+      if (!landed) {
         window.scrollTo(0, y);
-        if (!was && modNum) flash("Module " + modNum + " covered — every task ticked off.");
+        if (!was && modNum) flash("That's every module covered — good session.");
+      } else if (landed !== modNum) {
+        flash("Module " + modNum + " covered — on to module " + landed + ".");
       }
 
       try {

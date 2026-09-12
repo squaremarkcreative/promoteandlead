@@ -365,11 +365,21 @@ check("the module they're teaching stays open across a Done",
 check("every teaching module is addressable by number", /class="mod tg" data-mod="/.test(tgPage));
 check("what they expanded is remembered, not reset to a default",
   /addEventListener\("toggle", function \(\) \{ TG_OPEN = tgOpenModules\(el\)/.test(tgPage));
-check("Done lands on the next task still to cover", /tgSpotlightNext\(el, modNum\)/.test(tgPage));
+check("Done lands on the next task still to cover", /tgAdvance\(el, modNum\)/.test(tgPage));
+// Finishing a module hides its coaching notes, so the page shortens and restoring the old
+// scroll position clamps to the top. Carry on into the next module instead of stopping.
+check("finishing a module carries on into the next one",
+  /nums\.slice\(at\)\.concat\(nums\.slice\(0, at\)\)/.test(tgPage));
+check("and says which module it moved them to",
+  /on to module " \+ landed/.test(tgPage));
+check("a collapsed next module is opened before scrolling, or there's nothing to scroll to",
+  /if \(!d\.open\) d\.open = true/.test(tgPage));
+check("only a genuinely finished guide falls back to holding position",
+  /That's every module covered/.test(tgPage));
 check("the next task is found by skipping covered ones",
   /\$\(".tg-task:not\(\.covered\)", d\)/.test(tgPage));
-check("finishing a module says so rather than jumping nowhere",
-  /every task ticked off/.test(tgPage));
+check("finishing a module tells them where they've been moved to",
+  /Module " \+ modNum \+ " covered/.test(tgPage));
 check("un-ticking holds their place instead of moving them",
   /Un-ticking is a correction, not progress/.test(tgPage) && /window\.scrollTo\(0, y\)/.test(tgPage));
 check("their original numbering is kept, so you can still refer to task 3",
