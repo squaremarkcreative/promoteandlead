@@ -8,6 +8,28 @@ waitlist.csv
 # RBLP reference material — kept locally, never published
 Website/
 
+# Classroom source pack (coach notes derived from RBLP curriculum). Cloudflare Pages serves
+# the repo root as static files, so anything committed here is publicly fetchable — this pack
+# must stay local. The app deep-links the official modules instead.
+P-and-L-classroom-CC-pack/
+
 # Local dev / editor
 .claude/
 .envrc
+
+# Local-only DB access for a Claude Code session (see HOWTO-connect-db-to-cc.md).
+# .sbconn holds a root Postgres credential — never commit, never deploy.
+.sbconn
+.dbenv/
+sbq.py
+
+# Blank certificate template. Cloudflare Pages serves the repo root as static files, so
+# committing this would publish a fillable, seal-bearing certificate at
+# promoteandlead.com/Cert templates/ for anyone to download. The classroom renders the
+# certificate from this template's layout instead (classroom/index.html + assets/cert/).
+Cert templates/
+
+# Internal build-out guides (student + instructor). Same reason as the content pack: Pages
+# serves the repo root, so committing these would publish them. Their content is folded into
+# functions/_lib/curriculum.js and the classroom UI instead.
+Classroom resources/

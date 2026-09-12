@@ -315,6 +315,20 @@
   .ct-code { font-family: "Clash Display", sans-serif; font-weight: 700; color: var(--cream); font-size: 1.05rem; }
   .ct-time { color: var(--cream); font-weight: 600; font-size: 0.95rem; margin-top: 0.45rem; }
   .ct-dur { color: var(--text-faint); font-size: 0.82rem; margin-top: 0.15rem; }
+  .cohort-note { color: var(--text-soft); font-size: 0.86rem; line-height: 1.6; margin: 1rem 0 0; }
+  .ca-gotchas { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 0.8rem; }
+  .ca-gotchas div { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 12px; padding: 0.85rem 1rem; color: var(--text-soft); font-size: 0.86rem; line-height: 1.55; }
+  .ca-gotchas b { display: block; color: var(--cream); font-size: 0.92rem; margin-bottom: 0.2rem; }
+  .cohort-list { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin: 1.75rem 0 0; padding: 0; }
+  .cohort-list li { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0.7rem 1.1rem; text-align: left; min-width: 190px; }
+  .cohort-list li b { display: block; font-family: "Clash Display", sans-serif; color: var(--cream); font-size: 1rem; }
+  .cohort-list li span { display: block; color: var(--text-faint); font-size: 0.84rem; margin-top: 0.1rem; }
+  .cohort-list li.next { border-color: rgba(200,164,21,0.55); background: rgba(200,164,21,0.08); }
+  .cohort-list li.next b::after { content: "Next"; float: right; font-family: inherit; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); background: var(--gold-2); border-radius: 100px; padding: 0.1rem 0.5rem; margin-left: 0.6rem; }
+  .cohort-list li.past { opacity: 0.4; }
+  .cohort-list li.past b::after { content: "Closed"; float: right; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); border: 1px solid var(--border); border-radius: 100px; padding: 0.1rem 0.5rem; margin-left: 0.6rem; }
+  .ca-status { max-width: 640px; margin: 0 auto 1.75rem; text-align: left; background: var(--surface); border: 1px solid rgba(200,164,21,0.4); border-radius: 14px; padding: 0.95rem 1.15rem; color: var(--text-soft); font-size: 0.9rem; line-height: 1.6; }
+  .ca-status b { color: var(--cream); }
   .enroll-note { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.5rem; font-size: 0.88rem; font-weight: 600; color: var(--cream); text-decoration: none; padding: 0.5rem 0.95rem; border-radius: 100px; background: var(--surface); border: 1px solid rgba(200,164,21,0.4); transition: border-color .2s, transform .15s; }
   .enroll-note:hover { border-color: var(--gold); transform: translateY(-2px); }
   .enroll-note svg { color: var(--gold); }
@@ -399,7 +413,7 @@
         <a class="link" href="#how">How It Works</a>
         <a class="link" href="#instructor">Instructor</a>
         <a class="link" href="#prep">Cohort Prep</a>
-        <a class="btn btn-gold btn-sm" href="#apply">Apply Now</a>
+        <a class="btn btn-gold btn-sm" href="#start">Get Started</a>
         <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="mobileMenu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
@@ -412,7 +426,7 @@
       <a href="#how">How It Works</a>
       <a href="#instructor">Instructor</a>
       <a href="#prep">Cohort Prep</a>
-      <a class="mm-apply" href="#apply">Apply Now</a>
+      <a class="mm-apply" href="#start">Get Started</a>
     </div>
   </header>
 
@@ -426,17 +440,17 @@
       <h1>Build the leader.<br /><span class="grad">Earn the climb.</span></h1>
       <p class="lead">Earn a nationally recognized RBLP leadership certification with instructor-led exam prep built for military members, working professionals, and students, from Promote &amp; Lead Solutions.</p>
       <div class="hero-cta">
-        <a class="btn btn-gold" href="#apply">Start Your Free Application</a>
+        <a class="btn btn-gold" href="/classroom">Create Your Free Account</a>
         <a class="btn btn-ghost" href="#program">Explore the Program</a>
       </div>
       <a class="enroll-note" href="#schedule">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        Now enrolling: Cohort 26&#8209;001 &middot; Sat, Aug 8 (CST)
+        <span id="heroCohort">Now enrolling: Cohort 26&#8209;002 &middot; Sat, 12 September (Central)</span>
       </a>
       <div class="trust-strip">
         <span class="trust-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>ACE&reg; college-credit recommended</span>
         <span class="trust-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>U.S. Dept. of Labor recognized</span>
-        <span class="trust-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>GI Bill&reg; eligible</span>
+        <span class="trust-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>GI Bill&reg; exam reimbursement</span>
         <span class="trust-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>0% APR financing via Affirm</span>
       </div>
     </div>
@@ -497,7 +511,7 @@
         <div class="card reveal">
           <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
           <h3>Flexible financing</h3>
-          <p>0% APR for up to 12 months on your prep training and certification exam through Affirm.</p>
+          <p>Affirm offers 0% APR for up to 12 months on your prep training and exam, at RBLP&rsquo;s checkout. Your rate and term are set by Affirm and shown before you commit.</p>
         </div>
       </div>
     </div>
@@ -509,11 +523,11 @@
       <div class="section-head center reveal">
         <span class="eyebrow">Certification levels</span>
         <h2>Choose the level that matches your experience</h2>
-        <p>Each certification pairs an instructor-led exam prep course from Promote &amp; Lead Solutions with an oral certification exam administered by RBLP. Prep training prices are shown below; RBLP exam fees are paid separately to RBLP and are eligible for GI Bill&reg; reimbursement.</p>
+        <p>Each certification pairs an instructor-led exam prep course from Promote &amp; Lead Solutions with an oral certification exam administered by RBLP. <strong style="color:var(--cream)">Everything is purchased through RBLP</strong> &mdash; both the prep and the exam &mdash; so your receipt comes from them, not from us. Exam fees are eligible for GI Bill&reg; reimbursement.</p>
       </div>
       <div class="apply-note reveal" style="max-width:700px;margin:0 auto 2.25rem;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-        <span><strong style="color:var(--cream)">Apply first.</strong> The RBLP application is free and must be completed <strong style="color:var(--cream)">before</strong> you purchase exam prep. <a href="#apply" style="color:var(--gold-2);font-weight:600;text-decoration:none;">Start your free application &rarr;</a></span>
+        <span><strong style="color:var(--cream)">Start with a free account.</strong> There are a few moving parts &mdash; the RBLP application, funding, then your cohort &mdash; and your account walks you through them in order so nothing gets missed. <a href="/classroom" style="color:var(--gold-2);font-weight:600;text-decoration:none;">Create your free account &rarr;</a></span>
       </div>
       <div class="levels">
         <div class="level reveal">
@@ -530,8 +544,8 @@
             <div class="amt">$395 <small>/ exam prep</small></div>
             <div class="exam">+ $595 RBLP exam fee (paid to RBLP)</div>
           </div>
-          <a class="btn btn-primary lvl-cta" href="https://rblp.com/product/promote-and-lead-solutions-llc-rblp-exam-prep-training/" target="_blank" rel="noopener">Add to Cart</a>
-          <div class="lvl-note">Apply for RBLP first, then check out on rblp.com</div>
+          <a class="btn btn-primary lvl-cta" href="/classroom">Start with RBLP</a>
+          <div class="lvl-note">Free account &middot; we walk you through the RBLP application and funding</div>
         </div>
 
         <div class="level featured reveal">
@@ -547,10 +561,10 @@
           </ul>
           <div class="price">
             <div class="amt">$495 <small>/ exam prep</small></div>
-            <div class="exam">+ $795 RBLP&#8209;C exam fee &middot; from ~$107.50/mo (0% APR)</div>
+            <div class="exam">+ $795 RBLP&#8209;C exam fee &middot; Affirm from ~$107.50/mo at 0% APR over 12 months, subject to approval</div>
           </div>
-          <a class="btn btn-gold lvl-cta" href="https://rblp.com/product/promote-and-lead-solutions-llc-rblp-coach-exam-prep-training/" target="_blank" rel="noopener">Add to Cart</a>
-          <div class="lvl-note">Apply for RBLP first, then check out on rblp.com</div>
+          <a class="btn btn-gold lvl-cta" href="/classroom">Start with RBLP&#8209;C</a>
+          <div class="lvl-note">Free account &middot; we walk you through the RBLP application and funding</div>
         </div>
 
         <div class="level reveal">
@@ -565,10 +579,10 @@
           </ul>
           <div class="price">
             <div class="amt">$595 <small>/ exam prep</small></div>
-            <div class="exam">+ $995 RBLP&#8209;T exam fee &middot; from ~$132.50/mo (0% APR)</div>
+            <div class="exam">+ $995 RBLP&#8209;T exam fee &middot; Affirm from ~$132.50/mo at 0% APR over 12 months, subject to approval</div>
           </div>
-          <a class="btn btn-primary lvl-cta" href="https://rblp.com/product/promote-and-lead-solutions-llc-rblp-trainer-exam-prep-training-copy/" target="_blank" rel="noopener">Add to Cart</a>
-          <div class="lvl-note">Apply for RBLP first, then check out on rblp.com</div>
+          <a class="btn btn-primary lvl-cta" href="/classroom">Start with RBLP&#8209;T</a>
+          <div class="lvl-note">Free account &middot; we walk you through the RBLP application and funding</div>
         </div>
       </div>
     </div>
@@ -599,10 +613,13 @@
         <span class="eyebrow">How exam prep works</span>
         <h2>A guided path from application to certification</h2>
         <p>Our exam prep blends self-paced reading and reflection with live, instructor-led online discussion, so you arrive at your oral exam ready and confident.</p>
+        <p style="font-size:0.92rem;"><strong style="color:var(--cream)">Be honest with yourself about the reading.</strong> Your certification expects 6&ndash;10 hours of personal reflection <em>before</em> the live session, depending on level. It&rsquo;s the part people underestimate, and it&rsquo;s the part that decides how the exam goes &mdash; the session expands what you&rsquo;ve already written, it doesn&rsquo;t replace it.</p>
       </div>
       <div class="steps">
-        <div class="step reveal"><h3>Apply free with RBLP</h3><p>Submit the free RBLP application (under 10 minutes) and request Promote &amp; Lead Solutions as your exam prep instructor. See the exact steps below.</p></div>
-        <div class="step reveal"><h3>Get enrolled and scheduled</h3><p>RBLP processes your application, payment, and any financing options. We'll confirm your certification level and lock in your cohort date.</p></div>
+        <div class="step reveal"><h3>Create your free account</h3><p>Tell us which certification you&rsquo;re going for and how you plan to fund it. That&rsquo;s all we need to lay out the rest of your path.</p></div>
+        <div class="step reveal"><h3>Apply free with RBLP</h3><p>Your account links you to the free RBLP application (under 10 minutes) and shows you exactly what to select so it comes to our cohort. See the steps below.</p></div>
+        <div class="step reveal"><h3>Sort your funding</h3><p>Credentialing Assistance, COOL, GI Bill or paying directly &mdash; your account walks the path for whichever applies, and tells you when to expect each piece.</p></div>
+        <div class="step reveal"><h3>Get your cohort date</h3><p>We place you in the next cohort you&rsquo;re eligible for and send your Teams link and the day&rsquo;s timings.</p></div>
         <div class="step reveal"><h3>Read &amp; reflect</h3><p>Work through the module readings and structured reflection on your own schedule.</p></div>
         <div class="step reveal"><h3>Attend your live cohort session</h3><p>During your scheduled cohort, work through the competencies online with your instructor and peers, applying them to real leadership challenges and rehearsing for the oral exam.</p></div>
         <div class="step reveal"><h3>Review the competency domains</h3><p>Confirm you're ready across the competency domains for your certification level and prepare for the format of the oral exam.</p></div>
@@ -612,12 +629,13 @@
   </section>
 
   <!-- ============ APPLY (referral) ============ -->
-  <section id="apply" class="apply-band">
+  <section id="start" class="apply-band">
     <div class="container">
       <div class="apply-card reveal">
-        <span class="eyebrow">Apply now</span>
-        <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;margin:0.8rem 0 0.6rem;">Start your free application in three quick steps</h2>
-        <p style="color:var(--text-soft);max-width:60ch;">Applications are submitted directly on the official RBLP site. To make sure your exam prep is scheduled with us, follow these steps when you apply:</p>
+        <span class="eyebrow">Get started</span>
+        <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;margin:0.8rem 0 0.6rem;">Create your free account &mdash; we&rsquo;ll take it from there</h2>
+        <p style="color:var(--text-soft);max-width:64ch;">Getting certified has a few moving parts: the free RBLP application, your funding, then your cohort and your exam. Your account lays them out in order, tells you what&rsquo;s next and who you&rsquo;re waiting on, and we email you as each piece lands. Nothing to pay to start.</p>
+        <p style="color:var(--text-soft);max-width:64ch;margin-top:0.8rem;">Your first step is the <strong style="color:var(--cream)">free RBLP application</strong>, and your account links you straight to it. Here&rsquo;s what it asks, so you know what&rsquo;s coming:</p>
 
         <div class="apply-steps">
           <div class="apply-step">
@@ -635,13 +653,22 @@
         </div>
 
         <div class="hero-cta" style="margin:0;">
-          <a class="btn btn-gold" href="https://rblp.com/leadership-certifications/apply/" target="_blank" rel="noopener">Start Your Free Application &rarr;</a>
+          <a class="btn btn-gold" href="/classroom">Create Your Free Account &rarr;</a>
+          <a class="btn btn-ghost" href="https://rblp.com/leadership-certifications/apply/" target="_blank" rel="noopener">Go straight to the RBLP application</a>
           <a class="btn btn-ghost" href="https://rblp.com/authorized-training-partners/promote-and-lead-solutions-llc/" target="_blank" rel="noopener">View Our RBLP Partner Page</a>
         </div>
 
         <div class="apply-note">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
           <span>The RBLP application is <strong style="color:var(--cream)">free</strong> and takes under 10 minutes. Requesting us as your instructor is what connects you to our next cohort. You won't be charged anything to apply.</span>
+        </div>
+        <div class="apply-note" style="margin-top:0.8rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span><strong style="color:var(--cream)">Already bought your exam prep through RBLP?</strong> Create your account anyway &mdash; it&rsquo;s free and takes a minute. Tick &ldquo;I&rsquo;ve already bought my exam prep&rdquo; and we&rsquo;ll confirm it with RBLP rather than making you pay twice, then open your prep work.</span>
+        </div>
+        <div class="apply-note" style="margin-top:0.8rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>You&rsquo;ll end up with <strong style="color:var(--cream)">two accounts</strong>, and that&rsquo;s normal. Your certification and your exam live with RBLP on rblp.com; your cohort, prep work and certificate live with us. Use a <strong style="color:var(--cream)">personal email address</strong> on the RBLP one &mdash; not work or military &mdash; because you&rsquo;ll need access to it for years.</span>
         </div>
       </div>
     </div>
@@ -682,6 +709,16 @@
         <span class="eyebrow" style="justify-content:center;">Army &amp; Air Force COOL / CA</span>
         <h2>Let your service pay for it: <span class="grad">$0 out of pocket</span></h2>
         <p>Army and Air Force Credentialing Assistance (COOL/CA) can fully fund <strong style="color:var(--cream)">both</strong> your exam prep training and your certification exam. Hundreds of Active-Duty, Reserve, and Guard members have earned an RBLP certification since 2020.</p>
+        <p style="font-size:0.92rem;">Navy, Marine Corps and Coast Guard COOL work differently: they fund the <strong style="color:var(--cream)">exam</strong>, not the exam prep training. Prep is self-funded (or 0% APR financing) unless your unit covers it &mdash; we&rsquo;ll walk you through it either way.</p>
+      </div>
+
+      <!-- Default wording is the pre-reopen one on purpose: with JS off we under-claim rather
+           than advertise CA before the Army window is actually open. -->
+      <div class="ca-status" id="caStatus">
+        <b id="caLead">Army CA reopens 14 September 2026.</b>
+        Apply free now &mdash; the RBLP application costs nothing and takes ten minutes. A CA request
+        has to be in <b>45 days before</b> class starts (<b>30 days</b> for Air Force), so the first
+        cohort a CA-funded seat can join is <b id="caCohort">Cohort 26&#8209;004 &middot; Sat, 7 November 2026</b><span id="caDeadline"></span>.
       </div>
 
       <div class="branches reveal">
@@ -703,16 +740,29 @@
       </div>
 
       <div class="section-head reveal" style="margin:2.5rem auto 0.5rem;text-align:center;">
+        <h3 style="font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.35rem;">Before you file &mdash; what bounces a packet</h3>
+      </div>
+      <div class="ca-gotchas reveal">
+        <div><b>Two separate requests</b>Training and exam are funded separately. One combined request gets kicked back.</div>
+        <div><b>The vendor name has to match</b>On the training request the company is <b style="color:var(--cream)">RLS</b>, spelled as it appears in your portal. This is the most common reason a packet bounces.</div>
+        <div><b>Don&rsquo;t pay out of pocket to hold a seat</b>CA won&rsquo;t reimburse you afterwards. Talk to us first &mdash; we&rsquo;ll hold your place.</div>
+        <div><b>Don&rsquo;t start before it&rsquo;s funded</b>Attending before approval can cost you the funding entirely.</div>
+        <div><b>Get supervisor approval early</b>Since March 2026 every CA request needs commander or supervisor sign-off, and first-time users have portal training to finish first.</div>
+        <div><b>Allow 45&ndash;90 days</b>That&rsquo;s the window we use to work out which cohort you can join.</div>
+      </div>
+
+      <div class="section-head reveal" style="margin:2.5rem 0 1.5rem;">
         <h3 style="font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.35rem;">Match your pay grade to a certification</h3>
       </div>
       <div class="grades reveal">
         <div class="grade"><div class="rk">E4&ndash;E6</div><div class="lv">RBLP</div></div>
-        <div class="grade"><div class="rk">E6&ndash;E7</div><div class="lv">RBLP Coach</div></div>
-        <div class="grade"><div class="rk">E7&ndash;E9</div><div class="lv">RBLP Trainer</div></div>
+        <div class="grade"><div class="rk">E6&ndash;E7 &middot; W1&ndash;W3</div><div class="lv">RBLP Coach</div></div>
+        <div class="grade"><div class="rk">E7&ndash;E9 &middot; W3&ndash;W5</div><div class="lv">RBLP Trainer</div></div>
       </div>
+      <p style="color:var(--text-soft);font-size:0.88rem;text-align:center;margin:0.9rem auto 0;max-width:66ch;">These are RBLP&rsquo;s suggested bands for <em>experience</em>, not funding eligibility &mdash; what matters for the exam is the leadership you can speak to. <strong style="color:var(--cream)">Credentialing Assistance is an enlisted benefit</strong>, so officers should plan on the GI Bill for the exam, unit funding via SF&#8209;182, or paying directly. Your education center is the authority on your own eligibility.</p>
 
       <div class="hero-cta reveal" style="justify-content:center;margin:2rem 0 0;">
-        <a class="btn btn-gold" href="https://rblp.com/leadership-certifications/apply/" target="_blank" rel="noopener">Start Your Free Application</a>
+        <a class="btn btn-gold" href="/classroom">Create Your Free Account</a>
         <a class="btn btn-ghost" href="#contact" onclick="var t=document.getElementById('cf-topic'); if(t) t.value='COOL/CA or GI Bill funding';">Have Questions? Contact Us</a>
       </div>
 
@@ -774,25 +824,32 @@
     <div class="container reveal">
       <span class="eyebrow" style="justify-content:center;">Now enrolling</span>
       <h2 style="font-size:clamp(2rem,5vw,3.2rem);font-weight:700;margin:0.9rem 0 0.6rem;">Join our next cohort</h2>
-      <p style="color:var(--text-soft);max-width:56ch;margin:0 auto;">Our first cohort is scheduled and enrolling now, and seats are limited. Applying is free. Your seat is secured once you purchase your exam prep with Promote &amp; Lead Solutions as your instructor, and we'll email you to confirm your spot.</p>
+      <p style="color:var(--text-soft);max-width:56ch;margin:0 auto;">Our next cohort is scheduled and enrolling now, and seats are limited. Applying is free. Your seat is secured once you purchase your exam prep with Promote &amp; Lead Solutions as your instructor, and we'll email you to confirm your spot.</p>
+
+      <ul class="cohort-list" id="cohortList">
+        <li data-date="2026-09-12"><b>Cohort 26&#8209;002</b><span>Sat, 12 September 2026</span></li>
+        <li data-date="2026-10-03"><b>Cohort 26&#8209;003</b><span>Sat, 3 October 2026</span></li>
+        <li data-date="2026-11-07"><b>Cohort 26&#8209;004</b><span>Sat, 7 November 2026</span></li>
+      </ul>
 
       <div class="cohort-card">
         <div class="cohort-head">
-          <div class="cohort-id">Cohort 26&#8209;001</div>
-          <div class="cohort-date">Saturday, August 8, 2026 &middot; Live online &middot; All times CST</div>
+          <div class="cohort-id">Every cohort runs this shape</div>
+          <div class="cohort-date">Live online &middot; All times Central</div>
         </div>
         <div class="cohort-times">
-          <div class="ct"><div class="ct-code">RBLP</div><div class="ct-time">9:00 AM &ndash; 12:00 PM</div><div class="ct-dur">3 instructional hours</div></div>
-          <div class="ct"><div class="ct-code">RBLP&#8209;C</div><div class="ct-time">9:00 AM &ndash; 3:30 PM</div><div class="ct-dur">4 instructional hours (incl. lunch &amp; breaks)</div></div>
-          <div class="ct"><div class="ct-code">RBLP&#8209;T</div><div class="ct-time">9:00 AM &ndash; 4:30 PM</div><div class="ct-dur">5 instructional hours (incl. lunch &amp; breaks)</div></div>
+          <div class="ct"><div class="ct-code">RBLP</div><div class="ct-time">9:00 AM &ndash; 12:30 PM</div><div class="ct-dur">3 instructional hours</div></div>
+          <div class="ct"><div class="ct-code">RBLP&#8209;C</div><div class="ct-time">9:00 AM &ndash; 2:30 PM</div><div class="ct-dur">4 instructional hours</div></div>
+          <div class="ct"><div class="ct-code">RBLP&#8209;T</div><div class="ct-time">9:00 AM &ndash; 3:30 PM</div><div class="ct-dur">5 instructional hours</div></div>
         </div>
+        <p class="cohort-note">Everyone starts together at 9:00 AM and finishes when their credential is complete &mdash; so you learn alongside Coaches and Trainers for the modules you share. Breaks and lunch sit inside the times above.</p>
       </div>
 
       <div class="hero-cta" style="justify-content:center;margin:1.75rem 0 0;">
-        <a class="btn btn-gold" href="#apply">Apply Free to Get Started</a>
+        <a class="btn btn-gold" href="/classroom">Create Your Free Account</a>
       </div>
 
-      <p style="color:var(--text-soft);max-width:44ch;margin:2.5rem auto 0;">Can't make this one? Get notified when the next cohort opens:</p>
+      <p style="color:var(--text-soft);max-width:44ch;margin:2.5rem auto 0;">None of these work? Get notified when the next cohort opens:</p>
       <form id="waitlist" novalidate>
         <input type="email" id="email" name="email" placeholder="you@email.com" required autocomplete="email" aria-label="Email address" />
         <button type="submit" class="btn btn-primary" id="submitBtn">Notify Me</button>
@@ -850,7 +907,7 @@
           <a href="#how">How It Works</a>
           <a href="#instructor">Your Instructor</a>
           <a href="#prep">Prepare for Your Cohort</a>
-          <a href="#apply">Apply Now</a>
+          <a href="#start">Get Started</a>
         </div>
         <div class="foot-col">
           <h4>Connect</h4>
@@ -983,6 +1040,71 @@
       }
     });
   }
+
+  // ---------------------------------------------------------------- cohort schedule + CA
+  // The cohort dates live in the markup (crawlable, and correct with JS off); this only marks
+  // which one is next and which have closed, and swaps the CA line once the Army window opens.
+  //
+  // CA_WINDOW_DAYS mirrors admin/index.html — a request has to be in this many days before the
+  // class starts, so a CA student's first possible cohort is the first one that far out. Keep
+  // the two in step if a branch ever changes its lead time.
+  var CA_WINDOW_DAYS = { Army: 45, "Air Force": 30 };
+  var CA_REOPENS = "2026-09-14";
+
+  (function () {
+    var todayIso = new Date().toISOString().slice(0, 10);
+    var items = Array.prototype.slice.call(document.querySelectorAll("#cohortList li"));
+    if (!items.length) return;
+
+    var upcoming = items.filter(function (li) { return li.dataset.date >= todayIso; });
+    items.forEach(function (li) { if (li.dataset.date < todayIso) li.classList.add("past"); });
+    if (upcoming.length) upcoming[0].classList.add("next");
+
+    // The hero badge names a date, so it goes stale the morning after that cohort runs.
+    var hero = document.getElementById("heroCohort");
+    if (hero) {
+      hero.textContent = upcoming.length
+        ? "Now enrolling: " + upcoming[0].querySelector("b").textContent.trim() + " \u00b7 " +
+          upcoming[0].querySelector("span").textContent.trim().replace(/^Sat, /, "Sat, ") + " (Central)"
+        : "Next cohort dates coming soon";
+    }
+
+    // First cohort far enough out to satisfy the longest branch window, counted from whichever
+    // is later: today, or the day the Army window reopens.
+    var from = todayIso > CA_REOPENS ? todayIso : CA_REOPENS;
+    var lead = Math.max(CA_WINDOW_DAYS.Army, CA_WINDOW_DAYS["Air Force"]);
+    var earliest = new Date(from + "T12:00:00Z");
+    earliest.setUTCDate(earliest.getUTCDate() + lead);
+    var earliestIso = earliest.toISOString().slice(0, 10);
+
+    var target = items.filter(function (li) { return li.dataset.date >= earliestIso; })[0];
+    var label = document.getElementById("caCohort");
+    var deadlineEl = document.getElementById("caDeadline");
+    if (label) {
+      // Once every announced cohort is inside the lead time, naming one would promise a seat
+      // CA can't fund in time. Say so rather than leave a date that has quietly gone stale.
+      label.textContent = target
+        ? target.querySelector("b").textContent.trim() + " \u00b7 " + target.querySelector("span").textContent.trim()
+        : "the next cohort we announce \u2014 email us and we'll line it up";
+    }
+    // The actionable number isn't the class date, it's the day the paperwork has to be in by.
+    if (deadlineEl && target) {
+      var due = new Date(target.dataset.date + "T12:00:00Z");
+      due.setUTCDate(due.getUTCDate() - CA_WINDOW_DAYS.Army);
+      if (due.toISOString().slice(0, 10) >= todayIso) {
+        deadlineEl.textContent = " \u2014 get your Army request in by " +
+          due.toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" });
+      }
+    }
+
+    // Once the window is open, lead with that instead of the reopening date.
+    if (todayIso >= CA_REOPENS) {
+      var box = document.getElementById("caStatus");
+      var lead1 = document.getElementById("caLead");
+      if (box && box.firstChild && box.firstChild.nodeType === 3) box.firstChild.nodeValue = "";
+      if (lead1) lead1.textContent = "Army CA is open now.";
+    }
+  })();
 
   // lightweight visit beacon — coarse geo (state/country/city) added server-side
   try {
