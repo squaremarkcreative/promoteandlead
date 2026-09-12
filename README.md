@@ -1,15 +1,24 @@
-# Promote & Lead — Coming Soon Splash
+# Promote & Lead Solutions — site
 
-A bold, single-page "coming soon" splash with email waitlist capture.
-Static HTML + a Cloudflare Pages Function backend (no separate server needed).
+Static HTML + Cloudflare Pages Functions (no separate server needed), with Supabase and Resend
+behind the API routes.
 
 ## Files
 
 ```
-index.html                 ← the splash page (self-contained: HTML/CSS/JS)
+index.html                 ← the marketing site (self-contained: HTML/CSS/JS)
+admin/                     ← admin CRM — see ADMIN-SETUP.md (Cloudflare Access protected)
+classroom/                 ← student classroom — see CLASSROOM-SETUP.md (email one-time code)
 functions/api/subscribe.js ← Pages Function: handles POST /api/subscribe
+tests/classroom.e2e.mjs    ← classroom end-to-end suite: `node tests/classroom.e2e.mjs`
 .gitignore
 ```
+
+## Guides
+
+- **ADMIN-SETUP.md** — the `/admin` CRM: Supabase, Cloudflare Access, secrets
+- **CLASSROOM-SETUP.md** — the `/classroom` student experience: schema, secrets, running a cohort
+- **REUSABLE-EMAIL-FEATURE.md** — the branded Resend email sender, as a drop-in feature
 
 ## How signups work
 

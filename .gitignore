@@ -22,6 +22,7 @@ P-and-L-classroom-CC-pack/
 .sbconn
 .dbenv/
 sbq.py
+certs/
 
 # Blank certificate template. Cloudflare Pages serves the repo root as static files, so
 # committing this would publish a fillable, seal-bearing certificate at

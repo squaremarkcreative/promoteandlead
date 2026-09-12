@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Classroom — Promote &amp; Lead Solutions</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+<style>
+  :root{--ink:#0a1428;--ink2:#0b1a34;--ink3:#08111f;--green:#1F5E2A;--green2:#2A8540;--gold:#C8A415;--gold2:#e8c769;--navy:#0B2E6D;--red:#8B2C2C;--cream:#fff4e8;
+        --surface:rgba(255,244,232,.045);--surface2:rgba(255,244,232,.08);--border:rgba(255,244,232,.12);--bstrong:rgba(255,244,232,.22);--soft:rgba(255,244,232,.72);--faint:rgba(255,244,232,.5)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--ink);color:var(--cream);-webkit-font-smoothing:antialiased;line-height:1.55}
+  a{color:var(--gold2)}
+  h1,h2,h3{line-height:1.25}
+
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 1.2rem;background:var(--ink3);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:.6rem;font-weight:700;font-size:.95rem}
+  .brand img{height:28px}
+  .brand small{display:block;font-size:.62rem;letter-spacing:.1em;color:var(--faint);font-weight:600;text-transform:uppercase}
+  .who{font-size:.8rem;color:var(--faint);display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.3rem 1.1rem 4rem}
+
+  nav.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.4rem;overflow-x:auto}
+  .tab{padding:.5rem .95rem;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--soft);cursor:pointer;font-size:.87rem;font-weight:600;white-space:nowrap;font-family:inherit}
+  .tab.active{background:linear-gradient(100deg,var(--gold),var(--gold2));color:#1a1206;border-color:transparent}
+  .panel{display:none}.panel.active{display:block}
+
+  .box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem;margin-bottom:1rem}
+  .box h3{font-size:.95rem;margin-bottom:.7rem}
+  .box h2{font-size:1.15rem;margin-bottom:.5rem}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;margin-bottom:1rem}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem}
+  .card .n{font-size:1.9rem;font-weight:800;color:var(--gold2);line-height:1}
+  .card .l{font-size:.72rem;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
+
+  input,select,textarea{font-family:inherit;font-size:.9rem;color:var(--cream);background:var(--ink2);border:1px solid var(--bstrong);border-radius:9px;padding:.55rem .7rem;outline:none;width:100%}
+  input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+  textarea{resize:vertical;min-height:74px}
+  label.fld{display:block;margin-bottom:.7rem}
+  label.fld span{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:.25rem;font-weight:600}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.1rem;border-radius:10px;border:1px solid transparent;font-weight:600;font-size:.88rem;cursor:pointer;font-family:inherit;text-decoration:none}
+  .btn-gold{background:linear-gradient(100deg,var(--gold),var(--gold2));color:#1a1206}
+  .btn-green{background:linear-gradient(100deg,var(--green),var(--green2));color:#fff}
+  .btn-red{background:var(--red);color:#fff;border-color:transparent}
+  .btn-ghost{background:var(--surface);border-color:var(--bstrong);color:var(--cream)}
+  .btn-sm{padding:.35rem .7rem;font-size:.78rem;border-radius:8px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+
+  .muted{color:var(--faint);font-size:.84rem}
+  .soft{color:var(--soft)}
+  .pill{font-size:.68rem;padding:.15rem .55rem;border-radius:100px;border:1px solid var(--border);color:var(--soft);white-space:nowrap}
+  .pill.ok{border-color:rgba(42,133,64,.6);color:#8fdc9f;background:rgba(42,133,64,.12)}
+  .pill.warn{border-color:rgba(200,164,21,.55);color:var(--gold2);background:rgba(200,164,21,.1)}
+  .notice{border-left:3px solid var(--gold);background:rgba(200,164,21,.08);padding:.7rem .9rem;border-radius:0 10px 10px 0;font-size:.86rem;margin:.7rem 0}
+  .notice.green{border-color:var(--green2);background:rgba(42,133,64,.1)}
+  .err{background:rgba(139,44,44,.18);border:1px solid rgba(139,44,44,.5);color:#f0b9b9;padding:.6rem .8rem;border-radius:9px;font-size:.85rem;margin-bottom:.8rem}
+  .ok-msg{background:rgba(42,133,64,.15);border:1px solid rgba(42,133,64,.5);color:#a5e8b4;padding:.6rem .8rem;border-radius:9px;font-size:.85rem;margin-bottom:.8rem}
+
+  .bar{height:8px;border-radius:100px;background:var(--surface2);overflow:hidden;margin:.45rem 0}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green2),var(--gold));border-radius:100px}
+
+  /* ---------------- pipeline ---------------- */
+  ol.pipe{list-style:none;counter-reset:step}
+  ol.pipe>li{position:relative;padding:0 0 1.1rem 2.6rem;counter-increment:step}
+  ol.pipe>li:before{content:counter(step);position:absolute;left:0;top:0;width:1.85rem;height:1.85rem;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:700;background:var(--surface2);color:var(--faint);border:1px solid var(--border)}
+  ol.pipe>li:after{content:"";position:absolute;left:.9rem;top:1.95rem;bottom:.1rem;width:1px;background:var(--border)}
+  ol.pipe>li:last-child:after{display:none}
+  ol.pipe>li.locked{opacity:.42}
+  ol.pipe>li.done:before{content:"✓";background:linear-gradient(100deg,var(--green),var(--green2));color:#fff;border-color:transparent}
+  ol.pipe>li.current:before{background:linear-gradient(100deg,var(--gold),var(--gold2));color:#1a1206;border-color:transparent}
+  ol.pipe>li.current{background:rgba(200,164,21,.06);border-radius:12px;padding-top:.15rem;padding-bottom:1rem;margin-bottom:.3rem}
+  ol.pipe>li.current:before{top:.15rem}
+  .step-t{font-weight:600;font-size:.95rem}
+  .step-body{margin-top:.5rem;font-size:.87rem;color:var(--soft)}
+
+  /* ---------------- worksheets ---------------- */
+  details.mod{border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-bottom:.8rem;overflow:hidden}
+  details.mod>summary{padding:.9rem 1.1rem;cursor:pointer;font-weight:700;display:flex;justify-content:space-between;gap:.7rem;align-items:center;flex-wrap:wrap;list-style:none}
+  details.mod>summary::-webkit-details-marker{display:none}
+  .mod-body{padding:0 1.1rem 1.1rem;border-top:1px solid var(--border)}
+  .task{border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-top:.85rem;background:var(--ink2)}
+  .task h4{font-size:.94rem;margin-bottom:.15rem}
+  .starter{font-size:.79rem;color:var(--faint);margin-bottom:.6rem}
+  .starter b{color:var(--soft);font-weight:600}
+  .glossary{display:flex;flex-wrap:wrap;gap:.35rem;margin:.6rem 0 .2rem}
+
+  table{width:100%;border-collapse:collapse;font-size:.84rem}
+  th,td{text-align:left;padding:.5rem .55rem;border-bottom:1px solid var(--border);vertical-align:middle}
+  th{color:var(--faint);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* ---------------- sign in ---------------- */
+  .signin{max-width:420px;margin:3.5rem auto;padding:0 1.1rem}
+  .signin .box{padding:1.6rem 1.5rem}
+  .code-in{font-size:1.5rem;letter-spacing:.55rem;text-align:center;font-weight:700}
+
+  /* ---------------- teaching guide (instructor) ---------------- */
+  .tg-open{font-size:.92rem;color:var(--soft);border-left:3px solid var(--gold);padding:.1rem 0 .1rem .7rem;margin:.9rem 0 1.1rem}
+  .tg-task{padding:.85rem 0;border-top:1px solid var(--border)}
+  .tg-task:first-of-type{border-top:0}
+  .tg-task h4{font-size:.95rem;color:var(--gold2);margin-bottom:.5rem}
+  .tg-task p{font-size:.88rem;margin:.45rem 0;line-height:1.55}
+  .tg-task i{color:var(--soft)}
+  .tg-l{display:block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:.12rem}
+  .tg-l.ask{color:var(--gold)}
+  @media print{
+    .tg-task{page-break-inside:avoid}
+    details.tg{display:block!important}
+    details.tg .mod-body{display:block!important}
+  }
+
+  .tg-seq{display:grid;gap:.25rem;margin:0 0 1.1rem;font-size:.82rem}
+  .tg-seq div{display:flex;gap:.6rem;color:var(--soft)}
+  .tg-seq span{flex:0 0 62px;color:var(--gold2);font-weight:700;font-variant-numeric:tabular-nums}
+  .tg-extra{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;margin-top:1.1rem;
+            padding-top:1rem;border-top:1px solid var(--bstrong)}
+  .tg-block h5{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);margin-bottom:.2rem}
+  .tg-block p.muted{font-size:.74rem;margin-bottom:.4rem}
+  .tg-block ul{margin-left:1rem;font-size:.83rem;line-height:1.5;color:var(--soft)}
+  .tg-block li{margin-bottom:.25rem}
+
+  /* ---------------- study aids (student) ---------------- */
+  .study-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+  .study-grid h5,.selfcheck h5{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem}
+  .study-grid ul,.selfcheck ul{margin-left:1rem;font-size:.85rem;line-height:1.5;color:var(--soft)}
+  .study-grid li,.selfcheck li{margin-bottom:.3rem}
+  ol.arc{margin:.5rem 0 .6rem 1.1rem;font-size:.86rem;line-height:1.6}
+  ol.arc li{margin-bottom:.2rem;color:var(--faint)}
+  ol.arc li.mine{color:var(--soft)}
+  .selfcheck{margin-top:1rem;padding:.9rem 1rem;border:1px solid var(--bstrong);border-radius:12px;background:var(--surface2)}
+  .selfcheck p{font-size:.86rem;line-height:1.55;margin-bottom:.3rem}
+  ul.tick{list-style:none;margin:0;font-size:.87rem;line-height:1.55}
+  ul.tick li{padding-left:1.3rem;position:relative;margin-bottom:.4rem}
+  ul.tick li:before{content:"";position:absolute;left:0;top:.45em;width:.5rem;height:.5rem;border-radius:2px;border:1.5px solid var(--gold)}
+
+  .gates{display:flex;flex-wrap:wrap;gap:.3rem}
+  .gates .btn{font-size:.72rem;padding:.25rem .55rem}
+
+  .fld-note{font-size:.78rem;margin:-.35rem 0 .9rem;line-height:1.5}
+  .fld input:disabled,.fld select:disabled{opacity:.55;cursor:not-allowed}
+
+  .linkish{background:none;border:0;color:var(--gold2);font:inherit;font-weight:600;cursor:pointer;padding:0;text-align:left;text-decoration:underline;text-underline-offset:2px}
+  .stage-t{font-size:.86rem;color:var(--cream);margin:.25rem 0 .1rem}
+  td.slow{color:#e8a0a0;font-weight:700}
+  .sdet{padding:.4rem 0 .8rem}
+  ol.jp-det{list-style:none;margin:0}
+  ol.jp-det li{display:flex;justify-content:space-between;gap:1rem;padding:.28rem 0 .28rem 1.5rem;position:relative;font-size:.85rem;color:var(--faint)}
+  ol.jp-det li:before{content:"";position:absolute;left:.25rem;top:.62rem;width:.5rem;height:.5rem;border-radius:50%;border:1.5px solid var(--border)}
+  ol.jp-det li.done{color:var(--soft)}
+  ol.jp-det li.done:before{content:"\2713";border:0;left:.1rem;top:.2rem;width:auto;height:auto;color:var(--green2);font-weight:700}
+  ol.jp-det li.now{color:var(--cream);font-weight:600}
+  ol.jp-det li.now:before{border-color:var(--gold);background:var(--gold)}
+  tr.detail td{background:var(--surface2)}
+
+  .why-prep h3{font-size:1.05rem;margin-bottom:.4rem}
+  .wp-lead{font-size:.92rem;color:var(--soft);line-height:1.6;margin-bottom:.9rem}
+  ol.wp-chain{list-style:none;margin:0;counter-reset:wp}
+  ol.wp-chain li{counter-increment:wp;position:relative;padding:.55rem 0 .55rem 2.2rem;border-top:1px solid var(--border)}
+  ol.wp-chain li:first-child{border-top:0}
+  ol.wp-chain li:before{content:counter(wp);position:absolute;left:0;top:.62rem;width:1.5rem;height:1.5rem;border-radius:50%;
+    background:var(--surface2);border:1px solid var(--bstrong);color:var(--gold2);font-size:.72rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+  ol.wp-chain b{display:block;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin-bottom:.15rem}
+  ol.wp-chain span{font-size:.89rem;color:var(--soft);line-height:1.6}
+  .wp-exam{margin-top:1rem;padding:.9rem 1rem;border:1px solid var(--bstrong);border-radius:12px;background:var(--surface2)}
+  .wp-exam h4{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem}
+  .wp-exam p{font-size:.88rem;line-height:1.6;color:var(--soft);margin-bottom:.45rem}
+  .wp-exam p:last-child{margin-bottom:0}
+
+  ol.booking{list-style:none;margin:.6rem 0 0;counter-reset:bk}
+  ol.booking li{counter-increment:bk;position:relative;padding:.5rem 0 .5rem 2.1rem;border-top:1px solid var(--border)}
+  ol.booking li:first-child{border-top:0}
+  ol.booking li:before{content:counter(bk);position:absolute;left:0;top:.58rem;width:1.4rem;height:1.4rem;border-radius:50%;
+    background:var(--surface2);border:1px solid var(--bstrong);color:var(--gold2);font-size:.7rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+  ol.booking b{display:block;font-size:.9rem;color:var(--cream)}
+  ol.booking span{font-size:.82rem;color:var(--faint);line-height:1.5}
+  .warn-h{font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);margin:1rem 0 .4rem}
+  ul.warnlist{list-style:none;margin:0}
+  ul.warnlist li{padding:.42rem 0 .42rem .95rem;position:relative;border-top:1px solid var(--border)}
+  ul.warnlist li:first-child{border-top:0}
+  ul.warnlist li:before{content:"";position:absolute;left:0;top:.78rem;width:.35rem;height:.35rem;border-radius:50%;background:var(--gold)}
+  ul.warnlist b{display:block;font-size:.86rem;color:var(--cream)}
+  ul.warnlist span{font-size:.82rem;color:var(--soft);line-height:1.55}
+
+  .deeper{margin-top:.6rem;padding:.7rem .85rem;border:1px dashed var(--border);border-radius:10px;background:rgba(200,164,21,.04)}
+  .deeper-h{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:.5rem}
+  .deeper .fld:last-child{margin-bottom:0}
+
+  /* ---------------- the journey ---------------- */
+  .next-step{border-color:var(--bstrong);padding:1.3rem 1.4rem}
+  .next-step.you{border-color:rgba(200,164,21,.5);background:linear-gradient(180deg,rgba(200,164,21,.07),transparent 60%)}
+  .ns-top{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.5rem;flex-wrap:wrap}
+  .ns-phase{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700}
+  .next-step h2{font-size:1.35rem;margin-bottom:.4rem}
+  .ns-blurb{color:var(--soft);font-size:.94rem;line-height:1.6}
+  .ns-body{margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--border)}
+  .ns-body .fld{max-width:360px}
+  .own{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;border-radius:99px;padding:.2rem .6rem;white-space:nowrap}
+  .own-you{background:var(--gold2);color:#1a1206}
+  .own-pls{background:rgba(42,133,64,.25);color:#8fd6a2;border:1px solid rgba(42,133,64,.5)}
+  .own-rblp{background:rgba(11,46,109,.4);color:#9db8e8;border:1px solid rgba(120,150,220,.4)}
+  .own-ca{background:rgba(139,44,44,.25);color:#e8a0a0;border:1px solid rgba(139,44,44,.6)}
+  ul.plain{list-style:none;margin:.6rem 0;font-size:.9rem;line-height:1.6;color:var(--soft)}
+  ul.plain li{padding-left:1rem;position:relative;margin-bottom:.3rem}
+  ul.plain li:before{content:"\2022";position:absolute;left:0;color:var(--gold)}
+  .row.check{gap:.55rem;align-items:flex-start;cursor:pointer;margin-top:.9rem}
+  .row.check input{width:auto;margin-top:.2rem}
+  .row.check span{font-size:.9rem}
+  .jp{margin-bottom:1rem}
+  .jp h4{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem}
+  .jp ol{list-style:none;margin:0}
+  .jp li{display:flex;align-items:center;gap:.6rem;padding:.35rem 0 .35rem 1.6rem;position:relative;font-size:.9rem;color:var(--faint)}
+  .jp li:before{content:"";position:absolute;left:.25rem;top:.72rem;width:.55rem;height:.55rem;border-radius:50%;border:1.5px solid var(--border)}
+  .jp li.done{color:var(--soft)}
+  .jp li.done:before{content:"\2713";border:0;left:.1rem;top:.28rem;width:auto;height:auto;color:var(--green2);font-size:.85rem;font-weight:700}
+  .jp li.now{color:var(--cream);font-weight:600}
+  .jp li.now:before{border-color:var(--gold);background:var(--gold)}
+  .jp li .jt{flex:1}
+
+  /* ---------------- run of day ---------------- */
+  .rod{display:grid;gap:2px;margin-top:.8rem}
+  .rod-row{display:grid;grid-template-columns:86px 1fr auto;align-items:center;gap:.7rem;
+           padding:.5rem .7rem;border-radius:8px;background:var(--surface);font-size:.87rem}
+  .rod-row.break,.rod-row.lunch{background:transparent;border:1px dashed var(--border);color:var(--faint)}
+  .rod-row.lunch{border-style:solid}
+  .rod-t{font-variant-numeric:tabular-nums;font-weight:700;color:var(--gold2);font-size:.8rem;line-height:1.25}
+  .rod-row.break .rod-t,.rod-row.lunch .rod-t{color:var(--faint);font-weight:600}
+  .rod-t i{display:block;font-style:normal;font-weight:400;color:var(--faint);font-size:.72rem}
+  .rod-m{font-size:.72rem;color:var(--faint);white-space:nowrap}
+  .rod-row.away{opacity:.4}
+  .rod-row.finish{box-shadow:inset 2px 0 0 var(--gold)}
+  .rod-you{display:block;font-size:.7rem;color:var(--gold);font-weight:700;letter-spacing:.04em;margin-top:.1rem}
+  .rod-leave{display:inline-block;margin-left:.5rem;font-size:.68rem;font-weight:700;letter-spacing:.05em;
+             color:var(--ink);background:var(--gold2);border-radius:99px;padding:.05rem .45rem;vertical-align:middle}
+  .rod-tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.5rem;margin-top:.9rem;font-size:.83rem}
+  .rod-tracks div{padding:.45rem .6rem;border:1px solid var(--border);border-radius:8px;color:var(--soft)}
+  @media(max-width:520px){.rod-row{grid-template-columns:70px 1fr}.rod-m{display:none}}
+
+  /* ---------------- completion certificate ---------------- */
+  /* Mirrors "Cert templates/CA Pay Cert Template.pptx". Every offset below is the inch
+     position straight out of that deck (11in x 8.5in landscape), so what prints matches the
+     original Tommy already hands to CA offices. The deck marks its fill-in fields in yellow;
+     those are authoring markers, not design — here they're set in navy instead. */
+  .cert{position:relative;width:11in;height:8.5in;background:#fff;color:#111;overflow:hidden;
+        font-family:"Times New Roman",Times,serif;font-size:16pt;line-height:1.35}
+  .cert .cnr{position:absolute;border:0 solid #1E3645}
+  .cert .cnr.tl{left:.03in;top:.02in;width:3.33in;height:3.53in;border-left-width:.41in;border-top-width:.41in}
+  .cert .cnr.tr{right:.03in;top:.02in;width:3.53in;height:3.33in;border-right-width:.41in;border-top-width:.41in}
+  .cert .cnr.bl{left:.03in;bottom:0;width:3.53in;height:3.32in;border-left-width:.41in;border-bottom-width:.41in}
+  .cert .cnr.br{right:.03in;bottom:0;width:3.33in;height:3.47in;border-right-width:.41in;border-bottom-width:.41in}
+  .cert-logo{position:absolute;left:3.12in;top:.12in;width:4.66in;height:2.3in;object-fit:contain}
+  .cert-title{position:absolute;left:0;right:0;top:2.5in;text-align:center;font-size:67pt;
+              font-weight:400;line-height:1;letter-spacing:.04em;color:#1E3645}
+  .cert-col{position:absolute;left:1.6in;right:1.6in;top:3.62in;text-align:center}
+  .cert-of{font-size:29.5pt;font-style:italic;color:#1E3645;line-height:1.1}
+  .cert-lead{margin-top:.22in}
+  .cert-name{font-size:48pt;line-height:1.1;color:#1E3645;margin:.04in 0 .1in}
+  .cert-award{margin:0 auto;max-width:7.6in}
+  .cert-award b{font-weight:700;color:#1E3645}
+  .cert-meta{margin-top:.12in;font-size:12pt;color:#40525e;letter-spacing:.02em}
+  .cert-seal{position:absolute;left:4.77in;top:6.84in;width:1.59in;height:1.6in;object-fit:contain}
+  .cert-sig{position:absolute;left:.93in;top:6.5in;width:2.9in;text-align:center}
+  .cert-sig .nm{font-size:20pt;font-style:italic;color:#1E3645;line-height:1.2}
+  .cert-sig hr{border:0;border-top:1px solid #1E3645;margin:.06in 0 .07in}
+  .cert-sig .ti{font-size:14pt;font-style:italic;line-height:1.25}
+
+  /* On-screen preview: the sheet is a fixed 11in wide, so scale it to fit the panel. */
+  .cert-prev{background:#5a6672;border-radius:12px;padding:12px;overflow:hidden}
+  .cert-prev .cert{transform:scale(var(--certScale,.55));transform-origin:top left;
+                   box-shadow:0 6px 24px rgba(0,0,0,.4)}
+  .cert-prev .shrink{height:calc(8.5in * var(--certScale,.55))}
+
+  /* ---------------- print (exam sheet) ---------------- */
+  .printable{display:none}
+  .cert-sheet{display:none}
+  @media print{
+    body{background:#fff;color:#111}
+    header.top,nav.tabs,.no-print,.btn{display:none!important}
+    .wrap{max-width:none;padding:0}
+    .printable{display:block}
+    /* Printing the certificate: just the sheet, unscaled, nothing else on the page. */
+    body.printing-cert .printable,body.printing-cert #msg{display:none!important}
+    body.printing-cert .cert-sheet{display:block}
+    body.printing-cert .cert{transform:none;box-shadow:none}
+    .panel{display:none!important}
+    .print-task{page-break-inside:avoid;border-bottom:1px solid #ddd;padding:8px 0}
+    .print-task h4{font-size:12pt}
+    .print-task p{font-size:10pt;margin:2px 0}
+    .print-task .lbl{font-weight:700}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================== signed out ============================== -->
+<div id="signin" class="signin" hidden>
+  <div class="box">
+    <div style="text-align:center;margin-bottom:1.2rem">
+      <img src="/assets/logo-icon.png" alt="" style="height:46px;margin-bottom:.5rem">
+      <h2 style="font-size:1.15rem">Promote &amp; Lead Classroom</h2>
+      <p class="muted" style="margin-top:.25rem">Enter your email and we'll send you a code.<br>
+        <b class="soft">New here? This is also how you create your account</b> &mdash; there's nothing to set up and no password to remember.</p>
+    </div>
+    <div id="siErr" class="err" hidden></div>
+
+    <form id="emailForm">
+      <label class="fld"><span>Email address</span>
+        <input type="email" id="siEmail" autocomplete="email" required placeholder="you@example.com">
+      </label>
+      <button class="btn btn-gold" style="width:100%" id="siSend">Email me a code</button>
+      <p class="muted" style="margin-top:.8rem;font-size:.82rem">Already bought your exam prep through RBLP? Sign in the same way &mdash;
+        we'll pick you up from wherever you are.</p>
+    </form>
+
+    <form id="codeForm" hidden>
+      <p class="muted" style="margin-bottom:.8rem">We emailed a 6-digit code to <b id="siTo" class="soft"></b>. It expires in 15 minutes.</p>
+      <label class="fld"><span>6-digit code</span>
+        <input type="text" id="siCode" class="code-in" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+      </label>
+      <button class="btn btn-green" style="width:100%" id="siVerify">Sign in</button>
+      <div class="row" style="justify-content:space-between;margin-top:.8rem">
+        <button type="button" class="btn btn-ghost btn-sm" id="siBack">Use a different email</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="siResend">Resend code</button>
+      </div>
+    </form>
+
+    <p class="muted" style="margin-top:1.3rem;font-size:.78rem;border-top:1px solid var(--border);padding-top:.9rem">
+      This is your <b class="soft">Promote &amp; Lead classroom account</b>. It is <b class="soft">not</b> your RBLP
+      credential account — you apply for that separately, free, at rblp.com.
+    </p>
+  </div>
+</div>
+
+<!-- ============================== signed in ============================== -->
+<div id="app" hidden>
+  <header class="top no-print">
+    <div class="brand">
+      <img src="/assets/logo-icon.png" alt="">
+      <div>Classroom<small>Promote &amp; Lead Solutions</small></div>
+    </div>
+    <div class="who">
+      <span id="whoEmail"></span>
+      <span class="pill" id="whoRole"></span>
+      <button class="btn btn-ghost btn-sm" data-go="settings" id="whoSettings">Settings</button>
+      <button class="btn btn-ghost btn-sm" id="signOut">Sign out</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav class="tabs no-print" id="tabs"></nav>
+    <div id="msg"></div>
+
+    <section class="panel" data-panel="home"></section>
+    <section class="panel" data-panel="pipeline"></section>
+    <section class="panel" data-panel="worksheets"></section>
+    <section class="panel" data-panel="cohort"></section>
+    <section class="panel" data-panel="exam"></section>
+    <section class="panel" data-panel="settings"></section>
+    <section class="panel" data-panel="teaching"></section>
+    <section class="panel" data-panel="instructor"></section>
+    <section class="panel" data-panel="admin"></section>
+
+    <div class="printable" id="printSheet"></div>
+    <div class="cert-sheet" id="certSheet"></div>
+  </div>
+</div>
+
+<script>
+/* ------------------------------------------------------------------ helpers */
+var ME = null, CONSOLE = null, ACTIVE = "home", ACTIVE_COHORT = null;
+var $ = function (s, r) { return (r || document).querySelector(s); };
+var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+// "Jonathan A. Smith" -> "Jonathan". display_name is the name we print on the certificate, so
+// it's a full name; greeting someone with all of it reads like a summons.
+function firstName(full) {
+  var n = String(full || "").trim().split(/\s+/)[0];
+  return n || "";
+}
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+// Content-pack copy uses **bold**; render just that, on escaped text.
+function md(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, "<b class=\"soft\">$1</b>"); }
+
+function flash(text, kind) {
+  var box = $("#msg");
+  box.innerHTML = '<div class="' + (kind === "err" ? "err" : "ok-msg") + '">' + esc(text) + "</div>";
+  if (kind !== "err") setTimeout(function () { box.innerHTML = ""; }, 3200);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function api(action, data) {
+  var res = await fetch("/api/classroom/action", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: action, data: data || {} })
+  });
+  var out = await res.json().catch(function () { return {}; });
+  if (!res.ok) throw new Error(out.error || "Something went wrong.");
+  return out;
+}
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("en-US", {
+      weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+      timeZone: "America/Chicago", timeZoneName: "short"
+    });
+  } catch (e) { return iso; }
+}
+// A bare "2026-10-03" is a calendar date, not an instant. Date() reads it as UTC midnight, so
+// formatting it in America/Chicago rolls it back to the 2nd — which would print the wrong day
+// on a document someone files with their CA office. Split date-only values by hand.
+var DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
+var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+// The certificate reads "4 April 2026", the way the original deck words it.
+function fmtCertDay(iso) {
+  if (!iso) return "";
+  var d = DATE_ONLY.exec(iso);
+  if (d) return Number(d[3]) + " " + MONTHS[Number(d[2]) - 1] + " " + d[1];
+  try {
+    var parts = new Date(iso).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Chicago" });
+    var m = /^(\w+) (\d+), (\d+)$/.exec(parts);
+    return m ? m[2] + " " + m[1] + " " + m[3] : parts;
+  } catch (e) { return iso; }
+}
+
+function fmtDay(iso) {
+  if (!iso) return "—";
+  var d = DATE_ONLY.exec(iso);
+  if (d) return MONTHS[Number(d[2]) - 1].slice(0, 3) + " " + Number(d[3]) + ", " + d[1];
+  try { return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/Chicago" }); }
+  catch (e) { return iso; }
+}
+
+/* ------------------------------------------------------------------ sign in */
+var pendingEmail = "";
+
+function showSignin(err) {
+  $("#app").hidden = true;
+  $("#signin").hidden = false;
+  if (err) { $("#siErr").hidden = false; $("#siErr").textContent = err; }
+}
+
+$("#emailForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  var btn = $("#siSend"); var email = $("#siEmail").value.trim().toLowerCase();
+  if (!email) return;
+  btn.disabled = true; btn.textContent = "Sending…"; $("#siErr").hidden = true;
+  try {
+    var res = await fetch("/api/classroom/auth", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "request-code", email: email })
+    });
+    var out = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(out.error || "Couldn't send the code.");
+    pendingEmail = email;
+    $("#siTo").textContent = email;
+    $("#emailForm").hidden = true; $("#codeForm").hidden = false;
+    $("#siCode").focus();
+  } catch (err) {
+    $("#siErr").hidden = false; $("#siErr").textContent = err.message;
+  } finally { btn.disabled = false; btn.textContent = "Email me a code"; }
+});
+
+$("#codeForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  var btn = $("#siVerify");
+  btn.disabled = true; btn.textContent = "Checking…"; $("#siErr").hidden = true;
+  try {
+    var res = await fetch("/api/classroom/auth", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "verify-code", email: pendingEmail, code: $("#siCode").value })
+    });
+    var out = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(out.error || "That code didn't work.");
+    $("#signin").hidden = true;
+    await boot();
+  } catch (err) {
+    $("#siErr").hidden = false; $("#siErr").textContent = err.message;
+  } finally { btn.disabled = false; btn.textContent = "Sign in"; }
+});
+
+$("#siBack").addEventListener("click", function () {
+  $("#codeForm").hidden = true; $("#emailForm").hidden = false; $("#siErr").hidden = true;
+});
+$("#siResend").addEventListener("click", function () { $("#emailForm").dispatchEvent(new Event("submit")); });
+$("#signOut").addEventListener("click", async function () {
+  await fetch("/api/classroom/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) });
+  location.reload();
+});
+
+/* ------------------------------------------------------------------ boot + render */
+async function boot() {
+  var res = await fetch("/api/classroom/me", { headers: { Accept: "application/json" } });
+  var data = await res.json().catch(function () { return {}; });
+  if (!res.ok) return showSignin(data.error || "Couldn't load the classroom.");
+  if (!data.signedIn) return showSignin();
+
+  ME = data;
+  $("#signin").hidden = true;
+  $("#app").hidden = false;
+  $("#whoEmail").textContent = ME.profile.displayName ? "Hi, " + firstName(ME.profile.displayName) : ME.profile.email;
+  $("#whoRole").textContent = ME.profile.role === "admin" ? "Admin" : ME.profile.role === "instructor" ? "Instructor" : ME.profile.track;
+
+  if (ME.profile.role === "instructor" || ME.profile.role === "admin") {
+    try {
+      var cres = await fetch("/api/classroom/console", { headers: { Accept: "application/json" } });
+      if (cres.ok) CONSOLE = await cres.json();
+    } catch (e) { /* console is optional — the student view still works */ }
+  }
+
+  renderTabs();
+  renderAll();
+}
+
+// Home / My steps / Worksheets / My cohort / Oral exam are one person's journey through their
+// own certification. An instructor who isn't enrolled in a cohort has none of those things, so
+// showing them a locked pipeline and an empty worksheet set is just clutter. They come back the
+// moment that instructor is added to a roster — Tommy going through RBLP-T still sees his own.
+function tabList() {
+  var t = [];
+  var staffOnly = CONSOLE && !(ME && ME.cohort);
+  if (!staffOnly) {
+    t = t.concat([["home", "Home"], ["pipeline", "My journey"], ["worksheets", "Prep work"],
+                  ["cohort", "My cohort"], ["exam", "Oral exam"], ["settings", "Settings"]]);
+  }
+  if (CONSOLE) t.push(["teaching", "Teaching guide"], ["instructor", "Instructor"]);
+  if (CONSOLE && CONSOLE.role === "admin") t.push(["admin", "Admin"]);
+  return t;
+}
+
+function renderTabs() {
+  var tabs = tabList();
+  if (!tabs.some(function (t) { return t[0] === ACTIVE; })) ACTIVE = tabs.length ? tabs[0][0] : "home";
+  $("#tabs").innerHTML = tabs.map(function (t) {
+    return '<button class="tab' + (t[0] === ACTIVE ? " active" : "") + '" data-tab="' + t[0] + '">' + esc(t[1]) + "</button>";
+  }).join("");
+  $$("#tabs .tab").forEach(function (b) {
+    b.addEventListener("click", function () {
+      ACTIVE = b.dataset.tab;
+      location.hash = "#/" + ACTIVE;
+      renderTabs(); renderAll(); window.scrollTo({ top: 0 });
+    });
+  });
+}
+
+function renderAll() {
+  $$(".panel").forEach(function (p) { p.classList.toggle("active", p.dataset.panel === ACTIVE); });
+  var map = {
+    home: renderHome, pipeline: renderPipeline, worksheets: renderWorksheets,
+    cohort: renderCohort, exam: renderExam, settings: renderSettings, teaching: renderTeaching,
+    instructor: renderInstructor, admin: renderAdmin
+  };
+  var el = $('.panel[data-panel="' + ACTIVE + '"]');
+  if (el && map[ACTIVE]) map[ACTIVE](el);
+  renderPrintSheet();
+  renderCertificate();
+}
+
+async function refresh() {
+  var res = await fetch("/api/classroom/me");
+  if (res.ok) ME = await res.json();
+  if (CONSOLE) {
+    var c = await fetch("/api/classroom/console");
+    if (c.ok) CONSOLE = await c.json();
+  }
+  renderAll();
+}
+
+async function run(fn, okMsg) {
+  try { await fn(); await refresh(); if (okMsg) flash(okMsg); }
+  catch (e) { flash(e.message, "err"); }
+}
+
+/* ------------------------------------------------------------------ home */
+function renderHome(el) {
+  var p = ME.profile, w = ME.worksheets.progress, h = ME.hours;
+  var current = ME.pipeline.steps.filter(function (s) { return s.key === ME.pipeline.currentStep; })[0];
+
+  el.innerHTML =
+    '<div class="box"><h2>' + (p.displayName ? "Hi, " + esc(firstName(p.displayName)) : "Welcome") + '</h2>' +
+      (p.displayName
+        ? '<p class="muted">You\'re preparing for the <b class="soft">' + esc(p.track) + '</b> oral exam with Promote and Lead Solutions.</p>'
+        : '<p class="muted">Let\'s start with your name &mdash; it\'s what goes on your certificate. ' +
+          '<button class="btn btn-ghost btn-sm" data-go="settings">Add my details</button></p>') +
+      '<div class="notice"><b>Your next step:</b> ' + esc(current ? current.title : "—") +
+        ' &nbsp;<button class="btn btn-gold btn-sm no-print" data-go="pipeline">See my journey</button></div>' +
+    "</div>" +
+
+    '<div class="cards">' +
+      card(w.ready + "/" + w.required, "Worksheets ready") +
+      card(h.attendedHours, "Hours attended of " + h.requiredHours) +
+      card(ME.cohort ? esc(ME.cohort.slug) : "—", "My cohort") +
+      card(esc(p.track), "My track") +
+    "</div>" +
+
+    '<div class="box no-print">' + whyPrepHtml(true) + "</div>" +
+
+    '<div class="grid2">' +
+      '<div class="box"><h3>Before your cohort session</h3>' +
+        '<p class="muted">Self-study the official RBLP modules and fill in <b class="soft">your own example</b> for every leader task. ' +
+        'This is required — the live session is for expanding your examples, not for reading the modules aloud.</p>' +
+        '<div class="bar"><i style="width:' + w.percent + '%"></i></div>' +
+        '<p class="muted">' + w.percent + '% ready &middot; ' + w.started + " started</p>" +
+        '<div class="row" style="margin-top:.7rem"><button class="btn btn-gold btn-sm" data-go="worksheets">Open my prep work</button></div>' +
+      "</div>" +
+      '<div class="box"><h3>The exam answer shape</h3>' +
+        '<p class="muted">For every leader task, RBLP wants <b class="soft">application, not regurgitation</b>. Answer three things, then tell a story:</p>' +
+        '<ol style="margin:.6rem 0 0 1.1rem;font-size:.87rem" class="soft"><li>What is it?</li><li>Why is it important?</li><li>Why is it important to <i>my life</i>?</li></ol>' +
+        '<p class="muted" style="margin-top:.6rem">Stories can come from ' + esc(ME.worksheets.storySources.join(", ")) + ".</p>" +
+      "</div>" +
+    "</div>";
+
+  wireGo(el);
+}
+
+function card(n, l) { return '<div class="card"><div class="n">' + n + '</div><div class="l">' + esc(l) + "</div></div>"; }
+function wireGo(el) {
+  $$("[data-go]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      ACTIVE = b.dataset.go; location.hash = "#/" + ACTIVE; renderTabs(); renderAll(); window.scrollTo({ top: 0 });
+    });
+  });
+}
+
+/* ------------------------------------------------------------------ pipeline */
+function renderPipeline(el) {
+  var p = ME.profile, J = ME.pipeline, cur = J.current;
+
+  // One thing at a time. The big card is whatever is actually next; the map below is there for
+  // orientation, not for working from. Students on this programme are juggling a CA portal, an
+  // RBLP account and us — a wall of thirteen checkboxes is how people give up.
+  var bodies = {
+    profile: function () {
+      return '<label class="fld"><span>Your name (as it should appear on your certificate)</span>' +
+        '<input id="pDisplay" value="' + esc(p.displayName) + '" placeholder="First Last"></label>' +
+        '<label class="fld"><span>Which certification are you going for?</span>' +
+        '<select id="pTrack"' + (p.trackLocked ? " disabled" : "") + ">" +
+        Object.keys(ME.tracks).map(function (k) {
+          return '<option value="' + k + '"' + (k === p.track ? " selected" : "") + ">" + k + " &mdash; " + ME.tracks[k].modules.length + " modules</option>";
+        }).join("") + "</select></label>" +
+        '<label class="fld"><span>How are you paying for it?</span><select id="pFunding">' +
+        '<option value="">Choose one&hellip;</option>' +
+        ME.funding.options.map(function (o) {
+          return '<option value="' + esc(o.key) + '"' + (o.key === p.paymentSource ? " selected" : "") + ">" + esc(o.label) + "</option>";
+        }).join("") + "</select></label>" +
+        '<button class="btn btn-gold btn-sm" id="pSaveProfile">Save and continue</button>';
+    },
+    rblp_apply: function () {
+      return '<p>Apply directly with RBLP &mdash; it\'s <b class="soft">free</b> and takes about ten minutes.</p>' +
+        '<ul class="plain"><li>Use a <b class="soft">personal email address</b>, not your work or military one &mdash; you\'ll need it for years.</li>' +
+        '<li>When it asks for your instructor, choose <b class="soft">Promote and Lead Solutions, LLC</b>.</li></ul>' +
+        '<div class="row"><a class="btn btn-gold btn-sm" href="https://rblp.com/leadership-certifications/apply/" target="_blank" rel="noopener">Apply at RBLP &rarr;</a></div>' +
+        '<label class="row check"><input type="checkbox" id="pApplied"' + (J.steps.filter(function (x) { return x.key === "rblp_apply"; })[0].done ? " checked" : "") + ">" +
+        "<span>I've submitted my RBLP application and named Promote and Lead Solutions.</span></label>";
+    },
+    invoice: function () {
+      return '<p>RBLP emails you <b class="soft">two</b> invoices &mdash; one for the exam, one for the training. You need both before you can file with CA.</p>' +
+        '<label class="row check"><input type="checkbox" id="pInvoice">' +
+        "<span>I've received both invoices from RBLP.</span></label>" +
+        '<p class="muted">Nothing after a week? Email <a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> and we\'ll chase it.</p>';
+    },
+    ca_submitted: function () {
+      var g = ME.funding.guidance || {};
+      return '<p>This happens on your branch\'s Credentialing Assistance website &mdash; you <b class="soft">upload</b> both invoices there, ' +
+          'the exam one and the training one.</p>' +
+        '<p><b class="soft">Start with the instructions.</b> RBLP keeps a step-by-step guide for your branch and it walks you through the ' +
+          'upload screen by screen. Read it first &mdash; it answers most of what people get stuck on.</p>' +
+        (g.link ? '<div class="row"><a class="btn btn-gold btn-sm" href="' + esc(g.link) + '" target="_blank" rel="noopener">Open the CA instructions for my branch &rarr;</a></div>' : "") +
+        '<div class="notice"><b>The one thing people get wrong:</b> when it asks for the training company, select <b>RLS</b>. ' +
+          'That\'s the government-approved partner CA pays through. Your instructor of record with RBLP is still Promote and Lead Solutions.</div>' +
+        (ME.funding.caWarnings
+          ? '<h4 class="warn-h">Before you file &mdash; the things that bounce packets</h4><ul class="warnlist">' +
+            ME.funding.caWarnings.map(function (w) {
+              return "<li><b>" + esc(w.rule) + "</b><span>" + esc(w.detail) + "</span></li>";
+            }).join("") + "</ul>"
+          : "") +
+        '<label class="fld" style="max-width:240px"><span>Date you uploaded them</span>' +
+        '<input type="date" id="pCaDate" value="' + esc(p.caSubmittedOn || "") + '"></label>' +
+        '<button class="btn btn-gold btn-sm" id="pCaSave">I\'ve uploaded both invoices</button>' +
+        '<p class="muted">We use that date for the 45-day clock, so it tells us which cohort you can join.</p>';
+    },
+    paid: function () {
+      return '<p>Exam prep is purchased on <b class="soft">rblp.com</b>, the same place your exam lives. Choose ' +
+        '<b class="soft">Promote and Lead Solutions, LLC</b> as your instructor so it comes to our cohort.</p>' +
+        '<p class="muted">RBLP collects the payment &mdash; we never handle money directly, so your receipt comes from them. ' +
+        'Affirm is offered at their checkout if you\'d rather spread it; the terms are set by Affirm and shown before you commit.</p>' +
+        '<div class="row"><a class="btn btn-gold btn-sm" href="https://rblp.com/certification-prep-training/" target="_blank" rel="noopener">Buy exam prep at RBLP &rarr;</a></div>' +
+        '<p class="muted">Once RBLP confirm it with us, your prep work opens and we place you in the next cohort. Stuck at checkout? Email <a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a>.</p>' +
+        (p.purchaseClaimedAt
+          ? '<div class="notice green">You told us on ' + esc(fmtDay(p.purchaseClaimedAt)) + ' that you\'d already bought it. ' +
+            'We\'re confirming with RBLP &mdash; you\'ll get an email the moment it clears, usually a day or two.</div>'
+          : '<label class="row check"><input type="checkbox" id="pBought">' +
+            "<span>I've already bought my exam prep through RBLP.</span></label>" +
+            '<p class="muted">Tick that and we\'ll check with RBLP rather than making you buy it twice.</p>');
+    },
+    prep: function () {
+      return J.fundingConfirmed
+        ? '<p>Your prep work is open. Read each module on rblp.com with the month password, then draft your own answers and stories.</p>' +
+          '<div class="row"><button class="btn btn-gold btn-sm" data-go="worksheets">Open my prep work</button></div>'
+        : '<p class="muted">This opens as soon as your funding is confirmed.</p>';
+    },
+    attend: function () {
+      return ME.cohort && ME.cohort.teamsUrl
+        ? '<p>Your session is on the <button class="btn btn-ghost btn-sm" data-go="cohort">My cohort</button> tab, with the times and your Teams link.</p>'
+        : '<p class="muted">Your cohort date and Teams link appear here once you\'re placed.</p>';
+    },
+    certificate: function () {
+      var c = ME.certificate;
+      if (c && c.available) {
+        return '<p>Issued ' + esc(fmtDay(c.issuedOn)) + ' &mdash; <b class="soft">' + esc(c.track) + ', ' + c.modules +
+            ' modules, ' + c.hours + ' contact hours</b>.</p>' +
+          '<p class="muted">If you\'re claiming Credentialing Assistance, this is the document your CA office asks for.</p>' +
+          '<div class="row"><button class="btn btn-gold btn-sm" id="cPrint">Download certificate</button></div>' +
+          '<div class="cert-prev no-print" id="cPrev"><div class="shrink">' + certHtml(c) + '</div></div>';
+      }
+      if (c && c.needsName) {
+        return '<p>Your certificate is ready, but we need the name to put on it.</p>' +
+          '<label class="fld" style="max-width:340px"><span>Name as it should appear</span>' +
+          '<input id="pDisplay" value="' + esc(p.displayName) + '" placeholder="First Last"></label>' +
+          '<button class="btn btn-gold btn-sm" id="pSaveProfile">Save</button>';
+      }
+      return '<p class="muted">We issue this after you attend your session.</p>';
+    },
+    exam: function () {
+      return '<p>The oral exam is taken with RBLP, not with us. ' + esc(p.track) + ' orals run about <b class="soft">' + examLength(p.track) + '</b>.</p>' +
+        '<div class="row"><a class="btn btn-gold btn-sm" href="https://rblp.com/leadership-certifications/schedule-exam/" target="_blank" rel="noopener">Schedule with RBLP &rarr;</a>' +
+        '<button class="btn btn-ghost btn-sm" data-go="exam">Open the exam checklist</button></div>' +
+        '<label class="row check"><input type="checkbox" id="examDone"' + (J.steps.filter(function (x) { return x.key === "exam"; })[0].done ? " checked" : "") + ">" +
+        "<span>I've scheduled my RBLP oral exam.</span></label>";
+    }
+  };
+
+  var body = bodies[cur.key] ? bodies[cur.key]() : "";
+  var waiting = cur.owner !== "you";
+
+  el.innerHTML =
+    '<div class="box next-step ' + esc(cur.owner) + '">' +
+      '<div class="ns-top"><span class="ns-phase">' + esc(cur.phase) + '</span>' +
+        '<span class="own own-' + esc(cur.owner) + '">' + esc(cur.ownerLabel) + "</span></div>" +
+      "<h2>" + esc(cur.title) + "</h2>" +
+      '<p class="ns-blurb">' + esc(cur.blurb) + "</p>" +
+      (waiting ? '<div class="notice">' + esc(cur.ownerHint) + "</div>" : "") +
+      (body ? '<div class="ns-body">' + body + "</div>" : "") +
+    "</div>" +
+
+    '<div class="box"><div class="row" style="justify-content:space-between"><h3>Your journey</h3>' +
+      '<span class="muted">' + J.completed + " of " + J.total + " done</span></div>" +
+      '<div class="bar" style="margin:.5rem 0 1rem"><i style="width:' + Math.round((J.completed / J.total) * 100) + '%"></i></div>' +
+      J.phases.map(function (ph) {
+        return '<div class="jp"><h4>' + esc(ph.phase) + "</h4><ol>" +
+          ph.steps.map(function (st) {
+            var cls = st.done ? "done" : (st.key === cur.key ? "now" : "later");
+            return '<li class="' + cls + '"><span class="jt">' + esc(st.title) + "</span>" +
+              (st.key === cur.key ? '<span class="own own-' + esc(st.owner) + '">' + esc(st.ownerLabel) + "</span>" : "") +
+              "</li>";
+          }).join("") + "</ol></div>";
+      }).join("") +
+      '<p class="muted" style="margin-top:.6rem">Stuck, or something looks wrong? Email ' +
+      '<a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> &mdash; a real person reads it.</p>' +
+    "</div>";
+
+  wireGo(el);
+
+  var save = $("#pSaveProfile", el);
+  if (save) save.addEventListener("click", function () {
+    var fund = $("#pFunding", el);
+    run(function () {
+      return api("profile.save", { display_name: $("#pDisplay").value, track: $("#pTrack") ? $("#pTrack").value : p.track })
+        .then(function () { return fund && fund.value ? api("funding.choose", { source: fund.value }) : null; });
+    }, "Saved.");
+  });
+  var applied = $("#pApplied", el);
+  if (applied) applied.addEventListener("change", function () {
+    run(function () { return api("pipeline.confirmApplied", { applied: applied.checked }); },
+      applied.checked ? "Thanks — we'll let you know when RBLP confirms." : "Unchecked.");
+  });
+  var inv = $("#pInvoice", el);
+  if (inv) inv.addEventListener("change", function () {
+    run(function () { return api("pipeline.invoiceReceived", { done: inv.checked }); }, inv.checked ? "Noted." : "Unchecked.");
+  });
+  var caSave = $("#pCaSave", el);
+  if (caSave) caSave.addEventListener("click", function () {
+    run(function () { return api("pipeline.caSubmitted", { date: $("#pCaDate", el).value }); }, "Noted — we'll tell you the moment it's approved.");
+  });
+  var bought = $("#pBought", el);
+  if (bought) bought.addEventListener("change", function () {
+    run(function () { return api("pipeline.claimPurchase", { done: bought.checked }); },
+      bought.checked ? "Thanks — we'll confirm with RBLP and email you." : "Unticked.");
+  });
+  var examDone = $("#examDone", el);
+  if (examDone) examDone.addEventListener("change", function () {
+    run(function () { return api("exam.scheduled", { done: examDone.checked }); }, "Noted — thanks.");
+  });
+  var cPrint = $("#cPrint", el);
+  if (cPrint) cPrint.addEventListener("click", printCertificate);
+  fitCertPreview(el);
+}
+
+// The case for doing the prep work, with this student's own numbers in it. Shown wherever
+// they're deciding whether to bother: the prep page, the exam page, and home.
+function whyPrepHtml(compact) {
+  var w = ME.study.whyPrep, t = ME.tracks[ME.profile.track] || {};
+  return '<div class="why-prep"><h3>' + esc(w.headline) + "</h3>" +
+    '<p class="wp-lead"><b class="soft">' + esc(ME.profile.track) + '</b> expects <b class="soft">' +
+      (t.reflectionHours || "several") + ' hours</b> of personal reflection before your session, and ' +
+      (t.paybackHours || "") + ' hours in the room. The reflection is this &mdash; the worksheets are where those hours go.</p>' +
+    '<ol class="wp-chain">' + w.chain.map(function (c) {
+      return "<li><b>" + esc(c.at) + "</b><span>" + esc(c.says) + "</span></li>";
+    }).join("") + "</ol>" +
+    (compact ? "" :
+      '<div class="wp-exam"><h4>What the exam actually is</h4>' +
+        "<p><b class=\"soft\">" + esc(w.examTruth.isNot) + "</b> " + esc(w.examTruth.is) + "</p>" +
+        "<p>" + esc(w.examTruth.how) + "</p>" +
+        "<p>" + esc(w.examTruth.so) + "</p></div>") +
+    "</div>";
+}
+
+/* ------------------------------------------------------------------ settings */
+// Their own details. Email is deliberately read-only: it's the identity the sign-in code is
+// issued against and the key every record hangs off, so changing it here would orphan the
+// account rather than rename it. Changing it is a support job, and the page says so.
+function renderSettings(el) {
+  var p = ME.profile;
+  var fundingLocked = ME.pipeline.fundingConfirmed;
+  var fundingLabel = (ME.funding.options.filter(function (o) { return o.key === p.paymentSource; })[0] || {}).label;
+
+  el.innerHTML =
+    '<div class="box"><h2>Your details</h2>' +
+      '<p class="muted">This is what we use on your certificate and to work out your next step.</p>' +
+
+      '<label class="fld"><span>Your name</span>' +
+        '<input id="sName" value="' + esc(p.displayName) + '" placeholder="First Last"></label>' +
+      '<p class="muted fld-note">Spell it the way it should appear on your certificate &mdash; that\'s the document your CA office sees.</p>' +
+
+      '<label class="fld"><span>Email</span>' +
+        '<input value="' + esc(p.email) + '" disabled></label>' +
+      '<p class="muted fld-note">This is how you sign in, so it can\'t be changed here. ' +
+        'Need a different address? Email <a href="mailto:info@promoteandlead.com">info@promoteandlead.com</a> and we\'ll move your account across.</p>' +
+
+      '<label class="fld"><span>Which certification you\'re going for</span>' +
+        '<select id="sTrack"' + (p.trackLocked ? " disabled" : "") + ">" +
+        Object.keys(ME.tracks).map(function (k) {
+          return '<option value="' + k + '"' + (k === p.track ? " selected" : "") + ">" + k + " &mdash; " + ME.tracks[k].modules.length + " modules</option>";
+        }).join("") + "</select></label>" +
+      (p.trackLocked
+        ? '<p class="muted fld-note">Set by your cohort enrollment. Email us if it needs to change.</p>'
+        : '<p class="muted fld-note">You can change this until you\'re placed in a cohort.</p>') +
+
+      '<label class="fld"><span>How you\'re paying</span>' +
+        '<select id="sFunding"' + (fundingLocked ? " disabled" : "") + ">" +
+        '<option value="">Choose one&hellip;</option>' +
+        ME.funding.options.map(function (o) {
+          return '<option value="' + esc(o.key) + '"' + (o.key === p.paymentSource ? " selected" : "") + ">" + esc(o.label) + "</option>";
+        }).join("") + "</select></label>" +
+      (fundingLocked
+        ? '<p class="muted fld-note">Locked now that your funding is confirmed' +
+          (fundingLabel ? " (" + esc(fundingLabel) + ")" : "") + '. Email us if something changed.</p>'
+        : '<p class="muted fld-note">This decides the steps we show you &mdash; Credentialing Assistance has a few more than paying directly.</p>') +
+
+      (p.branch ? '<p class="muted fld-note">Branch: <b class="soft">' + esc(p.branch) + '</b> (from your funding choice)</p>' : "") +
+
+      '<div class="row" style="margin-top:1rem"><button class="btn btn-gold btn-sm" id="sSave">Save changes</button></div>' +
+    "</div>" +
+
+    '<div class="box"><h3>Your account</h3>' +
+      '<p class="muted">Signed in as <b class="soft">' + esc(p.email) + '</b>' +
+        (p.role !== "student" ? " &middot; " + esc(p.role) : "") + ".</p>" +
+      '<p class="muted">Your classroom stays open after you certify &mdash; your answers and stories are yours to come back to.</p>' +
+      '<div class="row" style="margin-top:.7rem"><button class="btn btn-ghost btn-sm" id="sSignOut">Sign out</button></div>' +
+    "</div>";
+
+  wireGo(el);
+  $("#sSave", el).addEventListener("click", function () {
+    var track = $("#sTrack", el), fund = $("#sFunding", el);
+    run(function () {
+      return api("profile.save", { display_name: $("#sName", el).value, track: track.disabled ? p.track : track.value })
+        .then(function () {
+          return (!fund.disabled && fund.value && fund.value !== p.paymentSource)
+            ? api("funding.choose", { source: fund.value }) : null;
+        });
+    }, "Saved.");
+  });
+  $("#sSignOut", el).addEventListener("click", function () { $("#signOut").click(); });
+}
+
+/* ------------------------------------------------------------------ worksheets */
+function studyCol(title, items) {
+  return '<div><h5>' + esc(title) + "</h5><ul>" +
+    (items || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div>";
+}
+
+function renderWorksheets(el) {
+  if (!ME.worksheets.unlocked) {
+    el.innerHTML = '<div class="box"><h2>Your prep work opens once your funding is confirmed</h2>' +
+      '<p class="muted">' + (ME.pipeline.route === "CA"
+        ? "As soon as RBLP tells us your Credentialing Assistance is approved, this unlocks and we'll email you the module password."
+        : "As soon as your payment lands, this unlocks and we'll email you the module password.") + "</p>" +
+      '<p class="muted">Your next step is <b class="soft">' + esc(ME.pipeline.current.title) + '</b> — ' + esc(ME.pipeline.current.ownerHint) + "</p>" +
+      '<button class="btn btn-gold btn-sm" style="margin-top:.7rem" data-go="pipeline">See my journey</button></div>';
+    wireGo(el);
+    return;
+  }
+
+  var w = ME.worksheets;
+  el.innerHTML =
+    '<div class="box no-print"><h2>My prep work</h2>' +
+      '<p class="muted">Read each module on rblp.com (password below), then write <b class="soft">your own</b> answers here. ' +
+      'The starter lines are our coaching notes — replace them with your own wording, and always use your own story.</p>' +
+      '<div class="bar"><i style="width:' + w.progress.percent + '%"></i></div>' +
+      '<p class="muted">' + w.progress.ready + " of " + w.progress.required + " tasks marked ready for your cohort</p>" +
+      '<div class="notice">' + (ME.modulePassword.password
+          ? "Module password for " + esc(ME.modulePassword.yearMonth) + ": <b>" + esc(ME.modulePassword.password) + "</b> — it rotates monthly."
+          : "The module password for " + esc(ME.modulePassword.yearMonth) + " hasn't been posted yet. Email info@promoteandlead.com if you need it now.") + "</div>" +
+      '<button class="btn btn-ghost btn-sm" id="printSheetBtn">Print my exam sheet</button> ' +
+      '<button class="btn btn-ghost btn-sm" id="howToStudy">How to study</button>' +
+    "</div>" +
+
+    '<div class="box no-print">' + whyPrepHtml(false) + "</div>" +
+
+    '<div class="box no-print" id="studyBox" hidden><h3>How to study</h3><div class="study-grid">' +
+      studyCol("Terms", ME.study.habits.terms) +
+      studyCol("Stories", ME.study.habits.stories) +
+      studyCol("Worksheets", ME.study.habits.worksheets) +
+      studyCol("In the live session", ME.study.habits.live) +
+    '</div>' +
+    '<h3 style="margin-top:1.1rem">How the modules build</h3><ol class="arc soft">' +
+      (ME.study.arc || []).map(function (x, i) {
+        return '<li' + (i < ME.worksheets.modules.length ? ' class="mine"' : '') + ">" + esc(x) + "</li>";
+      }).join("") +
+    '</ol><p class="muted">Your track covers ' + ME.worksheets.modules.length +
+      ' of these. Knowing where the rest goes helps you speak with more depth.</p></div>' +
+
+    w.modules.map(function (m) {
+      var ready = m.tasks.filter(function (t) { return t.response && (t.response.status === "ready" || t.response.status === "expanded"); }).length;
+      return '<details class="mod"' + (m.num === firstIncompleteModule() ? " open" : "") + ">" +
+        "<summary><span>Module " + m.num + " — " + esc(m.title) + "</span>" +
+        '<span class="pill' + (ready === m.tasks.length ? " ok" : "") + '">' + ready + "/" + m.tasks.length + " ready</span></summary>" +
+        '<div class="mod-body">' +
+          '<p class="muted" style="margin-top:.8rem">' + esc(m.theme) + "</p>" +
+          '<div class="row" style="margin-top:.7rem"><a class="btn btn-ghost btn-sm" href="' + esc(m.url) + '" target="_blank" rel="noopener">Read module ' + m.num + " on rblp.com →</a></div>" +
+          '<div class="glossary">' + m.glossary.map(function (g) {
+            return '<span class="pill" title="' + esc(g[1]) + '">' + esc(g[0]) + "</span>";
+          }).join("") + "</div>" +
+          m.tasks.map(function (t) { return taskHtml(t); }).join("") +
+          (m.study ? '<div class="selfcheck no-print"><h5>Ready for the oral when&hellip;</h5>' +
+            '<p>' + esc(m.study.success) + '</p>' +
+            (m.study.good ? '<p class="muted"><b>On your worksheet:</b> ' + esc(m.study.good) + '</p>' : '') +
+            '<h5 style="margin-top:.8rem">Self-check &mdash; no answer key</h5><ul>' +
+            m.study.selfCheck.map(function (q) { return "<li>" + esc(q) + "</li>"; }).join("") +
+            '</ul></div>' : '') +
+        "</div></details>";
+    }).join("");
+
+  $("#printSheetBtn", el).addEventListener("click", function () { window.print(); });
+  $("#howToStudy", el).addEventListener("click", function () {
+    var box = $("#studyBox", el);
+    box.hidden = !box.hidden;
+    if (!box.hidden) box.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  $$(".task", el).forEach(wireTask);
+}
+
+function firstIncompleteModule() {
+  var m = ME.worksheets.modules.filter(function (mm) {
+    return mm.tasks.some(function (t) { return !t.response || (t.response.status !== "ready" && t.response.status !== "expanded"); });
+  })[0];
+  return m ? m.num : -1;
+}
+
+// The first three plus a story are RBLP's three-bullet answer shape. The last two are where
+// the examiner pushes when your first answer lands — "what would a leader get wrong here" and
+// "what would you do with this team" are the Evaluate and Create dimensions of the oral. A
+// student who has written those has somewhere to go under follow-up instead of stalling.
+function taskHtml(t) {
+  var r = t.response || { what: "", why: "", life: "", story: "", notdo: "", plan: "", status: "empty" };
+  var badge = r.status === "expanded" ? '<span class="pill ok">Expanded after session</span>'
+    : r.status === "ready" ? '<span class="pill ok">Ready</span>'
+    : r.status === "draft" ? '<span class="pill warn">Draft</span>' : '<span class="pill">Not started</span>';
+  return '<div class="task" data-task="' + esc(t.key) + '">' +
+    '<div class="row" style="justify-content:space-between;align-items:flex-start"><h4>' + esc(t.title) + "</h4>" + badge + "</div>" +
+    '<div class="starter"><b>Starter — what:</b> ' + esc(t.what) + (t.why ? ' &middot; <b>why:</b> ' + esc(t.why) : "") + "</div>" +
+    '<label class="fld"><span>1. What is it?</span><textarea data-f="what">' + esc(r.what) + "</textarea></label>" +
+    '<label class="fld"><span>2. Why is it important?</span><textarea data-f="why">' + esc(r.why) + "</textarea></label>" +
+    '<label class="fld"><span>3. Why is it important to my life?</span><textarea data-f="life">' + esc(r.life) + "</textarea></label>" +
+    '<label class="fld"><span>My story</span><textarea data-f="story" placeholder="Family, current job, former job, an association, a time you led or followed…">' + esc(r.story) + "</textarea></label>" +
+    '<div class="deeper"><span class="deeper-h">Where the examiner will push</span>' +
+      '<label class="fld"><span>What would a leader get wrong here?</span>' +
+      '<textarea data-f="notdo" placeholder="The mistake you\'ve seen someone make — naming it proves you understand the idea, not just the definition.">' + esc(r.notdo || "") + "</textarea></label>" +
+      '<label class="fld"><span>If I ran this team tomorrow, I would&hellip;</span>' +
+      '<textarea data-f="plan" placeholder="One or two sentences. Applying it forward is the hardest thing they ask for.">' + esc(r.plan || "") + "</textarea></label></div>" +
+    '<div class="row"><button class="btn btn-ghost btn-sm" data-save="draft">Save draft</button>' +
+    '<button class="btn btn-green btn-sm" data-save="ready">Mark ready for cohort</button>' +
+    '<button class="btn btn-ghost btn-sm" data-save="expanded">Expanded after session</button></div></div>';
+}
+
+function wireTask(node) {
+  $$("[data-save]", node).forEach(function (btn) {
+    btn.addEventListener("click", async function () {
+      var payload = { task_key: node.dataset.task, status: btn.dataset.save };
+      $$("textarea[data-f]", node).forEach(function (ta) { payload[ta.dataset.f] = ta.value; });
+      btn.disabled = true;
+      try { await api("worksheet.save", payload); ME = await (await fetch("/api/classroom/me")).json(); renderAll(); flash("Saved."); }
+      catch (e) { flash(e.message, "err"); }
+      finally { btn.disabled = false; }
+    });
+  });
+}
+
+/* ------------------------------------------------------------------ cohort */
+function renderCohort(el) {
+  var c = ME.cohort, h = ME.hours;
+  if (!c) {
+    el.innerHTML = '<div class="box"><h2>No cohort yet</h2>' +
+      '<p class="muted">We place you in the cohort with the start date closest to when you\'re ready — sessions run on the first Saturday of the month by default. ' +
+      'Your Teams link and session times appear here as soon as you\'re enrolled.</p>' +
+      '<button class="btn btn-gold btn-sm" style="margin-top:.7rem" data-go="pipeline">See my journey</button></div>';
+    wireGo(el); return;
+  }
+
+  var win = ME.tracks[ME.profile.track].window;
+  el.innerHTML =
+    '<div class="box"><div class="row" style="justify-content:space-between"><h2>Cohort ' + esc(c.slug) + "</h2>" +
+      '<span class="pill">' + esc(c.status || "open") + "</span></div>" +
+      '<p class="muted">' + esc(ME.profile.track) + " &middot; typical session window " + esc(win) + " (America/Chicago)</p>" +
+      (c.teamsUrl
+        ? '<div class="row" style="margin-top:.9rem"><a class="btn btn-green" href="' + esc(c.teamsUrl) + '" target="_blank" rel="noopener">Join on Microsoft Teams</a>' +
+          '<button class="btn btn-ghost btn-sm" id="copyTeams">Copy link</button></div>'
+        : '<div class="notice">Your Teams link will appear here before your session.</div>') +
+    "</div>" +
+
+    '<div class="box"><div class="row" style="justify-content:space-between"><h3>My hours</h3>' +
+      (h.attendedHours >= h.requiredHours ? '<span class="pill ok">Requirement met</span>' : "") + "</div>" +
+      '<div class="bar"><i style="width:' + h.percent + '%"></i></div>' +
+      '<p class="muted">' + h.attendedHours + " hours attended &middot; " + h.requiredHours +
+      " required for " + esc(ME.profile.track) + "</p></div>" +
+
+    '<div class="box"><h3>How the day runs</h3>' +
+      '<p class="muted">' + esc(ME.day.shape) + '</p>' +
+      '<p class="muted">You\'re <b class="soft">' + esc(ME.profile.track) + '</b>, so your day is ' +
+        esc(ME.day.mine.start) + '&ndash;' + esc(ME.day.mine.end) + ' (America/Chicago) &mdash; ' +
+        (ME.day.mine.taughtMinutes / 60) + ' hours of instruction.</p>' +
+      runOfDayHtml(ME.day.blocks, { mark: true }) +
+      '<p class="muted" style="margin-top:.7rem">' + esc(ME.day.departures) + ' ' +
+      'The greyed blocks run on for the longer tracks. Your instructor confirms the exact day.</p></div>' +
+
+    '<div class="box"><h3>Sessions</h3>' +
+      (c.sessions.length
+        ? '<div class="scroll"><table><thead><tr><th>Session</th><th>When</th><th>Minutes</th><th>Me</th></tr></thead><tbody>' +
+          c.sessions.map(function (s) {
+            var a = s.attendance;
+            return "<tr><td>" + esc(s.label || "Cohort session") + "</td><td>" + esc(fmtDate(s.startsAt)) + "</td><td>" +
+              (s.instructionalMinutes || "—") + "</td><td>" +
+              (a && a.present ? '<span class="pill ok">Attended</span>' : '<span class="pill">—</span>') + "</td></tr>";
+          }).join("") + "</tbody></table></div>"
+        : '<p class="muted">Session dates will be posted here.</p>') +
+    "</div>" +
+
+    '<div class="box"><h3>Official modules</h3>' +
+      '<p class="muted">The curriculum lives on rblp.com — we don\'t copy it here. Use the month password to open each module.</p>' +
+      '<div class="notice">' + (ME.modulePassword.password
+        ? "Password for " + esc(ME.modulePassword.yearMonth) + ": <b>" + esc(ME.modulePassword.password) + "</b>"
+        : "The password for " + esc(ME.modulePassword.yearMonth) + " hasn't been posted yet.") + "</div>" +
+      '<div class="row">' + ME.worksheets.modules.map(function (m) {
+        return '<a class="btn btn-ghost btn-sm" href="' + esc(m.url) + '" target="_blank" rel="noopener">Module ' + m.num + " — " + esc(m.title) + "</a>";
+      }).join("") + "</div></div>";
+
+  wireGo(el);
+  var copy = $("#copyTeams", el);
+  if (copy) copy.addEventListener("click", function () {
+    navigator.clipboard.writeText(c.teamsUrl).then(function () { flash("Teams link copied."); });
+  });
+}
+
+/* ------------------------------------------------------------------ exam */
+// Oral length is per track — RBLP 1.5h, Coach 2h, Trainer 2.5h. This used to be hardcoded to
+// the Trainer number, which told every RBLP student to expect an hour more than they'll sit.
+function examLength(track) {
+  var h = ME.tracks[track] && ME.tracks[track].examHours;
+  return h ? (h === 1 ? "1 hour" : h + " hours") : "1.5 hours";
+}
+
+function renderExam(el) {
+  var p = ME.profile;
+  var booked = ME.pipeline.steps.filter(function (s) { return s.key === "exam"; })[0];
+  el.innerHTML =
+    '<div class="box"><h2>Your RBLP oral exam</h2>' +
+      '<p class="muted">The oral exam is taken with RBLP — not with Promote and Lead. We prepare you, hand you off, and stay available.</p>' +
+      '<ol style="margin:.9rem 0 0 1.1rem;font-size:.9rem" class="soft">' +
+        "<li>Finish your worksheets and print your exam sheet (glossary + your stories).</li>" +
+        '<li>Schedule your exam with RBLP. <a href="https://rblp.com/leadership-certifications/schedule-exam/" target="_blank" rel="noopener">Schedule exam →</a></li>' +
+        "<li>Tell us the date — we notify the ATP so your file is ready.</li>" +
+        "<li>Sit the exam. " + esc(p.track) + " orals run about <b>" + examLength(p.track) +
+          "</b>; you'll be told at the end when results are released. Your confirmation from RBLP is the authority.</li>" +
+        "<li>Let us know how it went — and if you'd share a short review, it helps the next cohort.</li>" +
+      "</ol>" +
+      '<label class="row" style="margin-top:1rem;gap:.5rem;align-items:flex-start;cursor:pointer">' +
+        '<input type="checkbox" id="examDone" style="width:auto;margin-top:.2rem"' + (booked && booked.done ? " checked" : "") + ">" +
+        '<span style="font-size:.9rem">I\'ve scheduled my RBLP oral exam.</span></label>' +
+    "</div>" +
+
+    '<div class="box">' + whyPrepHtml(false) + "</div>" +
+
+    '<div class="box"><h3>What the examiner is listening for</h3>' +
+      '<p class="muted">Application, not regurgitation. The exam is a live conversation over video &mdash; they\'re assessing ' +
+        'how you think and communicate as much as what you know, so a memorised script works against you. ' +
+        'For every leader task, be ready with three bullets and a story:</p>' +
+      '<ol style="margin:.6rem 0 0 1.1rem;font-size:.88rem" class="soft"><li>What is it?</li><li>Why is it important?</li><li>Why is it important to my life?</li></ol>' +
+      '<p class="muted" style="margin-top:.7rem">Bring your printed glossary and stories. ' +
+      '<button class="btn btn-ghost btn-sm" data-go="worksheets">Open worksheets</button></p></div>' +
+
+    '<div class="box"><h3>Booking it, in order</h3>' +
+      '<p class="muted">The order matters &mdash; two of these are the reason people get stuck at checkout.</p>' +
+      '<ol class="booking">' + (ME.study.booking || []).map(function (b) {
+        return "<li><b>" + esc(b.do) + "</b><span>" + esc(b.why) + "</span></li>";
+      }).join("") + "</ol></div>" +
+
+    '<div class="grid2">' +
+      '<div class="box"><h3>The mechanics</h3><ul class="tick soft">' +
+        ["format", "starts", "results", "scoring", "fees"].map(function (k) {
+          return "<li>" + esc(ME.study.examFacts[k]) + "</li>";
+        }).join("") + "</ul></div>" +
+      '<div class="box"><h3>' + esc(ME.study.examFacts.retake.lead) + "</h3>" +
+        '<p class="muted">' + esc(ME.study.examFacts.retake.detail) + "</p>" +
+        '<div class="notice green">' + esc(ME.study.examFacts.retake.ours) + "</div></div>" +
+    "</div>" +
+
+    '<div class="grid2">' +
+      '<div class="box"><h3>Exam-day mindset</h3><ul class="tick soft">' +
+        (ME.study.exam.mindset || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") +
+      '</ul></div>' +
+      '<div class="box"><h3>Before you sit it</h3><ul class="tick soft">' +
+        (ME.study.exam.checklist || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") +
+      '</ul>' +
+      (ME.study.exam.note ? '<p class="muted" style="margin-top:.7rem">' + esc(ME.study.exam.note) + '</p>' : '') +
+      '</div>' +
+    '</div>';
+
+  wireGo(el);
+  $("#examDone", el).addEventListener("change", function (e) {
+    run(function () { return api("exam.scheduled", { done: e.target.checked }); }, "Noted — thanks.");
+  });
+}
+
+/* ------------------------------------------------------------------ print sheet */
+function renderPrintSheet() {
+  if (!ME || !ME.worksheets.unlocked) { $("#printSheet").innerHTML = ""; return; }
+  $("#printSheet").innerHTML =
+    "<h2>" + esc(ME.profile.displayName || ME.profile.email) + " — " + esc(ME.profile.track) + " oral exam sheet</h2>" +
+    ME.worksheets.modules.map(function (m) {
+      return "<h3 style=\"margin-top:14px\">Module " + m.num + " — " + esc(m.title) + "</h3>" +
+        "<p style=\"font-size:10pt\"><b>Glossary:</b> " + m.glossary.map(function (g) { return esc(g[0]) + " — " + esc(g[1]); }).join(" &middot; ") + "</p>" +
+        m.tasks.map(function (t) {
+          var r = t.response || {};
+          return '<div class="print-task"><h4>' + esc(t.title) + "</h4>" +
+            '<p><span class="lbl">What:</span> ' + esc(r.what || t.what) + "</p>" +
+            '<p><span class="lbl">Why:</span> ' + esc(r.why || t.why) + "</p>" +
+            '<p><span class="lbl">My life:</span> ' + esc(r.life || "") + "</p>" +
+            '<p><span class="lbl">Story:</span> ' + esc(r.story || "") + "</p>" +
+            (r.notdo ? '<p><span class="lbl">Not this:</span> ' + esc(r.notdo) + "</p>" : "") +
+            (r.plan ? '<p><span class="lbl">My plan:</span> ' + esc(r.plan) + "</p>" : "") + "</div>";
+        }).join("");
+    }).join("");
+}
+
+/* ------------------------------------------------------------------ certificate */
+// The document a student hands in with a Credentialing Assistance claim. Everything variable
+// (name, level, hours, date, and which organisation is named) is decided server-side in
+// certificateData() — this only lays it out. Printing it is the download: the browser's
+// "Save as PDF" gives them a real PDF without this site needing a PDF library.
+function certHtml(c) {
+  var day = fmtCertDay(c.issuedOn);
+  var level = c.track + ", " + c.modules + (c.modules === 1 ? " Module" : " Modules");
+  return '<div class="cert">' +
+    '<span class="cnr tl"></span><span class="cnr tr"></span><span class="cnr bl"></span><span class="cnr br"></span>' +
+    '<img class="cert-logo" src="' + esc(c.org.logo) + '" alt="' + esc(c.org.name) + '">' +
+    '<div class="cert-title">CERTIFICATE</div>' +
+    '<div class="cert-col">' +
+      '<div class="cert-of">of Training</div>' +
+      '<div class="cert-lead">This certificate is presented to</div>' +
+      '<div class="cert-name">' + esc(c.name) + '</div>' +
+      '<div class="cert-award">Has successfully completed the <b>RBLP Exam Prep Course (' + esc(level) + ')</b> ' +
+        'with ' + esc(c.org.name) + ' on this day, <b>' + esc(day) + '</b></div>' +
+      '<div class="cert-meta">' + c.hours + ' instructional contact hours' +
+        (c.cohortSlug ? ' &middot; Cohort ' + esc(c.cohortSlug) : '') + '</div>' +
+    '</div>' +
+    '<img class="cert-seal" src="/assets/cert/rblp-atp-seal.jpg" alt="RBLP Authorized Training Partner">' +
+    '<div class="cert-sig"><div class="nm">Thomas Hendler</div><hr>' +
+      '<div class="ti">Instructor<br>Promote and Lead</div></div>' +
+    '</div>';
+}
+
+// The sheet is a fixed 11in wide so it prints correctly, so the on-screen preview is scaled
+// to the panel rather than reflowed — the student sees the real thing, just smaller.
+function fitCertPreview(root) {
+  var box = $("#cPrev", root);
+  if (!box) return;
+  var apply = function () {
+    var inner = box.querySelector(".cert");
+    if (!inner) return;
+    var avail = box.clientWidth - 24;
+    box.style.setProperty("--certScale", Math.max(.18, Math.min(1, avail / (11 * 96))));
+  };
+  apply();
+  window.addEventListener("resize", apply);
+}
+
+function renderCertificate() {
+  var c = ME && ME.certificate;
+  $("#certSheet").innerHTML = c && c.available ? certHtml(c) : "";
+}
+
+// Letter landscape, no margins — set only while the certificate is the thing being printed,
+// so the portrait exam sheet keeps its own paper.
+// Print an arbitrary certificate — the admin needs to reprint anyone's to send to RBLP.
+function printCertificateFor(cert) {
+  $("#certSheet").innerHTML = certHtml(cert);
+  printCertificate(function () { renderCertificate(); });
+}
+
+function printCertificate(after) {
+  var rule = document.createElement("style");
+  rule.id = "certPageRule";
+  rule.textContent = "@page{size:letter landscape;margin:0}";
+  document.head.appendChild(rule);
+  document.body.classList.add("printing-cert");
+  var ran = false;
+  var done = function () {
+    if (ran) return;
+    ran = true;
+    document.body.classList.remove("printing-cert");
+    var r = document.getElementById("certPageRule");
+    if (r) r.remove();
+    window.removeEventListener("afterprint", done);
+    if (typeof after === "function") after();
+  };
+  window.addEventListener("afterprint", done);
+  window.print();
+  setTimeout(done, 1000);
+}
+
+/* ------------------------------------------------------------------ run of day */
+// Breaks sit on module boundaries, so the table reads as the day actually runs.
+function runOfDayHtml(blocks, opts) {
+  opts = opts || {};
+  return '<div class="rod">' + blocks.map(function (b) {
+    var cls = "rod-row " + b.kind + (opts.mark && !b.mine ? " away" : "") + (b.finish && opts.mark ? " finish" : "");
+    var tail = b.finishes && opts.showLeavers
+      ? '<span class="rod-leave">' + esc(b.finishes) + ' finish</span>' : "";
+    return '<div class="' + cls + '">' +
+      '<span class="rod-t">' + esc(b.at) + '<i>' + esc(b.until) + '</i></span>' +
+      '<span class="rod-l">' + esc(b.label) +
+        (b.finish && opts.mark ? '<b class="rod-you">You finish here</b>' : "") + tail + '</span>' +
+      '<span class="rod-m">' + b.minutes + ' min</span></div>';
+  }).join("") + '</div>';
+}
+
+/* ------------------------------------------------------------------ teaching guide */
+function tgList(title, sub, items) {
+  if (!items || !items.length) return "";
+  return '<div class="tg-block"><h5>' + esc(title) + '</h5><p class="muted">' + esc(sub) + '</p><ul>' +
+    items.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></div>";
+}
+
+// What the instructor teaches from. Per leader task: how to open it, one of Tommy's own
+// stories to model the answer with, and the single applied question to put to the room.
+// The story is there to prompt the instructor's own — not to be read out as-is.
+function renderTeaching(el) {
+  if (!CONSOLE) { el.innerHTML = '<div class="box"><p class="muted">Loading…</p></div>'; return; }
+
+  // Show the modules this instructor's cohorts actually cover, so an RBLP cohort isn't
+  // scrolling past module 5.
+  var tracks = {};
+  CONSOLE.cohorts.forEach(function (c) { (c.roster || []).forEach(function (r) { tracks[r.track] = (tracks[r.track] || 0) + 1; }); });
+  var maxModule = 0;
+  Object.keys(tracks).forEach(function (t) {
+    var mods = CONSOLE.tracks[t] && CONSOLE.tracks[t].modules;
+    if (mods) maxModule = Math.max(maxModule, mods[mods.length - 1]);
+  });
+  if (!maxModule) maxModule = 5;
+
+  el.innerHTML =
+    '<div class="box"><h2>Teaching guide</h2>' +
+      '<p class="muted">How to open each leader task, an example to model with, and the question to put to the room. ' +
+        'Budget ~75 minutes a module.</p>' +
+      '<div class="notice green"><b>How we run it:</b><br>' + CONSOLE.facilitation.map(esc).join("<br>") + '</div>' +
+      '<div class="notice"><b>The story is a prompt, not a script.</b> Tommy\'s example is there so you can hear what ' +
+        '&ldquo;in my experience…&rdquo; sounds like, then tell your own. Your story beats his in your room every time.</div>' +
+      (CONSOLE.mixedCohorts ? '<div class="notice"><b>Mixed cohorts:</b> ' + esc(CONSOLE.mixedCohorts) + '</div>' : '') +
+    '</div>' +
+
+    (CONSOLE.day ? '<div class="box"><h3>Run of day <span class="pill">09:00&ndash;15:30</span></h3>' +
+      '<p class="muted">' + esc(CONSOLE.day.notes.shape) + '</p>' +
+      runOfDayHtml(CONSOLE.day.blocks, { showLeavers: true }) +
+      '<div class="rod-tracks">' + Object.keys(CONSOLE.day.tracks).map(function (t) {
+        var d = CONSOLE.day.tracks[t];
+        var n = (tracks[t] ? tracks[t] : 0);
+        return '<div><b>' + esc(t) + '</b> ' + esc(d.start) + '&ndash;' + esc(d.end) +
+          ' &middot; ' + (d.taughtMinutes / 60) + 'h' +
+          (n ? ' <span class="pill ok">' + n + ' on this roster</span>' : ' <span class="pill">none</span>') + '</div>';
+      }).join("") + '</div>' +
+      '<p class="muted" style="margin-top:.8rem"><b>Why the breaks land there:</b> ' + esc(CONSOLE.day.notes.breaks) + '</p>' +
+      '<p class="muted"><b>Departures:</b> ' + esc(CONSOLE.day.notes.departures) + '</p>' +
+      '<div class="notice green">' + esc(CONSOLE.day.notes.instructor) + '</div>' +
+      '<p class="muted">That is <b>60 minutes of clock per module</b>. Prepare ~75 minutes of material and land it in 60 &mdash; ' +
+      'the extra is depth to spend where the discussion goes, not slides to rush.</p></div>' : "") +
+
+    (CONSOLE.mockExaminer ? '<div class="box"><h3>Push on the answers</h3>' +
+      '<p class="muted">' + esc(CONSOLE.mockExaminer.why) + "</p>" +
+      '<div class="glossary">' + CONSOLE.mockExaminer.prompts.map(function (x) {
+        return '<span class="pill">' + esc(x) + "</span>";
+      }).join("") + "</div>" +
+      '<div class="notice green"><b>Say this early:</b> ' + esc(CONSOLE.mockExaminer.anxiety) + "</div></div>" : "") +
+
+    '<div class="box"><h3>The 75-minute shape you prepare</h3><div class="scroll"><table><tbody>' +
+      (CONSOLE.rhythm || []).map(function (r) {
+        return '<tr><td style="width:90px"><b>' + esc(r[0]) + '</b></td><td style="width:70px" class="muted">' +
+          esc(r[1]) + '</td><td>' + esc(r[2]) + '</td></tr>';
+      }).join("") + '</tbody></table></div>' +
+      '<div class="glossary" style="margin-top:.8rem">' +
+        (CONSOLE.cards || []).map(function (c) { return '<span class="pill">' + esc(c) + '</span>'; }).join("") +
+      '</div></div>' +
+
+    CONSOLE.outline.filter(function (m) { return m.num <= maxModule; }).map(function (m) {
+      return '<details class="mod tg"' + (m.num === 1 ? " open" : "") + '><summary>' +
+        '<span>Module ' + m.num + ' — ' + esc(m.title) + '</span>' +
+        '<span class="pill">' + m.tasks.length + ' tasks &middot; ~75 min</span></summary>' +
+        '<div class="mod-body">' +
+          (m.opening ? '<p class="tg-open">' + esc(m.opening) + '</p>' : '') +
+          (m.teaching && m.teaching.sequence ?
+            '<div class="tg-seq">' + m.teaching.sequence.map(function (r) {
+              return '<div><span>' + esc(r[0]) + '</span>' + esc(r[1]) + '</div>';
+            }).join("") + '</div>' : '') +
+          m.tasks.map(function (t, i) {
+            var c = t.coaching;
+            if (!c) return '<div class="tg-task"><h4>' + (i + 1) + '. ' + esc(t.title) + '</h4></div>';
+            return '<div class="tg-task"><h4>' + (i + 1) + '. ' + esc(t.title) + '</h4>' +
+              '<p><span class="tg-l">Open with</span>' + esc(c.open) + '</p>' +
+              '<p><span class="tg-l">Model it</span><i>' + esc(c.model) + '</i></p>' +
+              '<p><span class="tg-l ask">Ask the room</span><b class="soft">&ldquo;' + esc(c.ask) + '&rdquo;</b></p>' +
+              '</div>';
+          }).join("") +
+          (m.teaching ? '<div class="tg-extra">' +
+            tgList("Workplace translations", "For the civilians in the room — the same idea outside uniform.", m.teaching.civilian) +
+            tgList("Common student misses", "Listen for these; they cost marks in the oral.", m.teaching.misses) +
+            tgList("Likely oral angles", "Coverage check, not an answer key.", m.teaching.angles) +
+          '</div>' : '') +
+          '<div class="glossary">' + m.glossary.map(function (g) {
+            return '<span class="pill" title="' + esc(g[1]) + '">' + esc(g[0]) + "</span>";
+          }).join("") + '</div>' +
+        '</div></details>';
+    }).join("");
+}
+
+/* ------------------------------------------------------------------ instructor */
+function renderInstructor(el) {
+  if (!CONSOLE) { el.innerHTML = '<div class="box"><p class="muted">Loading…</p></div>'; return; }
+  if (!CONSOLE.cohorts.length) {
+    el.innerHTML = '<div class="box"><h2>No cohorts assigned</h2><p class="muted">Ask Tommy to set your email as the instructor on a cohort.</p></div>';
+    return;
+  }
+  if (!ACTIVE_COHORT || !CONSOLE.cohorts.some(function (c) { return c.id === ACTIVE_COHORT; })) ACTIVE_COHORT = CONSOLE.cohorts[0].id;
+  var c = CONSOLE.cohorts.filter(function (x) { return x.id === ACTIVE_COHORT; })[0];
+
+  el.innerHTML =
+    '<div class="box"><div class="row" style="justify-content:space-between"><h2>Instructor console</h2>' +
+      '<select id="cohortPick" style="max-width:230px">' + CONSOLE.cohorts.map(function (x) {
+        return '<option value="' + x.id + '"' + (x.id === c.id ? " selected" : "") + ">" + esc(x.slug || x.name) + "</option>";
+      }).join("") + "</select></div>" +
+      '<p class="muted">' + esc(c.name) + " &middot; " + c.roster.length + " on roster &middot; " +
+        (c.teamsUrl ? '<a href="' + esc(c.teamsUrl) + '" target="_blank" rel="noopener">Teams link</a>' : "no Teams link yet") + "</p></div>" +
+
+    '<div class="box"><h3>Roster</h3><div class="scroll"><table><thead><tr>' +
+      "<th>Student</th><th>Track</th><th>Funding</th><th>RBLP applied</th><th>Worksheets</th><th>Hours</th><th></th>" +
+      "</tr></thead><tbody>" +
+      (c.roster.length ? c.roster.map(function (r) {
+        return "<tr><td>" + esc(r.name || r.email) + '<br><span class="muted">' + esc(r.email) + "</span>" +
+            (r.hasAccount ? "" : ' <span class="pill warn">no account yet</span>') + "</td>" +
+          "<td>" + esc(r.track) + "</td>" +
+          "<td>" + esc(r.paymentType || r.paymentSource || "—") + (r.branch ? '<br><span class="muted">' + esc(r.branch) + "</span>" : "") + "</td>" +
+          "<td>" + (r.rblpApplied ? '<span class="pill ok">Yes</span>' : '<span class="pill">—</span>') + "</td>" +
+          "<td>" + r.worksheets.ready + "/" + r.worksheets.required + '<div class="bar" style="min-width:60px"><i style="width:' + r.worksheets.percent + '%"></i></div></td>' +
+          "<td>" + r.hours.attendedHours + "/" + r.hours.requiredHours + "</td>" +
+          "<td>" + (r.certifiedOn
+            ? '<span class="pill ok">Certified ' + esc(fmtDay(r.certifiedOn)) + "</span>"
+            : '<button class="btn btn-ghost btn-sm" data-certify="' + r.memberId + '">Certify</button>') + "</td></tr>";
+      }).join("") : '<tr><td colspan="7" class="muted">No one on this roster yet — add members in /admin.</td></tr>') +
+      "</tbody></table></div>" +
+      '<p class="muted" style="margin-top:.7rem">Worksheet completion only — students\' written answers stay private to them.</p></div>' +
+
+    '<div class="box"><h3>Attendance</h3>' +
+      (c.sessions.length ? c.sessions.map(function (s) {
+        return '<div style="margin-bottom:1rem"><div class="row" style="justify-content:space-between">' +
+          "<b>" + esc(s.label || "Session") + "</b><span class=\"muted\">" + esc(fmtDate(s.startsAt)) + " &middot; " + (s.instructionalMinutes || "—") + " min</span></div>" +
+          '<div class="scroll"><table><tbody>' + c.roster.map(function (r) {
+            var a = r.attendance[s.id];
+            // Present or absent, nothing else. The hours follow the student's credential — an
+            // RBLP sits 3, a Coach 4, a Trainer 5 — so asking an instructor to type minutes
+            // invites a wrong number on something that feeds a CA claim.
+            var mins = (CONSOLE.tracks[r.track] || {}).paybackHours;
+            return "<tr><td>" + esc(r.name || r.email) +
+                ' <span class="pill">' + esc(r.track) + "</span>" +
+                '<br><span class="muted">' + (mins ? mins + " hours for " + esc(r.track) : "") + "</span></td>" +
+              '<td style="width:190px"><button class="btn ' + (a && a.present ? "btn-green" : "btn-ghost") + ' btn-sm" data-att="' + s.id + "|" + esc(r.email) + '|1">Present</button> ' +
+              '<button class="btn ' + (a && a.present === false ? "btn-red" : "btn-ghost") + ' btn-sm" data-att="' + s.id + "|" + esc(r.email) + '|0">Absent</button></td>' +
+              '<td class="muted">' + (a ? (a.present ? "Credited " + mins + "h" : "Not credited") : "") + "</td></tr>";
+          }).join("") + "</tbody></table></div></div>";
+      }).join("") : '<p class="muted">No sessions scheduled yet — add them on the Admin tab.</p>') + "</div>" +
+
+    '<div class="box"><h3>Teaching guide</h3>' +
+      '<p class="muted">How to open each task, an example to model with, and the question to ask &mdash; ' +
+      'on the <button class="btn btn-ghost btn-sm" data-go="teaching">Teaching guide</button> tab.</p></div>' +
+
+    '<div class="box"><h3>Company SOP</h3><ul style="margin-left:1.1rem;font-size:.88rem" class="soft">' +
+      CONSOLE.sop.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul></div>" +
+
+    '<div class="box"><h3>Finish the class</h3>' +
+      '<p class="muted">Mark attendance above first, then complete the class. That issues the training certificate ' +
+      'for everyone who attended &mdash; they refresh their classroom and download it themselves.</p>' +
+      (function () {
+        var done = c.roster.filter(function (r) { return r.certifiedOn; }).length;
+        var here = c.roster.filter(function (r) {
+          return Object.keys(r.attendance || {}).some(function (k) { return r.attendance[k].present; });
+        }).length;
+        return '<p class="muted"><b class="soft">' + here + '</b> marked present &middot; <b class="soft">' + done +
+          '</b> already completed of ' + c.roster.length + ' on the roster.</p>' +
+          '<div class="row"><button class="btn btn-gold btn-sm" data-complete="' + c.id + '"' +
+          (here ? "" : " disabled") + '>Complete the class for everyone present</button></div>' +
+          (here ? "" : '<p class="muted">Nothing to complete yet &mdash; mark who attended first.</p>');
+      })() + "</div>" +
+
+    '<div class="box"><h3>How you get paid</h3>' +
+      '<p>' + esc(CONSOLE.pay.basis) + "</p>" +
+      '<ol style="margin:.7rem 0 0 1.1rem;font-size:.88rem" class="soft">' +
+        CONSOLE.pay.chain.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol>" +
+      '<div class="notice">' + esc(CONSOLE.pay.note) + "</div>" +
+      '<p class="muted">' + esc(CONSOLE.pay.ask) + "</p></div>" +
+
+    '<div class="box"><h3>Cohort notes</h3>' +
+      '<textarea id="cohortNotes" placeholder="Notes for whoever teaches this cohort…">' + esc(c.notes) + "</textarea>" +
+      '<button class="btn btn-ghost btn-sm" style="margin-top:.6rem" id="saveNotes">Save notes</button></div>';
+
+  wireGo(el);
+  $("#cohortPick", el).addEventListener("change", function (e) { ACTIVE_COHORT = e.target.value; renderAll(); });
+  $("#saveNotes", el).addEventListener("click", function () {
+    run(function () { return api("cohort.notes", { cohort_id: c.id, notes: $("#cohortNotes").value }); }, "Notes saved.");
+  });
+  $$("[data-att]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var p = b.dataset.att.split("|");
+      // No minutes sent — hoursProgress credits the student's own track. One less thing to get
+      // wrong on the number that ends up on a Credentialing Assistance claim.
+      run(function () {
+        return api("attendance.mark", { cohort_id: c.id, session_id: p[0], student_email: p[1], present: p[2] === "1" });
+      }, "Attendance saved.");
+    });
+  });
+  $$("[data-complete]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!confirm("Complete the class for everyone marked present? This issues their training certificates.")) return;
+      run(function () { return api("class.complete", { cohort_id: b.dataset.complete }); }, "Class completed — certificates are available to them now.");
+    });
+  });
+  $$("[data-certify]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      run(function () { return api("member.certify", { cohort_id: c.id, member_id: b.dataset.certify }); }, "Marked certified.");
+    });
+  });
+}
+
+/* ------------------------------------------------------------------ admin */
+function renderAdmin(el) {
+  if (!CONSOLE || !CONSOLE.admin) { el.innerHTML = '<div class="box"><p class="muted">Loading…</p></div>'; return; }
+  var a = CONSOLE.admin;
+
+  el.innerHTML =
+    '<div class="box"><h2>Classroom admin</h2>' +
+      '<p class="muted">Cohorts, rosters, contacts and email campaigns still live in <a href="/admin">/admin</a>. ' +
+      "This tab covers the classroom-only settings.</p></div>" +
+
+    '<div class="box"><h3>Module password (rotates monthly)</h3>' +
+      '<div class="row"><input id="pwMonth" placeholder="YYYY-MM" value="' + esc(a.currentMonth) + '" style="max-width:130px">' +
+      '<input id="pwValue" placeholder="Academy password for that month" style="max-width:280px">' +
+      '<button class="btn btn-gold btn-sm" id="pwSave">Set</button></div>' +
+      (a.passwords.length ? '<div class="scroll" style="margin-top:.8rem"><table><thead><tr><th>Month</th><th>Password</th><th>Updated</th></tr></thead><tbody>' +
+        a.passwords.map(function (p) {
+          return "<tr><td>" + esc(p.year_month) + "</td><td>" + esc(p.password || "—") + "</td><td>" + esc(fmtDay(p.updated_at)) + "</td></tr>";
+        }).join("") + "</tbody></table></div>" : '<p class="muted" style="margin-top:.7rem">No passwords set yet.</p>') + "</div>" +
+
+    CONSOLE.cohorts.map(function (c) {
+      return '<div class="box" data-cohort="' + c.id + '"><h3>' + esc(c.name) + "</h3>" +
+        '<div class="grid2">' +
+          '<label class="fld"><span>Cohort id / slug</span><input data-f="slug" value="' + esc(c.slug || "") + '" placeholder="26-002"></label>' +
+          '<label class="fld"><span>Teams join URL</span><input data-f="teams_url" value="' + esc(c.teamsUrl || "") + '" placeholder="https://teams.microsoft.com/l/meetup-join/…"></label>' +
+          '<label class="fld"><span>Instructor email</span><input data-f="instructor_email" value="' + esc(c.instructorEmail || "") + '" placeholder="instructor@promoteandlead.com"></label>' +
+          '<label class="fld"><span>Classroom status</span><select data-f="classroom_status">' +
+            ["draft", "open", "in_progress", "complete"].map(function (s) {
+              return '<option value="' + s + '"' + (s === c.classroomStatus ? " selected" : "") + ">" + s + "</option>";
+            }).join("") + "</select></label>" +
+          '<label class="fld"><span>Module password month override</span><input data-f="password_month_key" value="' + esc(c.passwordMonthKey || "") + '" placeholder="YYYY-MM (blank = current month)"></label>' +
+          '<label class="fld"><span>Tracks allowed</span><div class="row">' +
+            ["RBLP", "RBLP-C", "RBLP-T"].map(function (t) {
+              var on = c.tracksAllowed && c.tracksAllowed.indexOf(t) >= 0;
+              return '<label class="row" style="gap:.3rem"><input type="checkbox" data-track="' + t + '" style="width:auto"' + (on ? " checked" : "") + "> " + t + "</label>";
+            }).join("") + "</div></label>" +
+        "</div>" +
+        '<button class="btn btn-gold btn-sm" data-savecohort="' + c.id + '">Save cohort settings</button>' +
+
+        '<h3 style="margin-top:1.2rem">Sessions</h3>' +
+        (c.sessions.length ? '<div class="scroll"><table><thead><tr><th>Label</th><th>Starts</th><th>Ends</th><th>Min</th><th></th></tr></thead><tbody>' +
+          c.sessions.map(function (s) {
+            return "<tr><td>" + esc(s.label || "Session") + "</td><td>" + esc(fmtDate(s.startsAt)) + "</td><td>" + esc(s.endsAt ? fmtDate(s.endsAt) : "—") + "</td><td>" +
+              (s.instructionalMinutes || "—") + '</td><td><button class="btn btn-ghost btn-sm" data-delsession="' + s.id + '">Delete</button></td></tr>';
+          }).join("") + "</tbody></table></div>" : '<p class="muted">No sessions yet.</p>') +
+        '<div class="row" style="margin-top:.7rem;align-items:flex-end">' +
+          '<label class="fld" style="margin:0;max-width:150px"><span>Label</span><input data-s="label" placeholder="Saturday session"></label>' +
+          '<label class="fld" style="margin:0;max-width:210px"><span>Starts (local)</span><input data-s="starts" type="datetime-local"></label>' +
+          '<label class="fld" style="margin:0;max-width:210px"><span>Ends</span><input data-s="ends" type="datetime-local"></label>' +
+          '<label class="fld" style="margin:0;max-width:110px"><span>Minutes</span><input data-s="minutes" type="number" placeholder="225"></label>' +
+          '<button class="btn btn-ghost btn-sm" data-addsession="' + c.id + '">Add session</button>' +
+        "</div></div>";
+    }).join("") +
+
+    // Instructors and admins don't walk the student journey, so they don't belong in this table
+    // and certainly don't need CA handoff buttons. They get their own list below, for roles only.
+    (function () {
+      var learners = a.students.filter(function (s) { return s.role === "student"; });
+      var staff = a.students.filter(function (s) { return s.role !== "student"; });
+      return renderLearnerTable(a, learners) + renderCertTable(a.certificates) + renderStaffTable(staff);
+    })();
+
+  $("#pwSave", el).addEventListener("click", function () {
+    run(function () { return api("password.set", { year_month: $("#pwMonth").value.trim(), password: $("#pwValue").value.trim() }); }, "Module password set.");
+  });
+  $$("[data-savecohort]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var box = b.closest("[data-cohort]"), payload = { id: b.dataset.savecohort, tracks_allowed: [] };
+      $$("[data-f]", box).forEach(function (f) { payload[f.dataset.f] = f.value; });
+      $$("[data-track]", box).forEach(function (t) { if (t.checked) payload.tracks_allowed.push(t.dataset.track); });
+      run(function () { return api("cohort.classroom", payload); }, "Cohort settings saved.");
+    });
+  });
+  $$("[data-addsession]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var box = b.closest("[data-cohort]");
+      var get = function (k) { var n = $('[data-s="' + k + '"]', box); return n ? n.value : ""; };
+      if (!get("starts")) return flash("Pick a start time.", "err");
+      run(function () {
+        return api("session.add", {
+          cohort_id: b.dataset.addsession, label: get("label"),
+          starts_at: new Date(get("starts")).toISOString(),
+          ends_at: get("ends") ? new Date(get("ends")).toISOString() : null,
+          instructional_minutes: get("minutes") ? Number(get("minutes")) : null
+        });
+      }, "Session added.");
+    });
+  });
+  $$("[data-delsession]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!confirm("Delete this session? Attendance recorded against it goes too.")) return;
+      run(function () { return api("session.delete", { id: b.dataset.delsession }); }, "Session deleted.");
+    });
+  });
+  $$("[data-role]", el).forEach(function (sel) {
+    sel.addEventListener("change", function () {
+      run(function () { return api("student.role", { id: sel.dataset.role, role: sel.value }); }, "Role updated.");
+    });
+  });
+  $$("[data-cert]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var row = (CONSOLE.admin.certificates || []).filter(function (r) { return r.memberId === b.dataset.cert; })[0];
+      if (row) printCertificateFor(row.certificate);
+    });
+  });
+  $$("[data-detail]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var row = $("#det-" + b.dataset.detail, el);
+      if (row) row.hidden = !row.hidden;
+    });
+  });
+  $$("[data-adv]", el).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var parts = b.dataset.adv.split("|");
+      var on = parts[2] === "1";
+      run(function () { return api("student.advance", { id: parts[0], step: parts[1], done: on }); },
+        on ? "Marked — the student has been emailed." : "Unmarked.");
+    });
+  });
+}
+
+function renderLearnerTable(a, learners) {
+  // Longest-waiting first. The whole point of this table is spotting who has gone quiet.
+  var sorted = learners.slice().sort(function (x, y) { return (y.stage.days || 0) - (x.stage.days || 0); });
+  var stuck = sorted.filter(function (s) { return (s.stage.days || 0) >= a.stalledAfterDays; });
+
+  return '<div class="box"><h3>Students (' + learners.length + ")</h3>" +
+      '<p class="muted">Sorted by how long they\'ve been on the same step. Click a student to see their whole journey ' +
+      'and when each step landed.</p>' +
+      (stuck.length
+        ? '<div class="notice"><b>' + stuck.length + (stuck.length === 1 ? " student has" : " students have") +
+          " been on the same step for " + a.stalledAfterDays + "+ days.</b> Worth a nudge.</div>"
+        : "") +
+      (sorted.length ? '<div class="scroll"><table><thead><tr><th>Student</th><th>Track</th><th>Where they are</th><th>Waiting</th><th>Mark</th><th>Role</th></tr></thead><tbody>' +
+      sorted.map(function (s) {
+        var gates = a.handoffs.filter(function (h) { return h.route === "any" || h.route === s.route; });
+        var st = s.stage, slow = (st.days || 0) >= a.stalledAfterDays;
+        return '<tr class="srow" data-student="' + s.id + '"><td>' +
+            '<button class="linkish" data-detail="' + s.id + '">' + esc(s.display_name || s.email) + "</button>" +
+            '<br><span class="muted">' + esc(s.email) + "</span></td>" +
+          "<td>" + esc(s.track || "—") + '<br><span class="muted">' + esc(s.payment_source || "no funding yet") + "</span>" +
+            // They bought straight from RBLP's storefront and told us. Confirm it, then mark paid.
+            (s.purchase_claimed_at && !s.steps.paid
+              ? '<br><span class="pill warn">says they paid ' + esc(fmtDay(s.purchase_claimed_at)) + "</span>" : "") + "</td>" +
+          '<td><span class="own own-' + esc(st.owner) + '">' + esc(st.ownerLabel) + "</span>" +
+            '<div class="stage-t">' + esc(st.title) + "</div>" +
+            '<span class="muted">' + st.completed + " of " + st.total + " done</span></td>" +
+          '<td class="' + (slow ? "slow" : "") + '">' + (st.days == null ? "—" : st.days + "d") +
+            (slow ? '<br><span class="muted">since ' + esc(fmtDay(st.since)) + "</span>" : "") + "</td>" +
+          '<td><div class="gates">' + gates.map(function (h) {
+            var done = !!s.steps[h.step];
+            return '<button class="btn btn-sm ' + (done ? "btn-green" : "btn-ghost") + '" title="' + esc(h.hint) + '"' +
+              ' data-adv="' + s.id + "|" + h.step + "|" + (done ? "0" : "1") + '">' +
+              (done ? "&#10003; " : "") + esc(h.label) + "</button>";
+          }).join("") + "</div></td>" +
+          '<td><select data-role="' + s.id + '" style="max-width:110px">' +
+            ["student", "instructor"].map(function (r) {
+              return '<option value="' + r + '"' + (r === s.role ? " selected" : "") + ">" + r + "</option>";
+            }).join("") + "</select></td></tr>" +
+          '<tr class="detail" id="det-' + s.id + '" hidden><td colspan="6">' + studentDetail(s) + "</td></tr>";
+      }).join("") + "</tbody></table></div>"
+      : '<p class="muted">No students yet.</p>') + "</div>";
+}
+
+// The whole journey for one student, with the date each step landed and how long the gaps were.
+function studentDetail(s) {
+  return '<div class="sdet"><div class="row" style="justify-content:space-between;margin-bottom:.6rem">' +
+      "<b>" + esc(s.display_name || s.email) + "</b>" +
+      '<a class="btn btn-ghost btn-sm" href="mailto:' + esc(s.email) + '?subject=' +
+        encodeURIComponent("Your RBLP certification with Promote & Lead") + '">Email them</a></div>' +
+    '<ol class="jp-det">' + s.timeline.map(function (t) {
+      return '<li class="' + (t.done ? "done" : (t.key === s.stage.key ? "now" : "later")) + '">' +
+        '<span class="jt">' + esc(t.title) + "</span>" +
+        '<span class="muted">' + (t.at ? esc(fmtDay(t.at)) : (t.key === s.stage.key ? "since " + esc(fmtDay(s.stage.since)) : "")) + "</span>" +
+        "</li>";
+    }).join("") + "</ol></div>";
+}
+
+// Instructors and admins — role management only. No journey, no handoffs.
+// Every training certificate issued. Tommy sends these to RBLP to trigger our invoice, so he
+// needs all of them in one place — not one at a time as students happen to download theirs.
+function renderCertTable(certs) {
+  if (!certs) return "";
+  return '<div class="box"><h3>Training certificates issued (' + certs.length + ")</h3>" +
+    '<p class="muted">Your copy of every certificate we\'ve issued &mdash; these are what RBLP needs before we invoice.</p>' +
+    (certs.length ? '<div class="scroll"><table><thead><tr><th>Student</th><th>Credential</th><th>Cohort</th><th>Issued</th><th></th></tr></thead><tbody>' +
+      certs.map(function (r) {
+        var c = r.certificate;
+        return "<tr><td>" + esc(c.name || r.email) + '<br><span class="muted">' + esc(r.email) + "</span></td>" +
+          "<td>" + esc(c.track) + '<br><span class="muted">' + c.modules + " modules &middot; " + c.hours + "h &middot; " + esc(c.org.short) + "</span></td>" +
+          "<td>" + esc(r.cohort || "—") + "</td>" +
+          "<td>" + esc(fmtDay(c.issuedOn)) + "</td>" +
+          "<td>" + (c.available
+            ? '<button class="btn btn-ghost btn-sm" data-cert="' + esc(r.memberId) + '">Download</button>'
+            : '<span class="pill warn">needs a name</span>') + "</td></tr>";
+      }).join("") + "</tbody></table></div>"
+      : '<p class="muted">None yet. They\'re issued when an instructor completes a class.</p>') + "</div>";
+}
+
+function renderStaffTable(staff) {
+  if (!staff.length) return "";
+  return '<div class="box"><h3>Instructors &amp; admins (' + staff.length + ")</h3>" +
+    '<p class="muted">Staff accounts. They don\'t have a student journey &mdash; an instructor isn\'t working toward a credential here.</p>' +
+    '<p class="muted">Company admin is granted by the <b class="soft">CLASSROOM_ADMINS</b> setting, not from this table, so nobody can be promoted to admin from here.</p>' +
+    '<div class="scroll"><table><thead><tr><th>Account</th><th>Role</th></tr></thead><tbody>' +
+    staff.map(function (s) {
+      return "<tr><td>" + esc(s.email) + '<br><span class="muted">' + esc(s.display_name || "no name yet") + "</span></td>" +
+        '<td><select data-role="' + s.id + '" style="max-width:120px">' +
+          ["student", "instructor"].map(function (r) {
+            return '<option value="' + r + '"' + (r === s.role ? " selected" : "") + ">" + r + "</option>";
+          }).join("") + "</select>" +
+          (s.storedRole !== s.role ? '<br><span class="muted">admin via CLASSROOM_ADMINS</span>' : "") + "</td></tr>";
+    }).join("") + "</tbody></table></div></div>";
+}
+
+/* ------------------------------------------------------------------ start */
+(function () {
+  var h = (location.hash || "").replace("#/", "");
+  if (h) ACTIVE = h;
+  boot().catch(function () { showSignin("Couldn't reach the classroom. Please try again."); });
+})();
+</script>
+</body>
+</html>
