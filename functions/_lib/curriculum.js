@@ -21,7 +21,7 @@
 // with no context otherwise — "RBLP-C" means nothing on its own.
 export const TRACKS = {
   RBLP: {
-    label: "RBLP", prepPrice: 395, examFee: 595, modules: [1, 2, 3], paybackHours: 3, reflectionHours: 6,
+    label: "RBLP", coolCert: "rblp8598", prepPrice: 395, examFee: 595, modules: [1, 2, 3], paybackHours: 3, reflectionHours: 6,
     window: "09:00–12:30", examHours: 1.5,
     who: "First-line and aspiring supervisors",
     experience: "Typically 2+ years leading a team",
@@ -29,7 +29,7 @@ export const TRACKS = {
     covers: "Team Climate, Team Cohesion, Individual Purpose"
   },
   "RBLP-C": {
-    label: "RBLP-C", prepPrice: 495, examFee: 795, modules: [1, 2, 3, 4], paybackHours: 4, reflectionHours: 8,
+    label: "RBLP-C", coolCert: "rblp-c8675", prepPrice: 495, examFee: 795, modules: [1, 2, 3, 4], paybackHours: 4, reflectionHours: 8,
     window: "09:00–14:30", examHours: 2,
     who: "Managers, and Army warrant officers W1–W3",
     experience: "Typically 5+ years",
@@ -37,7 +37,7 @@ export const TRACKS = {
     covers: "Everything in RBLP, plus Team Learning"
   },
   "RBLP-T": {
-    label: "RBLP-T", prepPrice: 595, examFee: 995, modules: [1, 2, 3, 4, 5], paybackHours: 5, reflectionHours: 10,
+    label: "RBLP-T", coolCert: "rblp-t8676", prepPrice: 595, examFee: 995, modules: [1, 2, 3, 4, 5], paybackHours: 5, reflectionHours: 10,
     window: "09:00–15:30", examHours: 2.5,
     who: "Senior managers, and Army warrant officers W3–W5",
     experience: "Typically 10+ years",
@@ -1008,4 +1008,15 @@ export function caBudgetFor(track) {
     // Trainer leaves very little of the year's allowance behind.
     tight: total > CA_BUDGET.yearCap * 0.7
   };
+}
+
+// Army COOL is a reference, not a place you file anything — but the request in ArmyIgnitED asks
+// you to pick the credential and then its vendor, so people are sent to COOL to confirm the
+// credential is approved and see who's authorized to deliver it. Deep-linked per track so
+// nobody has to search 1,600 credentials for theirs.
+export function armyCoolUrl(track) {
+  const t = TRACKS[track];
+  return t && t.coolCert
+    ? `https://www.cool.osd.mil/army/credential/index.html?cert=${t.coolCert}`
+    : "https://www.cool.osd.mil/army/index.html";
 }

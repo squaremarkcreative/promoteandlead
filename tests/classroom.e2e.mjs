@@ -546,8 +546,9 @@ check("AFVEC tells them where AF COOL actually sits", /Education Programs/.test(
 check("the instructions still point at RBLP's guide per branch",
   /rblp\.com\/follow-these-steps-to-use-army/.test(gArmy.link) && /air-force/.test(gAf.link));
 const portalPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
-check("the step offers instructions then portal, numbered",
-  /1\. Read the step-by-step/.test(portalPage) && /2\. Open ' \+ esc\(g\.portal\.name\)/.test(portalPage));
+check("the step offers instructions, then COOL, then the portal — numbered",
+  /1\. Read the step-by-step/.test(portalPage) && /2\. Find it on Army COOL/.test(portalPage) &&
+  /Open " \+ esc\(g\.portal\.name\)/.test(portalPage));
 check("non-CA funding has no portal to open", !(await import(`file://${R}/_lib/classroom.js`)).fundingGuidance("self_pay").portal);
 
 // ---------------------------------------------------------------- who to chase
@@ -1318,6 +1319,28 @@ check("both still get the shared packet warnings",
     army.some((w) => w.rule === r) && af.some((w) => w.rule === r)),
   army.map((w) => w.rule));
 // Consequences a student can't discover any other way until it costs them.
+// Army COOL is the catalog of approved credentials; ArmyIgnitED is where the request is filed.
+// People conflate them, so the step names which is which and deep-links the right credential.
+const { armyCoolUrl: coolFor } = await import(`file://${R}/_lib/curriculum.js`);
+check("each track deep-links its own Army COOL credential page",
+  ["RBLP", "RBLP-C", "RBLP-T"].every((t) => /cool\.osd\.mil\/army\/credential\/.*cert=/.test(coolFor(t))) &&
+  new Set(["RBLP", "RBLP-C", "RBLP-T"].map(coolFor)).size === 3,
+  ["RBLP", "RBLP-C", "RBLP-T"].map(coolFor));
+check("Army students get the COOL link", /cool\.osd\.mil/.test(m.funding.coolUrl || ""), m.funding.coolUrl);
+check("it's Army-only — an Air Force student gets no COOL step",
+  (await (async () => {
+    const af = await signIn("af.cool@example.com");
+    await post(action, { action: "funding.choose", data: { source: "af_ca" } }, af.cookie);
+    return (await (await get(me, af.cookie)).json()).funding.coolUrl;
+  })()) === null);
+const coolPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("the step says COOL is a reference, not a form",
+  /Army COOL is a reference, not a form/.test(coolPage));
+check("and gives a fallback if the deep link ever breaks",
+  /search Army COOL for/.test(coolPage) && /Resilience-Building Leadership Professional/.test(coolPage));
+check("the three actions are numbered in the order they happen",
+  /1\. Read the step-by-step/.test(coolPage) && /2\. Find it on Army COOL/.test(coolPage));
+
 // FY26 caps, researched: $2,000 CA a year from a combined $4,500 TA+CA pool. RBLP-T at $1,590
 // uses most of it, which a student should know before committing, not after.
 const { caBudgetFor: budget, TRACKS: PRICED } = await import(`file://${R}/_lib/curriculum.js`);

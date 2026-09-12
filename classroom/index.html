@@ -737,8 +737,17 @@ function renderPipeline(el) {
           'screen by screen &mdash; it answers most of what people get stuck on. Then go to the portal and do it.</p>' +
         '<div class="row">' +
           (g.link ? '<a class="btn btn-ghost btn-sm" href="' + esc(g.link) + '" target="_blank" rel="noopener">1. Read the step-by-step &rarr;</a>' : "") +
-          (g.portal ? '<a class="btn btn-gold btn-sm" href="' + esc(g.portal.url) + '" target="_blank" rel="noopener">2. Open ' + esc(g.portal.name) + ' &rarr;</a>' : "") +
+          (ME.funding.coolUrl ? '<a class="btn btn-ghost btn-sm" href="' + esc(ME.funding.coolUrl) + '" target="_blank" rel="noopener">2. Find it on Army COOL &rarr;</a>' : "") +
+          (g.portal ? '<a class="btn btn-gold btn-sm" href="' + esc(g.portal.url) + '" target="_blank" rel="noopener">' +
+            (ME.funding.coolUrl ? "3. " : "2. ") + "Open " + esc(g.portal.name) + ' &rarr;</a>' : "") +
         "</div>" +
+        (ME.funding.coolUrl
+          ? '<p class="muted"><b class="soft">Army COOL is a reference, not a form.</b> You don\'t file anything there &mdash; ' +
+            'it\'s the Army\'s catalog of approved credentials, and it\'s where you confirm ' + esc(ME.profile.track) +
+            ' is fundable and see who\'s authorized to deliver it. The link above goes straight to your credential rather than ' +
+            'making you search 1,600 of them. If it doesn\'t open, search Army COOL for ' +
+            '<b>Resilience-Building Leadership Professional</b>. Then file the actual request in ArmyIgnitED.</p>'
+          : "") +
         (g.portal && g.portal.hint ? '<p class="muted">' + esc(g.portal.hint) + "</p>" : "") +
         (p.paymentSource === "army_ca"
           ? '<div class="notice warn-notice"><b>The company field looks like a dropdown. It is actually a search box.</b><br><br>' +

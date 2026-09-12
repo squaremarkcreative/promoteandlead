@@ -9,7 +9,7 @@ import {
   currentModulePassword, worksheetProgress, hoursProgress, buildPipeline, fundingGuidance, routeFor,
   certificateData
 } from "../../_lib/classroom.js";
-import { FACILITATION, SOP_CHECKLIST, STORY_SOURCES, MODULE_STUDY, MODULE_ARC, STUDY_HABITS, EXAM_PREP, EXAM_FACTS, EXAM_BOOKING, caWarningsFor, CA_STAGES, eligibleCourseDates, caBudgetFor, runOfDay, dayFor, DAY_NOTES, WHY_PREP, RBLP_SUPPORT } from "../../_lib/curriculum.js";
+import { FACILITATION, SOP_CHECKLIST, STORY_SOURCES, MODULE_STUDY, MODULE_ARC, STUDY_HABITS, EXAM_PREP, EXAM_FACTS, EXAM_BOOKING, caWarningsFor, CA_STAGES, eligibleCourseDates, caBudgetFor, armyCoolUrl, runOfDay, dayFor, DAY_NOTES, WHY_PREP, RBLP_SUPPORT } from "../../_lib/curriculum.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -77,7 +77,9 @@ export async function onRequestGet(context) {
         caStages: routeFor(student.payment_source) === "CA" ? CA_STAGES : null,
         // The form wants a start date they can't know yet — hand them valid ones.
         courseDates: routeFor(student.payment_source) === "CA" ? eligibleCourseDates() : null,
-        caBudget: routeFor(student.payment_source) === "CA" ? caBudgetFor(track) : null
+        caBudget: routeFor(student.payment_source) === "CA" ? caBudgetFor(track) : null,
+        // Army only — COOL is where you confirm the credential is approved before filing.
+        coolUrl: student.payment_source === "army_ca" ? armyCoolUrl(track) : null
       },
       cohort: cohort
         ? {
