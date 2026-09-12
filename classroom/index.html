@@ -98,6 +98,14 @@
   .step-body{margin-top:.5rem;font-size:.87rem;color:var(--soft)}
 
   /* ---------------- worksheets ---------------- */
+  .jump{position:sticky;top:var(--hdr,64px);z-index:15;display:flex;align-items:center;gap:.4rem;
+    margin:0 0 .8rem;padding:.55rem .6rem;background:var(--ink3);border:1px solid var(--border);
+    border-radius:12px;overflow-x:auto;scrollbar-width:thin}
+  .jump-h{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;flex:none;padding:0 .3rem}
+  .jump button{flex:none;white-space:nowrap}
+  .jump-n{opacity:.75;font-weight:600;margin-left:.3rem}
+  @media (max-width:560px){ .jump-h{display:none} }
+  .task.spotlight{outline:2px solid var(--gold);outline-offset:3px;transition:outline-color .4s}
   details.mod{border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-bottom:.8rem;overflow:hidden}
   details.mod>summary{padding:.9rem 1.1rem;cursor:pointer;font-weight:700;display:flex;justify-content:space-between;gap:.7rem;align-items:center;flex-wrap:wrap;list-style:none}
   details.mod>summary::-webkit-details-marker{display:none}
@@ -1172,9 +1180,11 @@ function renderWorksheets(el) {
     '</ol><p class="muted">Your track covers ' + ME.worksheets.modules.length +
       ' of these. Knowing where the rest goes helps you speak with more depth.</p></div>' +
 
+    moduleJumpHtml() +
+
     w.modules.map(function (m) {
-      var ready = m.tasks.filter(function (t) { return t.response && (t.response.status === "ready" || t.response.status === "expanded"); }).length;
-      return '<details class="mod"' + (m.num === firstIncompleteModule() ? " open" : "") + ">" +
+      var ready = readyCount(m);
+      return '<details class="mod" data-mod="' + m.num + '"' + (m.num === firstIncompleteModule() ? " open" : "") + ">" +
         "<summary><span>Module " + m.num + " — " + esc(m.title) + "</span>" +
         '<span class="pill' + (ready === m.tasks.length ? " ok" : "") + '">' + ready + "/" + m.tasks.length + " ready</span></summary>" +
         '<div class="mod-body">' +
@@ -1204,7 +1214,76 @@ function renderWorksheets(el) {
     box.hidden = !box.hidden;
     if (!box.hidden) box.scrollIntoView({ behavior: "smooth", block: "start" });
   });
+  $$("[data-jump]", el).forEach(function (b) {
+    b.addEventListener("click", function () { openModule(el, Number(b.dataset.jump)); });
+  });
+  syncHeaderOffset();
   $$(".task", el).forEach(wireTask);
+}
+
+// The jump bar is sticky under the header, and the header wraps to two lines on a narrow
+// phone, so its height has to be measured rather than guessed.
+function syncHeaderOffset() {
+  var h = $("header.top");
+  if (h) document.documentElement.style.setProperty("--hdr", h.offsetHeight + "px");
+}
+window.addEventListener("resize", syncHeaderOffset);
+
+function readyCount(m) {
+  return m.tasks.filter(function (t) {
+    return t.response && (t.response.status === "ready" || t.response.status === "expanded");
+  }).length;
+}
+
+// Modules are collapsed accordions, so reaching module 4 to review it used to mean scrolling
+// past everything before it. These pin to the top instead, and carry their own ready count so
+// a student can see at a glance which module still owes work.
+function moduleJumpHtml() {
+  return '<div class="jump no-print"><span class="jump-h">Jump to</span>' +
+    ME.worksheets.modules.map(function (m) {
+      var ready = readyCount(m), done = ready === m.tasks.length;
+      return '<button class="btn btn-sm ' + (done ? "btn-green" : "btn-ghost") + '" data-jump="' + m.num +
+        '" title="Module ' + m.num + " — " + esc(m.title) + '">M' + m.num +
+        '<span class="jump-n">' + ready + "/" + m.tasks.length + "</span></button>";
+    }).join("") + "</div>";
+}
+
+function openModule(el, num, taskKey) {
+  var d = $('details.mod[data-mod="' + num + '"]', el);
+  if (!d) return null;
+  d.open = true;
+  var task = taskKey ? $('.task[data-task="' + taskKey + '"]', d) : null;
+  (task || d).scrollIntoView({ behavior: "smooth", block: task ? "center" : "start" });
+  if (task) {
+    task.classList.add("spotlight");
+    setTimeout(function () { task.classList.remove("spotlight"); }, 1600);
+  }
+  return task || d;
+}
+
+// Marking a task ready means they're finished with it, so move them to the next one that
+// isn't. Deliberately nothing is reordered: the instructor sinks covered tasks because they
+// only care what's left to teach, but a student has to read back through their own answers in
+// module order before the oral, and shuffling their writing around mid-review would fight that.
+function advanceFrom(taskKey) {
+  var el = $('.panel[data-panel="worksheets"]');
+  if (!el) return;
+  var flat = [];
+  ME.worksheets.modules.forEach(function (m) {
+    m.tasks.forEach(function (t) { flat.push({ num: m.num, task: t }); });
+  });
+  var at = -1;
+  for (var i = 0; i < flat.length; i++) if (flat[i].task.key === taskKey) { at = i; break; }
+  if (at < 0) return;
+  var order = flat.slice(at + 1).concat(flat.slice(0, at));
+  for (var j = 0; j < order.length; j++) {
+    var r = order[j].task.response;
+    if (!r || (r.status !== "ready" && r.status !== "expanded")) {
+      openModule(el, order[j].num, order[j].task.key);
+      return;
+    }
+  }
+  flash("That's every task on your track marked ready. Print your exam sheet and review.");
 }
 
 function firstIncompleteModule() {
@@ -1351,7 +1430,9 @@ function wireTask(node) {
         try { localStorage.removeItem(draftKey(key)); } catch (e) {}
         ME = await (await fetch("/api/classroom/me")).json();
         renderAll();
-        flash("Saved.");
+        // "Save draft" means they're still working on this one; ready/expanded means move on.
+        if (btn.dataset.save === "draft") flash("Saved.");
+        else advanceFrom(key);
       } catch (e) { flash(e.message, "err"); }
       finally { btn.disabled = false; delete SKIP_BLUR[key]; }
     });

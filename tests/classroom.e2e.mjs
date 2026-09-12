@@ -1458,6 +1458,30 @@ check("an empty stashed value never blanks what the server holds",
 check("a stash that has nothing to contribute is cleared rather than left to rot",
   (asPage.match(/localStorage\.removeItem\(draftKey/g) || []).length >= 3);
 
+// Modules are collapsed accordions, so reviewing module 4 meant scrolling past everything
+// before it.
+section("Worksheets: reaching a module without scrolling");
+check("there is a jump button per module", /data-jump="' \+ m\.num/.test(asPage));
+check("each module is addressable by number", /data-mod="' \+ m\.num/.test(asPage));
+check("the jump bar carries each module's ready count", /jump-n">' \+ ready \+ "\/"/.test(asPage));
+check("the bar pins below the header while they scroll", /\.jump\{position:sticky;top:var\(--hdr/.test(asPage));
+check("the header's real height is measured, not guessed (it wraps on a phone)",
+  /--hdr", h\.offsetHeight/.test(asPage) && /addEventListener\("resize", syncHeaderOffset\)/.test(asPage));
+check("jumping opens the module even when collapsed", /d\.open = true/.test(asPage));
+
+// Marking a task ready should carry them onward, which is what keeps them with the instructor.
+check("marking ready moves to the next unfinished task", /else advanceFrom\(key\)/.test(asPage));
+check("Save draft does not move them — they're still writing",
+  /if \(btn\.dataset\.save === "draft"\) flash\("Saved\."\)/.test(asPage));
+check("the next task is spotlit so they can see where they landed", /classList\.add\("spotlight"\)/.test(asPage));
+check("finishing the last task says so rather than jumping nowhere",
+  /every task on your track marked ready/.test(asPage));
+// The instructor sinks covered tasks because they only care what's left to teach. A student
+// reviewing before the oral must not have their own answers shuffled under them.
+check("the student's tasks stay in module order, unlike the teaching view",
+  /m\.tasks\.map\(function \(t\) \{ return taskHtml\(t\); \}\)/.test(asPage)
+  && !/todo\.concat\(done\)[\s\S]{0,400}taskHtml/.test(asPage));
+
 // Prove the server half: saving content with status "ready" keeps it ready.
 await post(action, { action: "worksheet.save", data: { task_key: "m1_respect", what: "Treating people as people", status: "ready" } }, student.cookie);
 let wsm = await (await get(me, student.cookie)).json();
