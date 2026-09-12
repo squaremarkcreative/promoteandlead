@@ -846,6 +846,7 @@ const CA_WARNINGS_SHARED = [
 ];
 
 const CA_WARNINGS_ARMY = [
+  { rule: "The company field is a search box, not a dropdown", detail: "Nothing on screen says so. The list is alphabetical and only loads the first stretch of partners, so scrolling never reaches RLS. Click into the field and start typing R-L-S, and Resilient Leadership Solutions appears. This is the step people give up on, assuming we aren't an approved vendor." },
   { rule: "Commissioned officers are no longer eligible", detail: "As of 19 March 2026, O1–O10 can't open new Army CA goals. Warrant officers W1–W5 and all enlisted Soldiers still can. If you had a credential goal open before that date you may be able to finish that one — ask your education center." },
   { rule: "Get your supervisor's approval early", detail: "Since 19 March 2026 every Army CA request needs commander or supervisor sign-off whatever your rank, and first-time users have ArmyIgnitED training and a MilGears plan to finish first. Start that now, not the week you file." },
   { rule: "Plan on 45 to 90 days", detail: "That's the window from submitting in ArmyIgnitED to a decision, and it decides which cohort you can realistically join." }

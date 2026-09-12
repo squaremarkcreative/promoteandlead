@@ -217,6 +217,8 @@
   .access-row code{font-family:ui-monospace,Menlo,monospace;font-size:1.25rem;letter-spacing:.12em;font-weight:700;
     color:var(--cream);background:var(--ink3);border:1px solid var(--bstrong);border-radius:8px;padding:.4rem .8rem}
 
+  .notice.warn-notice{border-color:rgba(200,164,21,.55);background:rgba(200,164,21,.1)}
+
   /* ---------------- the journey ---------------- */
   .next-step{border-color:var(--bstrong);padding:1.3rem 1.4rem}
   .next-step.you{border-color:rgba(200,164,21,.5);background:linear-gradient(180deg,rgba(200,164,21,.07),transparent 60%)}
@@ -722,6 +724,14 @@ function renderPipeline(el) {
           (g.portal ? '<a class="btn btn-gold btn-sm" href="' + esc(g.portal.url) + '" target="_blank" rel="noopener">2. Open ' + esc(g.portal.name) + ' &rarr;</a>' : "") +
         "</div>" +
         (g.portal && g.portal.hint ? '<p class="muted">' + esc(g.portal.hint) + "</p>" : "") +
+        (p.paymentSource === "army_ca"
+          ? '<div class="notice warn-notice"><b>The company field looks like a dropdown. It is actually a search box.</b><br><br>' +
+            'Nothing on screen tells you that, which is why this is the step people give up on. The list is alphabetical and only ' +
+            'loads the first stretch of partners, so scrolling will never reach <b>RLS</b> &mdash; and it\'s easy to conclude we aren\'t ' +
+            'an approved vendor and stop.<br><br>' +
+            '<b>What to do:</b> click into the company field and <b>start typing R&#8209;L&#8209;S</b>. ' +
+            '<b>Resilient Leadership Solutions</b> appears in the results. Select it from there.</div>'
+          : "") +
         '<div class="notice"><b>When it asks for the training company, select RLS</b> &mdash; here\'s why, because two names on one ' +
           'credential looks odd until someone explains it.<br><br>' +
           '<b>Resilient Leadership Solutions (RLS)</b> is an RBLP Authorized Training Partner and the approved vendor registered in the ' +

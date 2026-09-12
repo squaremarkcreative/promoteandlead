@@ -166,6 +166,18 @@ check("and still flags selecting RLS as the training company",
 // is and why they're on the form — a Soldier who hesitates here doesn't file.
 check("the step explains WHY it's RLS, not just that it is",
   /Authorized Training Partner and the approved vendor/.test(caPage) && /in partnership with RLS/.test(caPage));
+// The ArmyIgnitED company field presents as a dropdown but is a search box, and the list is
+// truncated alphabetically so RLS is never visible. This is the step people abandon on.
+const armyWarn = (await import(`file://${R}/_lib/classroom.js`)).fundingGuidance("army_ca");
+const armyRules = (await import(`file://${R}/_lib/curriculum.js`)).caWarningsFor("army_ca");
+check("Army students are told the company field is a search box",
+  armyRules.some((w) => /search box/i.test(w.rule) && /typing/i.test(w.detail)), armyRules.map((w) => w.rule));
+check("the step itself says it, not just the warnings list",
+  /looks like a dropdown\. It is actually a search box/.test(caPage));
+check("and says exactly what to type", /start typing R&#8209;L&#8209;S/.test(caPage));
+check("it's shown only to Army — the Air Force portal is different",
+  /p\.paymentSource === "army_ca"/.test(caPage));
+
 check("RLS is spelled out, not left as an acronym", /Resilient Leadership Solutions \(RLS\)/.test(caPage));
 check("it separates who gets paid from who teaches",
   /who the government pays/.test(JSON.stringify(guidanceCA)) && /instructor of record/.test(caPage));
