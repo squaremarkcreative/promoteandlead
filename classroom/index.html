@@ -363,6 +363,7 @@
   .cert-sig .nm{font-size:20pt;font-style:italic;color:#1E3645;line-height:1.2}
   .cert-sig hr{border:0;border-top:1px solid #1E3645;margin:.06in 0 .07in}
   .cert-sig .ti{font-size:14pt;font-style:italic;line-height:1.25}
+  .cert-sig .ti .co{display:block;font-size:12pt;white-space:nowrap}
 
   /* On-screen preview: the sheet is a fixed 11in wide, so scale it to fit the panel. */
   .cert-prev{background:#5a6672;border-radius:12px;padding:12px;overflow:hidden}
@@ -1545,11 +1546,14 @@ function renderCohort(el) {
     '<div class="box"><div class="row" style="justify-content:space-between"><h2>Cohort ' + esc(c.slug) + "</h2>" +
       '<span class="pill">' + esc(c.status || "open") + "</span></div>" +
       '<p class="muted">' + esc(ME.profile.track) + " &middot; typical session window " + esc(win) + " (America/Chicago)</p>" +
+      certOpenerHtml() +
       (c.teamsUrl
         ? '<div class="row" style="margin-top:.9rem"><a class="btn btn-green" href="' + esc(c.teamsUrl) + '" target="_blank" rel="noopener">Join on Microsoft Teams</a>' +
           '<button class="btn btn-ghost btn-sm" id="copyTeams">Copy link</button></div>'
         : '<div class="notice">Your Teams link will appear here before your session.</div>') +
     "</div>" +
+
+    certificateCardHtml() +
 
     '<div class="box"><div class="row" style="justify-content:space-between"><h3>My hours</h3>' +
       (h.attendedHours >= h.requiredHours ? '<span class="pill ok">Requirement met</span>' : "") + "</div>" +
@@ -1586,8 +1590,6 @@ function renderCohort(el) {
       '<div class="row">' + ME.worksheets.modules.map(function (m) {
         return '<a class="btn btn-ghost btn-sm" href="' + esc(m.url) + '" target="_blank" rel="noopener">Module ' + m.num + " — " + esc(m.title) + "</a>";
       }).join("") + "</div></div>" +
-
-    certificateCardHtml() +
 
     cohortNotesHtml();
 
@@ -1697,6 +1699,7 @@ function renderPrintSheet() {
 // certificateData() — this only lays it out. Printing it is the download: the browser's
 // "Save as PDF" gives them a real PDF without this site needing a PDF library.
 function certHtml(c) {
+  var sg = c.instructor || { name: "Thomas Hendler", role: "Instructor", company: "Promote and Lead Solutions, LLC" };
   var day = fmtCertDay(c.issuedOn);
   var level = c.track + ", " + c.modules + (c.modules === 1 ? " Module" : " Modules");
   return '<div class="cert">' +
@@ -1713,8 +1716,8 @@ function certHtml(c) {
         (c.cohortSlug ? ' &middot; Cohort ' + esc(c.cohortSlug) : '') + '</div>' +
     '</div>' +
     '<img class="cert-seal" src="/assets/cert/rblp-atp-seal.jpg" alt="RBLP Authorized Training Partner">' +
-    '<div class="cert-sig"><div class="nm">Thomas Hendler</div><hr>' +
-      '<div class="ti">Instructor<br>Promote and Lead</div></div>' +
+    '<div class="cert-sig"><div class="nm">' + esc(sg.name) + '</div><hr>' +
+      '<div class="ti">' + esc(sg.role) + '<span class="co">' + esc(sg.company) + '</span></div></div>' +
     '</div>';
 }
 
@@ -1794,6 +1797,7 @@ function runOfDayHtml(blocks, opts) {
 var COVERED = {};
 var COVERED_COHORT = null;
 var COHORT_MOD = null;   // which module's notes are open on the cohort tab
+var CERT_OPEN = false;   // certificate expanded on the cohort tab
 var TG_OPEN = null;   // module numbers the instructor has expanded; null = first-visit default
 
 function tgOpenModules(el) {
@@ -2410,11 +2414,19 @@ function renderAdmin(el) {
 // During a live session the answers are what get worked on — the instructor drives one out, the
 // student sharpens theirs. Sending them to another tab to do it loses the thread of the room, so
 // their own notes open here, one module at a time, and save as they type like anywhere else.
+function certOpenerHtml() {
+  var c = ME.certificate;
+  if (!c || !c.available) return "";
+  return '<div class="row" style="margin-top:.9rem"><button class="btn btn-gold btn-sm" id="certToggle">' +
+    (CERT_OPEN ? "Hide my certificate" : "My certificate") + "</button></div>";
+}
+
 function certificateCardHtml() {
   var c = ME.certificate;
   if (!c) return "";
   if (c.available) {
-    return '<div class="box no-print"><div class="row" style="justify-content:space-between">' +
+    return '<div class="box no-print" id="certCard"' + (CERT_OPEN ? "" : " hidden") +
+        '><div class="row" style="justify-content:space-between">' +
         "<h3>My training certificate</h3>" +
         '<span class="pill ok">Issued ' + esc(fmtDay(c.issuedOn)) + "</span></div>" +
       '<p class="muted">' + esc(c.track) + " &middot; " + c.modules + " modules &middot; " + c.hours +
@@ -2440,6 +2452,14 @@ function certificateCardHtml() {
 function wireCert(el) {
   $$("[data-certprint]", el).forEach(function (b) {
     b.addEventListener("click", function () { printCertificate(); });
+  });
+  var t = $("#certToggle", el), card = $("#certCard", el);
+  if (!t || !card) return;
+  t.addEventListener("click", function () {
+    CERT_OPEN = !CERT_OPEN;
+    card.hidden = !CERT_OPEN;
+    t.textContent = CERT_OPEN ? "Hide my certificate" : "My certificate";
+    if (CERT_OPEN) scrollUnderBars(card);
   });
 }
 

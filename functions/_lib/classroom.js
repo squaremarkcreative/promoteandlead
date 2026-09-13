@@ -296,6 +296,14 @@ export const CERT_ORGS = {
   PLS: { name: "Promote and Lead Solutions, LLC", short: "PLS", logo: "/assets/logo-full.png" }
 };
 
+// The signature block. The company's registered name, not the trading shorthand — this is a
+// document a CA office reads alongside an invoice.
+export const CERT_SIGNER = {
+  name: "Thomas Hendler",
+  role: "Instructor",
+  company: "Promote and Lead Solutions, LLC"
+};
+
 export function certificateOrg(paymentSource) {
   const f = FUNDING[paymentSource];
   return f && f.paymentType === "CA" ? CERT_ORGS.RLS : CERT_ORGS.PLS;
@@ -335,7 +343,7 @@ export function certificateForMember(member, student) {
     cohortSlug: member.cohort ? member.cohort.slug || member.cohort.name : null,
     issuedOn: member.certified_on,
     org,
-    instructor: { name: "Thomas Hendler", title: "Instructor / Promote and Lead" }
+    instructor: CERT_SIGNER
   };
 }
 
@@ -358,7 +366,7 @@ export function certificateData({ student, membership, track, sessions, attendan
     cohortSlug: cohort ? cohort.slug || cohort.name : null,
     issuedOn,
     org: certificateOrg(student.payment_source),
-    instructor: { name: "Thomas Hendler", title: "Instructor / Promote and Lead" }
+    instructor: CERT_SIGNER
   };
 }
 

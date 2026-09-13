@@ -694,8 +694,31 @@ check("the certificate is available once the roster row is certified", certStu.c
 const cohPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
 check("it has a home of its own, not only a pipeline step", /function certificateCardHtml/.test(cohPage) &&
   /certificateCardHtml\(\) \+/.test(cohPage));
-check("on the cohort tab, where they see their hours met",
-  cohPage.indexOf("certificateCardHtml() +") > cohPage.indexOf("function renderCohort"));
+// Nobody scrolls to the foot of a page looking for their own certificate.
+check("the way in sits directly under the cohort heading, above the hours and the Teams link",
+  cohPage.indexOf("certOpenerHtml() +") < cohPage.indexOf("Join on Microsoft Teams"));
+check("the certificate itself opens in place, right below that box",
+  cohPage.indexOf("certificateCardHtml() +") < cohPage.indexOf("<h3>My hours</h3>"));
+check("it stays closed until asked for", /id="certCard"' \+ \(CERT_OPEN \? "" : " hidden"\)/.test(cohPage));
+check("the button says which way it goes", /CERT_OPEN \? "Hide my certificate" : "My certificate"/.test(cohPage));
+check("opening it scrolls clear of the sticky header", /if \(CERT_OPEN\) scrollUnderBars\(card\)/.test(cohPage));
+check("and it stays open across a redraw", /var CERT_OPEN = false/.test(cohPage));
+
+// The signature block was hardcoded and ignored the data it was handed.
+check("the signature is rendered from the data, not hardcoded",
+  /esc\(sg\.name\)/.test(cohPage) && /esc\(sg\.company\)/.test(cohPage) &&
+  !/<div class="nm">Thomas Hendler<\/div>/.test(cohPage));
+const signer = (await import("node:fs")).readFileSync(ROOT + "functions/_lib/classroom.js", "utf8");
+check("it carries the registered company name, not the trading shorthand",
+  /company: "Promote and Lead Solutions, LLC"/.test(signer) &&
+  !/Instructor \/ Promote and Lead"/.test(signer));
+check("one signer definition feeds both the student and the admin certificate",
+  (signer.match(/instructor: CERT_SIGNER/g) || []).length === 2);
+check("the registered name gets its own line so it can't wrap inside the signature block",
+  /\.cert-sig \.ti \.co\{display:block;font-size:12pt;white-space:nowrap\}/.test(cohPage));
+// The organization that delivered the training is a separate fact from who signed it.
+check("the training provider is still the funded vendor for a CA student",
+  /paymentType === "CA" \? CERT_ORGS\.RLS : CERT_ORGS\.PLS/.test(signer));
 check("with one print path shared by both places", !/id="cPrint"/.test(cohPage) &&
   (cohPage.match(/data-certprint/g) || []).length >= 3);
 check("the button says what it actually does", /Save or print my certificate/.test(cohPage));
