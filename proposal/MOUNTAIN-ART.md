@@ -1,0 +1,9 @@
+# Selected visual direction
+
+03 · Clean (Manrope headings, DM Sans body text) is selected on page load. The local design controls remain available for comparison. The mountain illustration replaces the earlier sculpture in the homepage hero, retaining the logo-inspired green peaks, winding ivory path, and gold star. The complete image fits within its container without cropping the peaks.
+
+Generated with the built-in image generation tool using the user-provided logo as a brand reference. Saved to `proposal/leadership-mountain-v3.png`. The prior asset is retained for comparison.
+
+## Final prompt
+
+Use case: stylized-concept. Asset type: square hero illustration for Promote & Lead Solutions website. The attached image is a brand reference, not an edit target. Create a sophisticated three-dimensional editorial illustration inspired closely by its mountain emblem: three angular forest-green mountain peaks, the tallest in the center, a clean ivory winding path rising up the center mountain, and a single faceted five-point champagne gold star hovering just above the summit. Preserve those recognizable motifs and the symmetrical strong silhouette. Render as a beautifully crafted architectural paper/ceramic sculpture with clean faceted planes, matte deep green surfaces, subtle warm gold metallic star, restrained realistic soft shadows, warm ivory studio background matching #f5f5ef. Entire mountain and star visible with generous margins, composition centered, subject occupying the middle 75 percent, lower 15 percent mostly quiet ivory space for a separate HTML caption. Refined professional leadership training brand, optimistic ascent, crisp and elegant, polished dimensional detail. No text, no letters, no wordmark, no added symbols, no spherical object, no ribbon wrapped around steps, no watermark. Reference logo's star and three mountains must read clearly at small sizes.
