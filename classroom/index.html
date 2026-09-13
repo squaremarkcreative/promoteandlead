@@ -226,6 +226,12 @@
   .jump-save{margin-left:auto;flex:none;padding:0 .45rem;font-size:.78rem;font-weight:600;color:#94a3b8;white-space:nowrap}
   .jump-save.saving{color:#fbbf24}
   .jump-save.saved{color:#4ade80}
+  .mod-ready{display:flex;gap:.9rem;align-items:center;justify-content:space-between;flex-wrap:wrap;
+    margin:1rem 0 .2rem;padding:.85rem 1rem;border:1px solid var(--gold);border-radius:12px;
+    background:rgba(212,175,55,.07)}
+  .mod-ready.done{border-color:var(--green);background:rgba(34,197,94,.08)}
+  .mod-ready p{margin:.25rem 0 0}
+  .mod-ready button{flex:none}
   .save-state{margin-left:auto;align-self:center;font-size:.8rem;color:#64748b}
 .save-state.saving{color:#b45309}
 .save-state.saved{color:#15803d}
@@ -906,7 +912,7 @@ function renderPipeline(el) {
         return '<p>Issued ' + esc(fmtDay(c.issuedOn)) + ' &mdash; <b class="soft">' + esc(c.track) + ', ' + c.modules +
             ' modules, ' + c.hours + ' contact hours</b>.</p>' +
           '<p class="muted">If you\'re claiming Credentialing Assistance, this is the document your CA office asks for.</p>' +
-          '<div class="row"><button class="btn btn-gold btn-sm" id="cPrint">Download certificate</button></div>' +
+          '<div class="row"><button class="btn btn-gold btn-sm" data-certprint>Save or print my certificate</button></div>' +
           '<div class="cert-prev no-print" id="cPrev"><div class="shrink">' + certHtml(c) + '</div></div>';
       }
       if (c && c.needsName) {
@@ -993,8 +999,7 @@ function renderPipeline(el) {
   if (examDone) examDone.addEventListener("change", function () {
     run(function () { return api("exam.scheduled", { done: examDone.checked }); }, "Noted — thanks.");
   });
-  var cPrint = $("#cPrint", el);
-  if (cPrint) cPrint.addEventListener("click", printCertificate);
+  wireCert(el);
   fitCertPreview(el);
 }
 
@@ -1204,6 +1209,7 @@ function renderWorksheets(el) {
             return '<span class="pill" title="' + esc(g[1]) + '">' + esc(g[0]) + "</span>";
           }).join("") + "</div>" +
           m.tasks.map(function (t) { return taskHtml(t); }).join("") +
+          moduleReadyHtml(m) +
           (m.study ? '<div class="selfcheck no-print"><h5>Ready for the oral when&hellip;</h5>' +
             '<p>' + esc(m.study.success) + '</p>' +
             (m.study.good ? '<p class="muted"><b>On your worksheet:</b> ' + esc(m.study.good) + '</p>' : '') +
@@ -1229,6 +1235,7 @@ function renderWorksheets(el) {
   });
   syncHeaderOffset();
   $$(".task", el).forEach(wireTask);
+  wireModuleReady(el);
   syncGlobalSave();
 }
 
@@ -1249,6 +1256,69 @@ function readyCount(m) {
 // Modules are collapsed accordions, so reaching module 4 to review it used to mean scrolling
 // past everything before it. These pin to the top instead, and carry their own ready count so
 // a student can see at a glance which module still owes work.
+// One decision per module rather than one per task: "is this module ready for my cohort".
+function moduleReadyHtml(m) {
+  var ready = readyCount(m), all = ready === m.tasks.length;
+  return '<div class="mod-ready' + (all ? " done" : "") + '">' +
+    "<div><b>" + (all
+      ? "Module " + m.num + " is ready for your cohort."
+      : "Module " + m.num + " &mdash; " + ready + " of " + m.tasks.length + " tasks marked ready") + "</b>" +
+    '<p class="muted">' + (all
+      ? "Change anything you like &mdash; it still saves as you type. Your instructor sees this module as ready."
+      : "Everything above saves as you type. When the whole module reads the way you want it to, mark it ready.") +
+    "</p></div>" +
+    '<button class="btn btn-sm ' + (all ? "btn-ghost" : "btn-gold") + '" data-modready="' + m.num + '">' +
+      (all ? "Reopen module " + m.num : "Mark module " + m.num + " ready") + "</button></div>";
+}
+
+// Changing a module's status must not cross with text still in flight, so anything unsaved is
+// flushed first and awaited.
+async function flushPending() {
+  var keys = Object.keys(DIRTY);
+  if (!keys.length) return;
+  var panel = $('.panel[data-panel="' + ACTIVE + '"]');
+  var jobs = [];
+  keys.forEach(function (k) {
+    var node = panel ? $('.task[data-task="' + k + '"]', panel) : null;
+    if (!node) return;
+    clearTimeout(SAVE_TIMERS[k]);
+    jobs.push(autosave(node));
+  });
+  await Promise.all(jobs);
+}
+
+function wireModuleReady(el) {
+  $$("[data-modready]", el).forEach(function (b) {
+    b.addEventListener("click", async function () {
+      var num = Number(b.dataset.modready);
+      var m = (ME.worksheets.modules || []).filter(function (x) { return x.num === num; })[0];
+      if (!m) return;
+      var all = readyCount(m) === m.tasks.length;
+      b.disabled = true;
+      try {
+        await flushPending();
+        await api("worksheet.moduleStatus", { module_num: num, status: all ? "draft" : "ready" });
+        ME = await (await fetch("/api/classroom/me")).json();
+        renderAll();
+        flash(all ? "Module " + num + " reopened." : "Module " + num + " is marked ready for your cohort.");
+        if (all) return;
+        // Marking one ready is the moment to move on to the next module with work left in it.
+        var next = (ME.worksheets.modules || []).filter(function (x) {
+          return x.num > num && readyCount(x) < x.tasks.length;
+        })[0];
+        if (!next) return;
+        if (ACTIVE === "cohort") {
+          COHORT_MOD = next.num;
+          renderCohort($('.panel[data-panel="cohort"]'));
+        } else {
+          openModule($('.panel[data-panel="worksheets"]'), next.num);
+        }
+      } catch (e) { flash(e.message, "err"); }
+      finally { b.disabled = false; }
+    });
+  });
+}
+
 function moduleJumpHtml() {
   return '<div class="jump no-print"><span class="jump-h">Jump to</span>' +
     ME.worksheets.modules.map(function (m) {
@@ -1272,26 +1342,6 @@ function openModule(el, num, taskKey) {
 // isn't. Deliberately nothing is reordered: the instructor sinks covered tasks because they
 // only care what's left to teach, but a student has to read back through their own answers in
 // module order before the oral, and shuffling their writing around mid-review would fight that.
-function advanceFrom(taskKey) {
-  var el = $('.panel[data-panel="' + ACTIVE + '"]');
-  if (!el) return;
-  var nodes = $$(".task", el);
-  var at = -1;
-  for (var i = 0; i < nodes.length; i++) if (nodes[i].dataset.task === taskKey) { at = i; break; }
-  if (at < 0) return;
-  var order = nodes.slice(at + 1).concat(nodes.slice(0, at));
-  for (var j = 0; j < order.length; j++) {
-    var st = order[j].dataset.status;
-    if (st !== "ready" && st !== "expanded") {
-      var d = order[j].closest("details.mod");
-      if (d && !d.open) d.open = true;
-      spotlight(order[j]);
-      return;
-    }
-  }
-  flash("That's every task here marked ready. Print your exam sheet and review.");
-}
-
 function firstIncompleteModule() {
   var m = ME.worksheets.modules.filter(function (mm) {
     return mm.tasks.some(function (t) { return !t.response || (t.response.status !== "ready" && t.response.status !== "expanded"); });
@@ -1322,10 +1372,7 @@ function taskHtml(t) {
       '<textarea data-f="notdo" placeholder="The mistake you\'ve seen someone make — naming it proves you understand the idea, not just the definition.">' + esc(r.notdo || "") + "</textarea></label>" +
       '<label class="fld"><span>If I ran this team tomorrow, I would&hellip;</span>' +
       '<textarea data-f="plan" placeholder="One or two sentences. Applying it forward is the hardest thing they ask for.">' + esc(r.plan || "") + "</textarea></label></div>" +
-    '<div class="row"><button class="btn btn-ghost btn-sm" data-save="draft">Save draft</button>' +
-    '<button class="btn btn-green btn-sm" data-save="ready">Mark ready for cohort</button>' +
-    '<button class="btn btn-ghost btn-sm" data-save="expanded">Expanded after session</button>' +
-    '<span class="save-state">Saves as you type</span></div></div>';
+    '<div class="row"><span class="save-state">Saves as you type</span></div></div>';
 }
 
 // Worksheets are long-form personal writing — the most expensive content on the site to
@@ -1446,10 +1493,6 @@ function wireTask(node) {
     });
   });
 
-  $$("[data-save]", node).forEach(function (btn) {
-    btn.addEventListener("mousedown", function () { SKIP_BLUR[key] = true; });
-  });
-
   // A draft left in local storage means an autosave never made it through. Put the work back
   // in front of them and try again now, rather than letting the server's older copy win.
   //
@@ -1477,25 +1520,6 @@ function wireTask(node) {
     try { localStorage.removeItem(draftKey(key)); } catch (e) {}
   }
 
-  $$("[data-save]", node).forEach(function (btn) {
-    btn.addEventListener("click", async function () {
-      clearTimeout(SAVE_TIMERS[key]);
-      var payload = collectTask(node);
-      payload.status = btn.dataset.save;
-      btn.disabled = true;
-      try {
-        await api("worksheet.save", payload);
-        delete DIRTY[key];
-        try { localStorage.removeItem(draftKey(key)); } catch (e) {}
-        ME = await (await fetch("/api/classroom/me")).json();
-        renderAll();
-        // "Save draft" means they're still working on this one; ready/expanded means move on.
-        if (btn.dataset.save === "draft") flash("Saved.");
-        else advanceFrom(key);
-      } catch (e) { flash(e.message, "err"); }
-      finally { btn.disabled = false; delete SKIP_BLUR[key]; }
-    });
-  });
 }
 
 // A tab closed mid-sentence would otherwise take the last second and a half of typing with it.
@@ -1563,9 +1587,12 @@ function renderCohort(el) {
         return '<a class="btn btn-ghost btn-sm" href="' + esc(m.url) + '" target="_blank" rel="noopener">Module ' + m.num + " — " + esc(m.title) + "</a>";
       }).join("") + "</div></div>" +
 
+    certificateCardHtml() +
+
     cohortNotesHtml();
 
   wireGo(el);
+  wireCert(el);
   wireCohortNotes(el);
   var copy = $("#copyTeams", el);
   if (copy) copy.addEventListener("click", function () {
@@ -2383,6 +2410,39 @@ function renderAdmin(el) {
 // During a live session the answers are what get worked on — the instructor drives one out, the
 // student sharpens theirs. Sending them to another tab to do it loses the thread of the room, so
 // their own notes open here, one module at a time, and save as they type like anywhere else.
+function certificateCardHtml() {
+  var c = ME.certificate;
+  if (!c) return "";
+  if (c.available) {
+    return '<div class="box no-print"><div class="row" style="justify-content:space-between">' +
+        "<h3>My training certificate</h3>" +
+        '<span class="pill ok">Issued ' + esc(fmtDay(c.issuedOn)) + "</span></div>" +
+      '<p class="muted">' + esc(c.track) + " &middot; " + c.modules + " modules &middot; " + c.hours +
+        " contact hours &middot; issued by " + esc(c.org.name) + "</p>" +
+      (ME.pipeline.route === "CA"
+        ? '<div class="notice">This is the document your CA office asks for. Keep the copy you ' +
+          'download &mdash; the organization named on it has to match the vendor your funding was ' +
+          'approved for.</div>'
+        : "") +
+      '<div class="row"><button class="btn btn-gold btn-sm" data-certprint>Save or print my certificate</button></div>' +
+      '<p class="muted fld-note">Opens your browser\'s print dialog &mdash; choose your printer, or ' +
+        '&ldquo;Save as PDF&rdquo; to keep a copy.</p>' +
+      '<div class="cert-prev no-print"><div class="shrink">' + certHtml(c) + "</div></div></div>";
+  }
+  if (c.needsName) {
+    return '<div class="box no-print"><h3>My training certificate</h3>' +
+      "<p>Your certificate is ready, but we need the name to put on it.</p>" +
+      '<div class="row"><button class="btn btn-gold btn-sm" data-go="settings">Add my name</button></div></div>';
+  }
+  return "";
+}
+
+function wireCert(el) {
+  $$("[data-certprint]", el).forEach(function (b) {
+    b.addEventListener("click", function () { printCertificate(); });
+  });
+}
+
 function cohortNotesHtml() {
   if (!ME.worksheets.unlocked) return "";
   var mods = ME.worksheets.modules || [];
@@ -2404,7 +2464,7 @@ function cohortNotesHtml() {
     (shown
       ? '<p class="muted" style="margin-top:.8rem"><b class="soft">Module ' + shown.num + " &mdash; " +
           esc(shown.title) + '</b> &middot; ' + esc(shown.theme) + "</p>" +
-        shown.tasks.map(function (t) { return taskHtml(t); }).join("")
+        shown.tasks.map(function (t) { return taskHtml(t); }).join("") + moduleReadyHtml(shown)
       : '<p class="muted" style="margin-top:.8rem">Pick a module above to open your notes for it.</p>') +
     "</div>";
 }
@@ -2418,6 +2478,8 @@ function wireCohortNotes(el) {
     });
   });
   $$(".task", el).forEach(wireTask);
+  wireModuleReady(el);
+  syncGlobalSave();
 }
 
 function renderCohortCreate() {

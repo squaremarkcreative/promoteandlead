@@ -10,7 +10,7 @@ import { FUNDING, normalizeTrack, loadMembership, loadSessions, PIPELINE_STEPS, 
 import { transactionalEmail, sendEmail } from "../../_lib/email.js";
 import { issueCode } from "../../_lib/session.js";
 import { standardSession } from "../../_lib/curriculum.js";
-import { allTaskKeys } from "../../_lib/curriculum.js";
+import { allTaskKeys, MODULES } from "../../_lib/curriculum.js";
 
 const VALID_TASKS = new Set(allTaskKeys());
 const VALID_STATUS = new Set(["empty", "draft", "ready", "expanded"]);
@@ -157,6 +157,35 @@ export async function onRequestPost(context) {
           updated_at: new Date().toISOString()
         };
         await db.upsert("pl_worksheet_responses", row, "student_id,task_key");
+        return json({ ok: true });
+      }
+
+      case "worksheet.moduleStatus": {
+        const num = Number(data.module_num);
+        const mod = MODULES.find((m) => m.num === num);
+        if (!mod) return json({ error: "Unknown module." }, 400);
+        const status = VALID_STATUS.has(data.status) ? data.status : "draft";
+        const keys = mod.tasks.map((t) => t.key);
+        const inList = (ks) => `in.(${ks.map(encodeURIComponent).join(",")})`;
+        const mine = `student_id=eq.${encodeURIComponent(me.id)}`;
+
+        const existing = await db.select("pl_worksheet_responses",
+          `select=task_key&${mine}&task_key=${inList(keys)}`);
+        const have = existing.map((r) => r.task_key);
+        const now = new Date().toISOString();
+
+        // Patch, never upsert: an upsert would need to carry the text back and could overwrite
+        // an answer being typed at the same moment.
+        if (have.length) {
+          await db.patch("pl_worksheet_responses", `${mine}&task_key=${inList(have)}`,
+            { status, updated_at: now });
+        }
+        const missing = keys.filter((k) => !have.includes(k));
+        if (missing.length) {
+          await db.insert("pl_worksheet_responses", missing.map((k) => ({
+            student_id: me.id, task_key: k, module_num: num, status, updated_at: now
+          })));
+        }
         return json({ ok: true });
       }
 

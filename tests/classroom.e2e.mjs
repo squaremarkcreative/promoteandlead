@@ -503,11 +503,37 @@ check("the notebar isn't a second sticky bar competing with the header",
 // Two bugs this surfaced, both about a redraw showing something other than the truth.
 check("autosave updates the in-memory copy, so switching module shows what was just typed",
   /cacheResponse\(payload\)/.test(cnPage) && /function cacheResponse/.test(cnPage));
-check("advancing works on the panel they're looking at, not a hidden one",
-  /\$\('\.panel\[data-panel="' \+ ACTIVE \+ '"\]'\)/.test(cnPage) &&
-  !/\$\('\.panel\[data-panel="worksheets"\]'\)/.test(cnPage));
-check("so it advances within the module on screen rather than jumping off it",
-  /var nodes = \$\$\("\.task", el\)/.test(cnPage));
+check("marking a module ready from the cohort tab moves to the next module there",
+  /COHORT_MOD = next\.num;/.test(cnPage));
+check("the module footer appears under the notes here too",
+  /taskHtml\(t\); \}\)\.join\(""\) \+ moduleReadyHtml\(shown\)/.test(cnPage));
+
+// Readiness is set for a whole module in one call. It must move the status and nothing else —
+// a student may be typing in one of those very boxes as they press it.
+section("Worksheets: readiness is a per-module decision");
+await post(action, { action: "worksheet.save", data: { task_key: "m1_analyze_climate", what: "Shared perception", story: "My shop", status: "draft" } }, student.cookie);
+const modReady = await post(action, { action: "worksheet.moduleStatus", data: { module_num: 1, status: "ready" } }, student.cookie);
+check("a student can mark a whole module ready", modReady.ok);
+let mr = await (await get(me, student.cookie)).json();
+const mod1 = mr.worksheets.modules.find((x) => x.num === 1);
+check("every task in the module is ready, including untouched ones",
+  mod1.tasks.every((t) => t.response && t.response.status === "ready"),
+  mod1.tasks.map((t) => t.response && t.response.status));
+check("the answers they had already written are untouched",
+  mod1.tasks.find((t) => t.key === "m1_analyze_climate").response.what === "Shared perception");
+check("and so is the rest of that row", 
+  mod1.tasks.find((t) => t.key === "m1_analyze_climate").response.story === "My shop");
+check("a module they didn't touch is left alone",
+  mr.worksheets.modules.find((x) => x.num === 2).tasks.every((t) => !t.response || t.response.status === "empty"));
+
+const reopened = await post(action, { action: "worksheet.moduleStatus", data: { module_num: 1, status: "draft" } }, student.cookie);
+check("reopening a module puts it back to draft", reopened.ok);
+mr = await (await get(me, student.cookie)).json();
+check("without losing the answers",
+  mr.worksheets.modules.find((x) => x.num === 1).tasks.every((t) => t.response.status === "draft") &&
+  mr.worksheets.modules.find((x) => x.num === 1).tasks.find((t) => t.key === "m1_analyze_climate").response.what === "Shared perception");
+const badMod = await post(action, { action: "worksheet.moduleStatus", data: { module_num: 9, status: "ready" } }, student.cookie);
+check("an unknown module is refused", badMod.status === 400);
 
 // ---------------------------------------------------------------- teaching coverage
 // The instructor's Done ticks used to live in localStorage, so they were stranded on whichever
@@ -656,6 +682,29 @@ check("the PowerPoint template itself is not committed (Pages would serve it pub
   execSyncCert("git ls-files 'Cert templates'", { cwd: ROOT }).toString().trim() === "");
 
 // ---------------------------------------------------------------- study aids
+// A certified student had no way to reach their certificate: it rendered only inside its own
+// pipeline step card, so once the journey moved past that step it was unreachable.
+section("Acceptance: a certified student can reach their certificate");
+// Exactly what the instructor console does: certify the roster row.
+const certified = await post(action, { action: "member.certify", data: { cohort_id: cohortId, member_id: DB.pl_cohort_members[0].id, certified_on: "2026-03-07" } }, instructor.cookie);
+check("the instructor console can certify the roster row", certified.ok);
+const certStu = await (await get(me, student.cookie)).json();
+check("the certificate is available once the roster row is certified", certStu.certificate.available === true,
+  certStu.certificate);
+const cohPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("it has a home of its own, not only a pipeline step", /function certificateCardHtml/.test(cohPage) &&
+  /certificateCardHtml\(\) \+/.test(cohPage));
+check("on the cohort tab, where they see their hours met",
+  cohPage.indexOf("certificateCardHtml() +") > cohPage.indexOf("function renderCohort"));
+check("with one print path shared by both places", !/id="cPrint"/.test(cohPage) &&
+  (cohPage.match(/data-certprint/g) || []).length >= 3);
+check("the button says what it actually does", /Save or print my certificate/.test(cohPage));
+check("and explains that Save as PDF is how you keep a copy", /Save as PDF/.test(cohPage));
+check("it names the issuing organization on the card", /issued by " \+ esc\(c\.org\.name\)/.test(cohPage));
+check("a CA student is told the organization has to match their funding",
+  /has to match the vendor your funding was/.test(cohPage));
+check("a missing name is a prompt to add it, not a dead end", /data-go="settings">Add my name/.test(cohPage));
+
 section("Acceptance: study aids + exam facts");
 m = await (await get(me, student.cookie)).json();
 check("every module the student sees carries its self-check",
@@ -1628,7 +1677,16 @@ check("work stranded by a failed save is restored on return",
 // it would silently un-ready a task the student had already marked ready for cohort.
 check("autosave carries the task's existing status", /payload\.status = currentStatus\(node\)/.test(asPage));
 check("the saved status is on the task node for autosave to read", /data-status="/.test(asPage));
-check("a save button still sets the status it names", /payload\.status = btn\.dataset\.save/.test(asPage));
+// Readiness is one judgement about a module, not seven about its tasks, so the per-task status
+// buttons are gone. Autosave was already doing the saving they appeared to do.
+check("tasks no longer carry their own status buttons", !/data-save="/.test(asPage));
+check("there is one ready control per module instead", /data-modready="/.test(asPage));
+check("it reads as a decision about the whole module", /Mark module " \+ m\.num \+ " ready/.test(asPage));
+check("and can be undone", /Reopen module " \+ m\.num/.test(asPage));
+check("the module status is set in one call, not one per task",
+  /api\("worksheet\.moduleStatus", \{ module_num: num, status: all \? "draft" : "ready" \}\)/.test(asPage));
+check("anything still being typed is flushed and awaited before the status changes",
+  /await flushPending\(\)/.test(asPage) && /await Promise\.all\(jobs\)/.test(asPage));
 
 // Restoring is a write, so a wrong restore destroys good work. Both guards matter: a stash
 // older than the server loses, and a restore fills empty fields but never empties full ones.
@@ -1651,14 +1709,13 @@ check("the header's real height is measured, not guessed (it wraps on a phone)",
   /--hdr", h\.offsetHeight/.test(asPage) && /addEventListener\("resize", syncHeaderOffset\)/.test(asPage));
 check("jumping opens the module even when collapsed", /d\.open = true/.test(asPage));
 
-// Marking a task ready should carry them onward, which is what keeps them with the instructor.
-check("marking ready moves to the next unfinished task", /else advanceFrom\(key\)/.test(asPage));
-check("Save draft does not move them — they're still writing",
-  /if \(btn\.dataset\.save === "draft"\) flash\("Saved\."\)/.test(asPage));
-check("the next task is spotlit so they can see where they landed", /classList\.add\("spotlight"\)/.test(asPage));
-// Scoped to what's on screen: the cohort tab shows one module, the worksheets tab shows all.
-check("finishing the last task on screen says so rather than jumping nowhere",
-  /every task here marked ready/.test(asPage));
+// Marking a module ready should carry them onward, which is what keeps them with the instructor.
+check("marking a module ready moves to the next module with work left",
+  /x\.num > num && readyCount\(x\) < x\.tasks\.length/.test(asPage));
+check("reopening a module deliberately does not move them", /if \(all\) return;/.test(asPage));
+check("the target is spotlit so they can see where they landed", /classList\.add\("spotlight"\)/.test(asPage));
+check("a fully ready module says so rather than nagging",
+  /is ready for your cohort/.test(asPage));
 // The instructor sinks covered tasks because they only care what's left to teach. A student
 // reviewing before the oral must not have their own answers shuffled under them.
 check("the student's tasks stay in module order, unlike the teaching view",
