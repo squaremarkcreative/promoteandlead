@@ -7,3 +7,7 @@ header.site{background:#fcfcf8;backdrop-filter:none}.nav-links{gap:18px}.brand.r
 .card{background:white;border-radius:12px;box-shadow:0 3px 14px #214e4005}.ico{background:#eaf0e5;color:#214e40}.card p{color:var(--text-soft)}input,textarea,select{color-scheme:light;background:#fff;color:#102a30;border-color:#aebfae}.contact-form input,.contact-form textarea,.contact-form select{background:#fff;color:#102a30}.mobile-menu{background:#fcfcf8}.apply-band,.prep-band{background:#eaf0e5;color:#102a30}footer{background:#eaf0e5;color:#102a30}.reveal{opacity:1;transform:none}:focus-visible{outline:3px solid #9b7b35;outline-offset:4px}
 @media(max-width:1000px){.brand.refreshed-brand{font-size:17px}.nav-links{gap:10px}.approved-hero h1{font-size:46px}.hero-layout{gap:8px}}
 @media(max-width:700px){section{padding-block:42px}.hero-layout{grid-template-columns:1fr;gap:25px}.approved-hero{padding-top:32px}.approved-hero h1{font-size:clamp(36px,9.5vw,46px);letter-spacing:-1.8px}.approved-hero .trust-strip{display:grid;grid-template-columns:1fr 1fr;margin-top:30px;font-size:11px}.approved-hero .hero-cta{flex-wrap:wrap}.refreshed-brand img{width:42px;height:42px}.brand.refreshed-brand{font-size:16px}}
+
+/* Keep the approved light header in its scrolling and expanded-menu states. */
+header.site.scrolled,header.site.menu-open{background:#fcfcf8;backdrop-filter:none;border-bottom-color:var(--border);box-shadow:0 4px 18px rgba(33,78,64,.08)}
+header.site .mobile-menu{background:#fcfcf8;backdrop-filter:none}
