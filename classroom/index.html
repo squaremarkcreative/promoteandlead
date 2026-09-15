@@ -932,6 +932,23 @@ function renderPipeline(el) {
       }
       return '<p class="muted">We issue this after you attend your session.</p>';
     },
+    ca_exam: function () {
+      var g = ME.funding.guidance || {};
+      var c = ME.certificate || {};
+      var filed = J.steps.filter(function (x) { return x.key === "ca_exam"; })[0].done;
+      return '<div class="notice warn-notice"><b>Don\'t sit on this one.</b> You have <b>180 days</b> from the day your ' +
+          'training grade posts to file this request. On day 181 the Army recoups what it paid for your training.</div>' +
+        (c.available ? '<p>Your training certificate was issued <b class="soft">' + esc(fmtDay(c.issuedOn)) + '</b>. ' +
+          'Once RBLP sends you the exam invoice, file right away rather than waiting until your exam date is close.</p>' : "") +
+        '<p>It works like your first request: on your branch\'s Credentialing Assistance website, you <b class="soft">upload</b> ' +
+          'the exam invoice RBLP sends you. This is a new, separate request &mdash; the training one is closed.</p>' +
+        '<div class="row">' +
+          (g.link ? '<a class="btn btn-ghost btn-sm" href="' + esc(g.link) + '" target="_blank" rel="noopener">Read the step-by-step &rarr;</a>' : "") +
+          (g.portal ? '<a class="btn btn-gold btn-sm" href="' + esc(g.portal.url) + '" target="_blank" rel="noopener">Open ' + esc(g.portal.name) + ' &rarr;</a>' : "") +
+        "</div>" +
+        '<label class="row check"><input type="checkbox" id="caExamDone"' + (filed ? " checked" : "") + ">" +
+        "<span>I've filed my CA request for the exam.</span></label>";
+    },
     exam: function () {
       return '<p>The oral exam is taken with RBLP, not with us. ' + esc(p.track) + ' orals run about <b class="soft">' + examLength(p.track) + '</b>.</p>' +
         '<div class="row"><a class="btn btn-gold btn-sm" href="https://rblp.com/leadership-certifications/schedule-exam/" target="_blank" rel="noopener">Schedule with RBLP &rarr;</a>' +
@@ -1003,6 +1020,11 @@ function renderPipeline(el) {
   if (bought) bought.addEventListener("change", function () {
     run(function () { return api("pipeline.claimPurchase", { done: bought.checked }); },
       bought.checked ? "Thanks — we'll confirm with RBLP and email you." : "Unticked.");
+  });
+  var caExamDone = $("#caExamDone", el);
+  if (caExamDone) caExamDone.addEventListener("change", function () {
+    run(function () { return api("pipeline.caExamSubmitted", { done: caExamDone.checked }); },
+      caExamDone.checked ? "Noted — next, schedule your exam with RBLP." : "Unticked.");
   });
   var examDone = $("#examDone", el);
   if (examDone) examDone.addEventListener("change", function () {

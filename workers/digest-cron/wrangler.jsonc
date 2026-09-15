@@ -1,0 +1,15 @@
+{
+  // Deploy: cd workers/digest-cron && wrangler deploy
+  // Secret: wrangler secret put DIGEST_SECRET  (must match the Pages project's DIGEST_SECRET)
+  "name": "promoteandlead-digest",
+  "main": "index.js",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": false,
+  "triggers": {
+    // 13:00 UTC is 8am Central in summer, 7am in winter.
+    "crons": ["0 13 * * *"]
+  },
+  "vars": {
+    "DIGEST_URL": "https://promoteandlead.com/api/classroom/digest"
+  }
+}

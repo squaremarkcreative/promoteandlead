@@ -191,6 +191,12 @@ export async function onRequestPost(context) {
         return json({ ok: true });
       }
 
+      case "pipeline.caExamSubmitted": {
+        // The second CA goal, for the exam. Only the student knows they've filed it.
+        await setPipelineEvent(db, me.id, "ca_exam", data.done !== false);
+        return json({ ok: true });
+      }
+
       case "exam.scheduled": {
         const scheduling = data.done !== false;
         const prior = scheduling

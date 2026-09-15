@@ -14,12 +14,9 @@ import {
   SESSION_RHYTHM, FACILITATION_CARDS, MIXED_COHORT_NOTE, MODULE_ARC,
   runOfDay, dayFor, DAY_NOTES, INSTRUCTOR_PAY, MOCK_EXAMINER
 } from "../../_lib/curriculum.js";
+import { loadJourneys, STALLED_AFTER_DAYS } from "../../_lib/roster.js";
 
 // The handoffs Tommy marks — each one emails the student. Order is the order they happen in.
-// How long someone can sit on one step before it's worth a nudge. Not a hard rule — it just
-// surfaces them, so Tommy decides whether to reach out.
-const STALLED_AFTER_DAYS = 14;
-
 // Each label states what YOU are confirming, not what the student hopes is true. Nothing says
 // "approved" anywhere the student can see until the matching button here has been pressed.
 const ADMIN_HANDOFFS = [
@@ -168,47 +165,13 @@ export async function onRequestGet(context) {
     }
 
     if (isAdmin) {
-      const students = await db.select("pl_students", "select=id,email,display_name,role,track,payment_source,ca_submitted_on,purchase_claimed_at,rblp_applied_at,referral_code,referred_by,referred_via,created_at,last_login_at&order=created_at.desc&limit=500");
-      // Which handoffs have already been marked, so the admin buttons show state instead of
-      // Tommy having to remember whether he already told someone their CA came through.
-      const evs = await db.select("pl_pipeline_events", "select=student_id,step,completed_at&limit=5000");
-      const byStudent = {};
-      for (const e of evs) {
-        if (!e.completed_at) continue;
-        (byStudent[e.student_id] || (byStudent[e.student_id] = {}))[e.step] = e.completed_at;
-      }
-      // Everything needed to place each student on their journey, in four bulk queries rather
-      // than four per student.
-      const allMembers = await db.select("pl_cohort_members", "select=*,cohort:pl_cohorts(*)&limit=1000");
-      const allSessions = await db.select("pl_cohort_sessions", "select=*&limit=1000");
-      const allResponses = await db.select("pl_worksheet_responses", "select=student_id,task_key,status&limit=20000");
-      const allAttendance = await db.select("pl_attendance", "select=student_email,session_id,present,minutes&limit=5000");
+      // Shared with the daily digest, so the two can never disagree about who's stuck.
+      const { journeys, members: allMembers } = await loadJourneys(db, env);
+      const students = journeys.map((j) => j.student);
 
-      const memberByEmail = {};
-      for (const mm of allMembers) memberByEmail[(mm.email || "").toLowerCase()] = mm;
-      const respByStudent = {};
-      for (const r of allResponses) (respByStudent[r.student_id] || (respByStudent[r.student_id] = [])).push(r);
-      const attByEmail = {};
-      for (const a of allAttendance) {
-        const k = (a.student_email || "").toLowerCase();
-        (attByEmail[k] || (attByEmail[k] = [])).push(a);
-      }
-
-      const withStage = students.map((s) => {
-        const evs = byStudent[s.id] || {};
-        const membership = memberByEmail[(s.email || "").toLowerCase()] || null;
-        const track = normalizeTrack((membership && membership.rblp_type) || s.track);
-        const sessions = membership && membership.cohort_id
-          ? allSessions.filter((x) => x.cohort_id === membership.cohort_id) : [];
-        const worksheets = worksheetProgress(track, respByStudent[s.id] || []);
-        const hours = hoursProgress(track, sessions, attByEmail[(s.email || "").toLowerCase()] || []);
-        const jp = buildPipeline({ student: s, membership, events: evs, worksheets, hours });
-
-        // How long they've sat where they are: the clock starts at the most recent thing that
-        // moved — a marked step, or the day they signed up if nothing has yet.
-        const stamps = Object.values(evs).filter(Boolean).sort();
-        const since = stamps.length ? stamps[stamps.length - 1] : s.created_at;
-        const days = since ? Math.floor((Date.now() - new Date(since).getTime()) / 86400000) : null;
+      const withStage = journeys.map((j) => {
+        const s = j.student, evs = j.events, membership = j.membership, jp = j.pipeline;
+        const since = j.since, days = j.days;
 
         return {
           ...s,

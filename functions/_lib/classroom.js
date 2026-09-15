@@ -235,6 +235,8 @@ export function buildPipeline({ student, membership, events, worksheets, hours }
     enrolled: done("enrolled") || !!cohort,
     attend: done("attend") || hours.attendedMinutes > 0,
     certificate: done("certificate") || !!(membership && membership.certified_on),
+    // Missing until now, so a CA student could never finish this step and sat on it for good.
+    ca_exam: done("ca_exam"),
     exam: done("exam"),
     // Only the admin marking it. Completing our training is `certificate`; this is RBLP's award.
     certified: done("certified")

@@ -1838,6 +1838,148 @@ check("in production it sends after responding, so a slow mail provider never st
 check("the old one-off purchase email is gone — one alert path, one recipient",
   !/Says they've already purchased/.test(alertActSrc));
 
+// ---------------------------------------------------------------- exam CA request
+// "File your second CA request — for the exam" had no state and no action, so a CA student could
+// never finish it and sat on it forever — right past the certificate, where the 180-day clock runs.
+section("Journey: the exam CA request can be completed");
+const caExamStudent = await signIn("ca.exam@example.com");
+Object.assign(DB.pl_students.find((x) => x.email === "ca.exam@example.com"),
+  { display_name: "Casey Exam", track: "RBLP", payment_source: "army_ca" });
+const caExamStudentId = DB.pl_students.find((x) => x.email === "ca.exam@example.com").id;
+for (const step of ["rblp_received", "invoice", "ca_submitted", "ca_approved", "enrolled", "prep", "attend", "certificate"]) {
+  DB.pl_pipeline_events.push({ student_id: caExamStudentId, step, completed_at: "2026-09-01T12:00:00Z" });
+}
+DB.pl_students.find((x) => x.id === caExamStudentId).rblp_applied_at = "2026-08-01T12:00:00Z";
+let caExamMe = await (await get(me, caExamStudent.cookie)).json();
+check("a certified CA student lands on the exam CA request", caExamMe.pipeline.current.key === "ca_exam", caExamMe.pipeline.current.key);
+const caExamRes = await post(action, { action: "pipeline.caExamSubmitted", data: {} }, caExamStudent.cookie);
+check("they can mark it filed", caExamRes.ok);
+caExamMe = await (await get(me, caExamStudent.cookie)).json();
+check("and the journey moves on to scheduling the exam", caExamMe.pipeline.current.key === "exam", caExamMe.pipeline.current.key);
+check("the step reads as done", caExamMe.pipeline.steps.find((x) => x.key === "ca_exam").done === true);
+await post(action, { action: "pipeline.caExamSubmitted", data: { done: false } }, caExamStudent.cookie);
+caExamMe = await (await get(me, caExamStudent.cookie)).json();
+check("and unmark it if they ticked it by mistake", caExamMe.pipeline.current.key === "ca_exam");
+const caExamPage = (await import("node:fs")).readFileSync(ROOT + "classroom/index.html", "utf8");
+check("the step has a card with the 180-day warning", /ca_exam: function/.test(caExamPage) && /180 days<\/b> from the day your/.test(caExamPage));
+check("and a control wired to the new action", /id="caExamDone"/.test(caExamPage) && /pipeline\.caExamSubmitted/.test(caExamPage));
+
+// ---------------------------------------------------------------- stall clock
+// The admin tab's "days on this step" only counted pipeline events. Applying at RBLP, filing CA,
+// claiming a purchase and writing prep work are stored elsewhere, so a student writing every day
+// looked like they'd gone quiet.
+section("Stall clock: counts every kind of movement");
+const rosterLib = await import(`file://${R}/_lib/roster.js`);
+const oldStu = { created_at: "2026-06-01T00:00:00Z" };
+check("with nothing recorded, the clock starts at sign-up",
+  rosterLib.lastMovedAt({ student: oldStu, events: {} }) === "2026-06-01T00:00:00Z");
+check("applying at RBLP counts as movement",
+  rosterLib.lastMovedAt({ student: { ...oldStu, rblp_applied_at: "2026-09-10T09:00:00Z" }, events: { account: "2026-06-01T00:00:00Z" } }) === "2026-09-10T09:00:00Z");
+check("so does filing CA, even though it's stored as a bare date",
+  rosterLib.lastMovedAt({ student: { ...oldStu, ca_submitted_on: "2026-09-12" }, events: { rblp_received: "2026-09-01T00:00:00Z" } }) === "2026-09-12");
+check("and so does writing prep work",
+  rosterLib.lastMovedAt({ student: oldStu, events: { ca_approved: "2026-08-01T00:00:00Z" }, lastWorksheetAt: "2026-09-14T20:00:00Z" }) === "2026-09-14T20:00:00Z");
+check("and being placed in a cohort",
+  rosterLib.lastMovedAt({ student: oldStu, events: {}, membership: { created_at: "2026-09-05T00:00:00Z" } }) === "2026-09-05T00:00:00Z");
+check("days are whole days, never negative",
+  rosterLib.daysSince("2026-09-01T00:00:00Z", Date.parse("2026-09-15T12:00:00Z")) === 14 &&
+  rosterLib.daysSince("2026-09-20T00:00:00Z", Date.parse("2026-09-15T12:00:00Z")) === 0);
+const adminStall = await (await get(consoleEp, boss.cookie)).json();
+check("the admin tab reads from the same loader",
+  adminStall.admin.students.every((x) => x.stage && "days" in x.stage) &&
+  /loadJourneys\(db, env\)/.test((await import("node:fs")).readFileSync(ROOT + "functions/api/classroom/console.js", "utf8")));
+
+// ---------------------------------------------------------------- daily digest
+section("Daily digest: what's waiting, what's stale, who's gone quiet");
+const digestLib = await import(`file://${R}/_lib/digest.js`);
+const DIGEST_NOW = Date.parse("2026-09-15T13:00:00Z");
+const mkJourney = (key, owner, days, { student: studentExtra, ...rest } = {}) => ({
+  role: "student", track: "RBLP", days, sessions: [], membership: null,
+  student: { email: `${key}.${days}@example.com`, display_name: `${key} ${days}`, payment_source: "army_ca", ...(studentExtra || {}) },
+  pipeline: { current: { key, title: `Step ${key}`, owner, done: false } },
+  ...rest
+});
+const digestCase = digestLib.classify([
+  mkJourney("enrolled", "pls", 0),
+  mkJourney("certificate", "pls", 2),
+  mkJourney("paid", "you", 1, { student: { purchase_claimed_at: "2026-09-14T00:00:00Z" } }),
+  mkJourney("paid", "you", 20),
+  mkJourney("rblp_received", "rblp", 5),
+  mkJourney("rblp_received", "rblp", 21),
+  mkJourney("ca_approved", "ca", 30),
+  mkJourney("rblp_apply", "you", 3),
+  mkJourney("rblp_apply", "you", 16),
+  mkJourney("attend", "you", 20, { sessions: [{ starts_at: "2026-10-03T14:00:00Z" }] }),
+  mkJourney("attend", "you", 20, { sessions: [{ starts_at: "2026-09-05T14:00:00Z" }] }),
+  mkJourney("ca_exam", "you", 25, { membership: { certified_on: "2026-08-21" } }),
+  { ...mkJourney("enrolled", "pls", 9), role: "instructor" },
+  { ...mkJourney("enrolled", "pls", 9), role: "admin" },
+  { ...mkJourney("certified", "rblp", 40), pipeline: { current: { key: "certified", title: "Done", owner: "rblp", done: true } } }
+], { now: DIGEST_NOW });
+const digestKeys = (rows) => rows.map((r) => r.email.split("@")[0]).sort().join(",");
+check("placing and certifying are yours whatever their age", digestKeys(digestCase.yours).includes("enrolled.0") && digestKeys(digestCase.yours).includes("certificate.2"));
+check("a claimed purchase is yours to confirm", digestKeys(digestCase.yours).includes("paid.1"));
+check("an unclaimed purchase is theirs, and only flagged once it's stale",
+  !digestKeys(digestCase.yours).includes("paid.20") && digestKeys(digestCase.quiet).includes("paid.20"));
+check("waiting on RBLP isn't news until it's been 14 days",
+  !digestKeys(digestCase.chase).includes("rblp_received.5") && digestKeys(digestCase.chase).includes("rblp_received.21"));
+check("a slow CA decision is worth chasing too", digestKeys(digestCase.chase).includes("ca_approved.30"));
+check("a student's own step isn't flagged in its first two weeks",
+  !digestKeys(digestCase.quiet).includes("rblp_apply.3") && digestKeys(digestCase.quiet).includes("rblp_apply.16"));
+check("waiting for a cohort date that hasn't come yet isn't going quiet",
+  digestCase.quiet.filter((r) => r.email.startsWith("attend.")).length === 1);
+check("a cohort date that passed with no attendance is flagged",
+  digestCase.quiet.some((r) => /session has passed with no attendance/.test(r.todo)));
+check("an unfiled exam CA request carries the recoupment warning",
+  digestCase.quiet.some((r) => r.email.startsWith("ca_exam.") && /180-day limit/.test(r.todo) && /recoupment/.test(r.todo)));
+check("instructors and admins are never in it", digestCase.yours.length === 3);
+check("finished journeys are never in it", !digestKeys(digestCase.chase).includes("certified.40"));
+check("longest-waiting first", digestCase.quiet[0].days >= digestCase.quiet[digestCase.quiet.length - 1].days);
+
+const digestMail = digestLib.digestEmail(digestCase);
+check("the subject says what's in it at a glance",
+  digestMail.subject === `Classroom daily: 3 need you, 2 to chase, ${digestCase.quiet.length} gone quiet`, digestMail.subject);
+check("it names what to do for each student", /place them in a cohort/.test(digestMail.html) && /certify them/.test(digestMail.html));
+check("it links to the admin tab", digestMail.html.includes("https://promoteandlead.com/classroom/#/admin"));
+check("and has a plain-text part", /NEEDS YOU/.test(digestMail.text) && /GONE QUIET/.test(digestMail.text));
+const digestEvil = digestLib.digestEmail(digestLib.classify([mkJourney("enrolled", "pls", 1, { student: { display_name: "<img src=x onerror=alert(1)>" } })], { now: DIGEST_NOW }));
+check("student-typed names are escaped", !digestEvil.html.includes("<img src=x") && digestEvil.html.includes("&lt;img"));
+check("one singular reads naturally", /^Classroom daily: 1 needs you$/.test(digestEvil.subject), digestEvil.subject);
+check("a quiet day produces no digest at all", digestLib.classify([mkJourney("rblp_apply", "you", 2)], { now: DIGEST_NOW }).total === 0);
+
+// The endpoint: student names are in here, so it's locked.
+const digestEndpoint = await import(`file://${R}/api/classroom/digest.js`);
+const callDigestEp = (headers, q = "", e = { ...env, DIGEST_SECRET: "digest-test-secret" }) => digestEndpoint.onRequest({
+  request: new Request("https://promoteandlead.com/api/classroom/digest" + q, { method: "POST", headers }), env: e
+});
+check("refuses to run until a secret is configured", (await callDigestEp({}, "", env)).status === 503);
+check("refuses a call with no secret", (await callDigestEp({})).status === 401);
+check("refuses a wrong secret", (await callDigestEp({ authorization: "Bearer nope" })).status === 401);
+check("refuses a secret that only matches as a prefix",
+  (await callDigestEp({ authorization: "Bearer digest-test-secre" })).status === 401);
+check("won't answer a GET", (await digestEndpoint.onRequest({ request: new Request("https://promoteandlead.com/api/classroom/digest"), env })).status === 405);
+const digestBeforeDry = SENT.length;
+const digestDryRes = await callDigestEp({ authorization: "Bearer digest-test-secret" }, "?dry=1");
+const digestDryBody = await digestDryRes.json();
+check("a dry run returns the digest", digestDryRes.ok && digestDryBody.dry === true && Array.isArray(digestDryBody.digest.yours), digestDryBody);
+check("without sending anything", SENT.length === digestBeforeDry && digestDryBody.sent === false);
+const digestLiveRes = await callDigestEp({ authorization: "Bearer digest-test-secret" });
+const digestLiveBody = await digestLiveRes.json();
+check("a real run sends it when there's something to say",
+  digestLiveRes.ok && (digestLiveBody.sent === true) === (digestLiveBody.counts.yours + digestLiveBody.counts.chase + digestLiveBody.counts.quiet > 0), digestLiveBody);
+if (digestLiveBody.sent) {
+  check("to Tommy's alert address", [].concat(SENT[SENT.length - 1].to).join() === "tommy@squaremarkweb.com");
+  check("as an internal email, never to a student", /Classroom alert/.test(SENT[SENT.length - 1].html));
+}
+check("the response never carries student data outside a dry run", !("digest" in digestLiveBody));
+
+const cronCfg = (await import("node:fs")).readFileSync(ROOT + "workers/digest-cron/wrangler.jsonc", "utf8");
+const cronCode = (await import("node:fs")).readFileSync(ROOT + "workers/digest-cron/index.js", "utf8");
+check("the Worker runs once a day at 8am Central (summer)", /"crons": \["0 13 \* \* \*"\]/.test(cronCfg));
+check("has no public URL", /"workers_dev": false/.test(cronCfg) && /status: 404/.test(cronCode));
+check("keeps its secret out of the file", !/DIGEST_SECRET"\s*:/.test(cronCfg));
+check("and fails loudly if the digest errors, so it shows in the dashboard", /if \(!res\.ok\) throw/.test(cronCode));
+
 // ---------------------------------------------------------------- licence
 section("Acceptance: no RBLP curriculum body text republished");
 const fs = await import("node:fs");
