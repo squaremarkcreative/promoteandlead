@@ -75,6 +75,7 @@ export function install(supabaseUrl) {
       const conflict = u.searchParams.get("on_conflict");
       const incoming = Array.isArray(body) ? body : [body];
       for (const row of incoming) {
+        if(name==='pl_teaching_progress' && !conflict && rows.some(r=>r.cohort_id===row.cohort_id&&r.instructor_id===row.instructor_id))return new Response('Duplicate progress',{status:409});
         if (conflict && prefer.includes("merge-duplicates")) {
           const keys = conflict.split(",");
           const existing = rows.find((r) => keys.every((k) => String(r[k]) === String(row[k])));
@@ -86,7 +87,9 @@ export function install(supabaseUrl) {
     }
 
     if (method === "PATCH") {
-      for (const r of rows.filter((r) => filters.every((f) => matches(r, f)))) Object.assign(r, body);
+      const updated=rows.filter((r) => filters.every((f) => matches(r, f)));
+      for (const r of updated) Object.assign(r, body);
+      if((init.headers?.Prefer||'').includes('return=representation'))return new Response(JSON.stringify(updated),{status:200});
       return new Response(null, { status: 204 });
     }
 

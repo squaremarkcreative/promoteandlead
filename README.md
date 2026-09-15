@@ -3,6 +3,14 @@
 Static HTML + Cloudflare Pages Functions (no separate server needed), with Supabase and Resend
 behind the API routes.
 
+## Production design and teaching guide
+
+The approved crisp-peaks homepage and light classroom theme are active at `/` and `/classroom`. Existing email sign-in, funding, worksheets, attendance and certificate workflows remain in place. Instructor accounts open Cohort overview first; the Teaching guide serves the 87 reading/example/discussion sections and coaching notes through the authenticated `/api/classroom/teaching` endpoint.
+
+Teaching progress is stored in Supabase per instructor and cohort, with revision checks to prevent stale devices overwriting newer progress. Apply `migrations/20260914-teaching-progress.sql` before deploying the endpoint. Row-level security is enabled; only the server service role accesses this table. Students cannot retrieve instructor materials. The old `/proposal/*` routes return 404 in production; the separate local Python preview remains a design reference.
+
+Validation commands: `node tests/classroom.e2e.mjs`, `node tests/teaching.e2e.mjs`, and `node tests/teaching-ui.mjs`. The last command exercises the UI logic with a DOM stub, not a visual browser.
+
 ## Files
 
 ```

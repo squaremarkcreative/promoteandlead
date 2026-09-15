@@ -33,8 +33,8 @@ export function sb(env) {
     select(table, query = "") {
       return req(`${table}?${query}`, { headers });
     },
-    patch(table, query, row) {
-      return req(`${table}?${query}`, { method: "PATCH", headers: { ...headers, Prefer: "return=minimal" }, body: JSON.stringify(row) });
+    patch(table, query, row, opts = {}) {
+      return req(`${table}?${query}`, { method: "PATCH", headers: { ...headers, Prefer: opts.representation ? "return=representation" : "return=minimal" }, body: JSON.stringify(row) });
     },
     remove(table, query) {
       return req(`${table}?${query}`, { method: "DELETE", headers: { ...headers, Prefer: "return=minimal" } });

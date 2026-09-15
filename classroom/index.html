@@ -390,6 +390,8 @@
     .print-task .lbl{font-weight:700}
   }
 </style>
+<link rel="stylesheet" href="/assets/classroom-design.css?v=20260914">
+<script src="/assets/teaching-guide.js?v=20260914"></script>
 </head>
 <body>
 
@@ -397,7 +399,7 @@
 <div id="signin" class="signin" hidden>
   <div class="box">
     <div style="text-align:center;margin-bottom:1.2rem">
-      <img src="/assets/logo-icon.png" alt="" style="height:46px;margin-bottom:.5rem">
+      <img src="/assets/proposal-logo-v5.png" alt="" style="height:46px;margin-bottom:.5rem">
       <h2 style="font-size:1.15rem">Promote &amp; Lead Classroom</h2>
       <p class="muted" style="margin-top:.25rem">Enter your email and we'll send you a code.<br>
         <b class="soft">New here? This is also how you create your account</b> &mdash; there's nothing to set up and no password to remember.</p>
@@ -435,10 +437,10 @@
 <!-- ============================== signed in ============================== -->
 <div id="app" hidden>
   <header class="top no-print">
-    <div class="brand">
-      <img src="/assets/logo-icon.png" alt="">
-      <div>Classroom<small>Promote &amp; Lead Solutions</small></div>
-    </div>
+    <a class="brand" href="/" aria-label="Promote and Lead home">
+      <img src="/assets/proposal-logo-v5.png" alt="">
+      <div>Promote &amp; Lead<small>CLASSROOM</small></div>
+    </a>
     <div class="who">
       <span id="whoEmail"></span>
       <span class="pill" id="whoRole"></span>
@@ -633,7 +635,7 @@ function tabList() {
     t = t.concat([["home", "Home"], ["pipeline", "My journey"], ["worksheets", "Prep work"],
                   ["cohort", "My cohort"], ["exam", "Oral exam"], ["settings", "Settings"]]);
   }
-  if (CONSOLE) t.push(["teaching", "Teaching guide"], ["instructor", "Instructor"]);
+  if (CONSOLE) t.push(["instructor", "Cohort overview"], ["teaching", "Teaching guide"]);
   if (CONSOLE && CONSOLE.role === "admin") t.push(["admin", "Admin"]);
   return t;
 }
@@ -682,12 +684,17 @@ async function run(fn, okMsg) {
 }
 
 /* ------------------------------------------------------------------ home */
+function studentSessionSummary(){
+ var sessions=ME.cohort&&ME.cohort.sessions||[];
+ var upcoming=sessions.filter(function(s){return s.startsAt&&new Date(s.startsAt).getTime()>=Date.now()}).sort(function(a,b){return new Date(a.startsAt)-new Date(b.startsAt)})[0];
+ return '<div class="home-next-session"><h3>Your next session</h3><p>'+ (upcoming?esc(upcoming.label||'Live cohort session')+' · '+esc(fmtDate(upcoming.startsAt)):ME.cohort?'Your cohort will post the next session here.':'Your session appears here once you join a cohort.')+'</p><button class="btn btn-ghost" data-go="cohort">View my cohort →</button></div>';
+}
 function renderHome(el) {
   var p = ME.profile, w = ME.worksheets.progress, h = ME.hours;
   var current = ME.pipeline.steps.filter(function (s) { return s.key === ME.pipeline.currentStep; })[0];
 
   el.innerHTML =
-    '<div class="box"><h2>' + (p.displayName ? "Hi, " + esc(firstName(p.displayName)) : "Welcome") + '</h2>' +
+    '<div class="home-focus"><h2>' + (p.displayName ? "Hi, " + esc(firstName(p.displayName)) : "Welcome") + '</h2>' +
       (p.displayName
         ? '<p class="muted">You\'re preparing for the <b class="soft">' + esc(p.track) + '</b> oral exam with Promote and Lead Solutions.</p>'
         : '<p class="muted">Let\'s start with your name &mdash; it\'s what goes on your certificate. ' +
@@ -696,6 +703,7 @@ function renderHome(el) {
         ' &nbsp;<button class="btn btn-gold btn-sm no-print" data-go="pipeline">See my journey</button></div>' +
     "</div>" +
 
+    studentSessionSummary() +
     '<div class="cards">' +
       card(w.ready + "/" + w.required, "Worksheets ready") +
       card(h.attendedHours, "Hours attended of " + h.requiredHours) +
@@ -1888,7 +1896,7 @@ function tgList(title, sub, items) {
 // What the instructor teaches from. Per leader task: how to open it, one of Tommy's own
 // stories to model the answer with, and the single applied question to put to the room.
 // The story is there to prompt the instructor's own — not to be read out as-is.
-function renderTeaching(el) {
+function renderTeachingResources(el) {
   if (!CONSOLE) { el.innerHTML = '<div class="box"><p class="muted">Loading…</p></div>'; return; }
   loadCovered();
 
