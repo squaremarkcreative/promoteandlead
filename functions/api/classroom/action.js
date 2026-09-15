@@ -11,6 +11,7 @@ import { transactionalEmail, sendEmail } from "../../_lib/email.js";
 import { issueCode } from "../../_lib/session.js";
 import { standardSession } from "../../_lib/curriculum.js";
 import { allTaskKeys, MODULES } from "../../_lib/curriculum.js";
+import { alertAdmin } from "../../_lib/alerts.js";
 
 const VALID_TASKS = new Set(allTaskKeys());
 const VALID_STATUS = new Set(["empty", "draft", "ready", "expanded"]);
@@ -19,6 +20,13 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = sb(env);
   if (!db.enabled) return json({ error: "The classroom isn't configured yet." }, 503);
+
+  // Alerts to Tommy go out after the response where the platform allows, so a slow mail provider
+  // never makes a student's click hang. Without waitUntil (tests), they're simply awaited.
+  const alert = (kind, student) => {
+    const job = alertAdmin(env, kind, student);
+    return context.waitUntil ? context.waitUntil(job) : job;
+  };
 
   const me = await currentStudent(request, env, db);
   if (!me) return json({ error: "Please sign in again." }, 401);
@@ -42,9 +50,10 @@ export async function onRequestPost(context) {
       case "pipeline.confirmApplied": {
         // Step 3: "I submitted my free RBLP application and asked for Promote and Lead Solutions."
         const applied = data.applied !== false;
-        await db.patch("pl_students", `id=eq.${me.id}`, {
-          rblp_applied_at: applied ? new Date().toISOString() : null
-        });
+        const now = applied ? new Date().toISOString() : null;
+        await db.patch("pl_students", `id=eq.${me.id}`, { rblp_applied_at: now });
+        // RBLP tells Tommy, not the student, so this is now waiting on him.
+        if (applied && !me.rblp_applied_at) await alert("rblp_apply", { ...me, rblp_applied_at: now });
         return json({ ok: true });
       }
 
@@ -63,8 +72,11 @@ export async function onRequestPost(context) {
           return json({ ok: true });
         }
         if (!on) return json({ error: "Tell us the date you uploaded them — we need it for the 45-day clock." }, 400);
+        const firstFiling = !me.ca_submitted_on;
         await db.patch("pl_students", `id=eq.${me.id}`, { ca_submitted_on: on });
         await setPipelineEvent(db, me.id, "ca_submitted", true);
+        // Approval comes back through RBLP to Tommy. Correcting the date isn't a new handoff.
+        if (firstFiling) await alert("ca_submitted", { ...me, ca_submitted_on: on });
         return json({ ok: true });
       }
 
@@ -75,17 +87,7 @@ export async function onRequestPost(context) {
         const when = data.done === false ? null : new Date().toISOString();
         const alreadyClaimed = !!me.purchase_claimed_at;
         await db.patch("pl_students", `id=eq.${me.id}`, { purchase_claimed_at: when });
-        if (when && !alreadyClaimed) {
-          await sendEmail(env, {
-            to: env.NOTIFY_TO || "info@promoteandlead.com",
-            subject: `Says they've already purchased — ${me.email}`,
-            html: transactionalEmail(
-              `<p style="margin:0 0 14px"><strong>${me.display_name || me.email}</strong> says they already bought their exam prep through RBLP.</p>` +
-              `<p style="margin:0 0 14px">Check it with RBLP, then mark <strong>RBLP confirmed payment</strong> on their row in the classroom Admin tab. That unlocks their prep work and emails them.</p>` +
-              `<p style="margin:0">${me.email}${me.track ? " &middot; " + me.track : ""}</p>`),
-            text: `${me.email} says they already purchased exam prep. Confirm with RBLP, then mark it in the Admin tab.`
-          });
-        }
+        if (when && !alreadyClaimed) await alert("purchase_claimed", { ...me, purchase_claimed_at: when });
         return json({ ok: true });
       }
 
@@ -190,7 +192,14 @@ export async function onRequestPost(context) {
       }
 
       case "exam.scheduled": {
-        await setPipelineEvent(db, me.id, "exam", data.done !== false);
+        const scheduling = data.done !== false;
+        const prior = scheduling
+          ? await db.select("pl_pipeline_events",
+              `select=completed_at&student_id=eq.${encodeURIComponent(me.id)}&step=eq.exam&limit=1`)
+          : [];
+        await setPipelineEvent(db, me.id, "exam", scheduling);
+        // The award comes from RBLP to Tommy, who has to mark it.
+        if (scheduling && !prior.length) await alert("exam", me);
         return json({ ok: true });
       }
 

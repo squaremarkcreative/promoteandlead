@@ -1498,7 +1498,8 @@ check("the claim is recorded and shown back to them", !!om.profile.purchaseClaim
 check("but it does NOT unlock their prep work — money is confirmed, not claimed",
   om.worksheets.unlocked === false && om.pipeline.current.key === "paid");
 check("and it tells Tommy to check with RBLP",
-  SENT.length > mailBefore && /already purchased/i.test(SENT[SENT.length - 1].subject), SENT[SENT.length - 1] && SENT[SENT.length - 1].subject);
+  SENT.length > mailBefore && /says they already paid/i.test(SENT[SENT.length - 1].subject) &&
+  /RBLP confirmed payment/.test(SENT[SENT.length - 1].html), SENT[SENT.length - 1] && SENT[SENT.length - 1].subject);
 const adminSees = await (await get(consoleEp, boss.cookie)).json();
 check("the admin list flags them for confirmation",
   adminSees.admin.students.some((x) => x.email === "bought.first@example.com" && x.purchase_claimed_at));
@@ -1756,6 +1757,86 @@ check("an autosave replaying that status does not demote it to draft",
   wsm.worksheets.responses.m1_respect.status === "ready", wsm.worksheets.responses.m1_respect.status);
 check("and the newly typed text is what was kept",
   /even when it costs me/.test(wsm.worksheets.responses.m1_respect.what));
+
+// ---------------------------------------------------------------- alerts
+// A student who has done their part and watches nothing move is the one who gives up. Every
+// handoff to Tommy emails him the moment it happens, once, saying which button to press.
+section("Alerts: Tommy hears the moment a step is his");
+const ALERT_TO = "tommy@squaremarkweb.com";
+const alertee = await signIn("alert.me@example.com");
+Object.assign(DB.pl_students.find((x) => x.email === "alert.me@example.com"),
+  { display_name: "Alex Alert", track: "RBLP-T", payment_source: "army_ca" });
+const lastMail = () => SENT[SENT.length - 1];
+const mailsTo = (addr) => SENT.filter((m) => [].concat(m.to).includes(addr)).length;
+
+let n0 = mailsTo(ALERT_TO);
+await post(action, { action: "pipeline.confirmApplied", data: { applied: true } }, alertee.cookie);
+check("applying at RBLP alerts Tommy", mailsTo(ALERT_TO) === n0 + 1);
+check("at the address he asked for", [].concat(lastMail().to).join() === ALERT_TO, lastMail().to);
+check("with a subject he can filter on", /^Action needed: Alex Alert applied at RBLP$/.test(lastMail().subject), lastMail().subject);
+check("naming the exact admin button to press", /RBLP has their application/.test(lastMail().html));
+check("with a link straight to the admin tab", lastMail().html.includes("https://promoteandlead.com/classroom/#/admin"));
+check("and the student's details so he doesn't have to look them up",
+  lastMail().html.includes("alert.me@example.com") && lastMail().html.includes("RBLP-T") &&
+  lastMail().html.includes("Army Credentialing Assistance"));
+check("it is an internal alert, not dressed as a sign-in code email",
+  /Classroom alert/.test(lastMail().html) && !/asked for a sign-in code/.test(lastMail().html));
+check("a plain-text part is included", /Your move: Watch for RBLP/.test(lastMail().text || ""));
+check("the student is never sent it", [].concat(lastMail().to).every((t) => t !== "alert.me@example.com"));
+
+n0 = mailsTo(ALERT_TO);
+await post(action, { action: "pipeline.confirmApplied", data: { applied: true } }, alertee.cookie);
+check("pressing it again doesn't send a second alert", mailsTo(ALERT_TO) === n0);
+
+n0 = mailsTo(ALERT_TO);
+await post(action, { action: "pipeline.caSubmitted", data: { date: "2026-09-20" } }, alertee.cookie);
+check("filing the CA request alerts Tommy", mailsTo(ALERT_TO) === n0 + 1);
+check("saying when they filed and which branch",
+  /filed their CA request/.test(lastMail().subject) && /September 20, 2026/.test(lastMail().html) && /\(Army\)/.test(lastMail().html),
+  lastMail().subject);
+check("naming the funding button", /RBLP confirmed funding/.test(lastMail().html));
+check("and working out the earliest course start under the Army's 45-day rule",
+  /earliest course start is <b>[^<]*November 4, 2026<\/b>/.test(lastMail().html));
+
+n0 = mailsTo(ALERT_TO);
+await post(action, { action: "pipeline.caSubmitted", data: { date: "2026-09-19" } }, alertee.cookie);
+check("correcting the filing date isn't a new handoff", mailsTo(ALERT_TO) === n0);
+
+// The 45-day rule is the Army's. Never state that date for an Air Force student.
+const afAlert = await signIn("af.alert@example.com");
+Object.assign(DB.pl_students.find((x) => x.email === "af.alert@example.com"),
+  { display_name: "Avery Force", track: "RBLP", payment_source: "af_ca" });
+await post(action, { action: "pipeline.caSubmitted", data: { date: "2026-09-20" } }, afAlert.cookie);
+check("an Air Force filing alerts too", /Avery Force filed their CA request/.test(lastMail().subject));
+check("but without the Army's 45-day date", !/45-day rule/.test(lastMail().html) && /\(Air Force\)/.test(lastMail().html));
+
+n0 = mailsTo(ALERT_TO);
+await post(action, { action: "exam.scheduled", data: {} }, alertee.cookie);
+check("scheduling the exam alerts Tommy", mailsTo(ALERT_TO) === n0 + 1 && /scheduled their RBLP exam/.test(lastMail().subject));
+check("naming the award button", /Passed the exam/.test(lastMail().html));
+check("and reminding him a Trainer's award sends the instructor invitation", /invitation to instruct/.test(lastMail().html));
+n0 = mailsTo(ALERT_TO);
+await post(action, { action: "exam.scheduled", data: {} }, alertee.cookie);
+await post(action, { action: "exam.scheduled", data: { done: false } }, alertee.cookie);
+check("re-marking or unmarking the exam sends nothing", mailsTo(ALERT_TO) === n0);
+
+// Delivery details.
+const alertsLib = await import(`file://${R}/_lib/alerts.js`);
+await alertsLib.alertAdmin(env, "rblp_apply", { email: "n@example.com", display_name: "Sneaky\r\nBcc: evil@example.com" });
+check("a name with line breaks can't split the subject line", !/[\r\n]/.test(lastMail().subject), lastMail().subject);
+await alertsLib.alertAdmin({ ...env, CLASSROOM_ALERT_TO: "someone.else@example.com" }, "exam",
+  { email: "x@example.com", display_name: "X", track: "RBLP" });
+check("the recipient can be changed without a code change", [].concat(lastMail().to).join() === "someone.else@example.com");
+check("a non-Trainer isn't told about the instructor invitation", !/invitation to instruct/.test(lastMail().html));
+check("a broken alert returns false instead of throwing into the student's action",
+  (await alertsLib.alertAdmin(env, "exam", null)) === false);
+check("with no mail key configured it quietly does nothing",
+  (await alertsLib.alertAdmin({}, "exam", { email: "x@example.com" })) === false);
+const alertActSrc = (await import("node:fs")).readFileSync(ROOT + "functions/api/classroom/action.js", "utf8");
+check("in production it sends after responding, so a slow mail provider never stalls a click",
+  /context\.waitUntil \? context\.waitUntil\(job\) : job/.test(alertActSrc));
+check("the old one-off purchase email is gone — one alert path, one recipient",
+  !/Says they've already purchased/.test(alertActSrc));
 
 // ---------------------------------------------------------------- licence
 section("Acceptance: no RBLP curriculum body text republished");

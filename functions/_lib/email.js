@@ -24,6 +24,11 @@ export function transactionalEmail(messageHtml) {
   return shell(messageHtml, "You received this because someone asked for a sign-in code for this address at promoteandlead.com. If that wasn't you, you can ignore it.");
 }
 
+// Internal wrapper — alerts to Promote & Lead about a student, never sent to the student.
+export function internalEmail(messageHtml) {
+  return shell(messageHtml, "Classroom alert &middot; sent because a student's next step is with you.");
+}
+
 function shell(bodyHtml, footerHtml) {
   return (
     `<!doctype html><html><body style="margin:0;padding:0;background:#f4f4f5">` +
